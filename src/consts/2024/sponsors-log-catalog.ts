@@ -1,4 +1,4 @@
-import type { SPONSORS } from "./sponsors";
+import { SPONSORS } from "./sponsors";
 
 export type SponsorId = (typeof SPONSORS)[number]["id"];
 

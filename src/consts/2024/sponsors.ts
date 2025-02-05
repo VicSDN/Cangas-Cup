@@ -1,4 +1,4 @@
-import type { Sponsors } from "../types/Sponsors";
+import type { Sponsors } from "../../types/Sponsors";
 
 export const SPONSORS: Array<Sponsors> = [
   {
