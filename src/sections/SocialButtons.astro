@@ -1,0 +1,38 @@
+---
+import Instagram from "../icons/Instagram.astro";
+import PositionMap from "../icons/PositionMap.astro";
+---
+
+<nav class:list={`${Astro.props.class}`}>
+  <ul
+    class="flex flex-row items-center gap-x-6"
+    aria-label="redes sociales y botón para alternar tema"
+  >
+    <li>
+      <a
+        target="_blank"
+        rel="noopener"
+        aria-label="Instagram de la Cangas Cup, se abrirá en una nueva pestaña"
+        href="https://www.instagram.com/cangascup?igsh=N2UwZ3E2OGRuaWsy"
+        class="inline-block any-hover:scale-125 any-hover:opacity-70 motion-safe:transition motion-reduce:any-hover:scale-100"
+      >
+        <Instagram
+          class="text-primary transition-colors duration-300 hover:text-accent motion-reduce:duration-0"
+        />
+      </a>
+    </li>
+    <li>
+      <a
+        target="_blank"
+        rel="noopener"
+        aria-label="Lugar donde se disputará la maratón"
+        href="https://maps.app.goo.gl/E84wujARYwQBV2nZA"
+        class="inline-block any-hover:scale-125 any-hover:opacity-70 motion-safe:transition motion-reduce:any-hover:scale-100"
+      >
+        <PositionMap
+          class="text-primary transition-colors duration-300 hover:text-accent motion-reduce:duration-0"
+        />
+      </a>
+    </li>
+  </ul>
+</nav>

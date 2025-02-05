@@ -1,0 +1,18 @@
+---
+import FooterContent from "./FooterContent.astro";
+import SocialButtons from "../../../sections/SocialButtons.astro";
+---
+
+<footer
+  class="relative mt-4 mb-2 mx-3 px-4 md:px-0 flex flex-col place-items-center pb-2 pt-14 md:flex-row md:justify-between md:pt-16"
+>
+  <hr
+    class="absolute top-0 w-full h-[2px] min-w-[18rem] border-t-0 bg-transparent bg-gradient-to-r from-transparent via-white to-transparent bg-center md:my-9"
+  />
+  <FooterContent class="mb-4 md:mb-0" />
+  <hr
+    aria-hidden="true"
+    class="my-12 w-full h-[2px] min-w-[18rem] border-t-0 bg-transparent bg-gradient-to-r from-transparent via-white to-transparent bg-center md:hidden"
+  />
+  <SocialButtons class="flex items-center justify-center" />
+</footer>

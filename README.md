@@ -1,48 +1,79 @@
-# Astro Starter Kit: Basics
+# Cangas Cup
 
-```sh
-npm create astro@latest -- --template basics
-```
+![project-image](https://socialify.git.ci/VicSDN/Cangas-Cup-Maraton/image?language=1&amp;owner=1&amp;name=1&amp;stargazers=1&amp;theme=Light)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+¡Bienvenido al README de nuestra emocionante página web para la Cangas Cup Maratón de Futsal! Este proyecto está diseñado para brindar una plataforma completa y accesible donde los entusiastas del futsal puedan obtener toda la información relevante sobre la cangas cup 2024.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Descripción detallada
+-La app consta de dos partes , la de usuario normal y la de admin. 
+-El usuario normal, podra visualizar información del torneo , así como la ubicación , colaboradores , consultar jugadores , equipos  y resultados.
+-El administrador, podra añadir, eliminar y modificar jugadores, equipos y resultados.
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+Construido Con 🛠️
 
-## 🚀 Project Structure
+Explica qué tecnologías usaste para construir este proyecto. Aquí algunos ejemplos:
 
-Inside of your Astro project, you'll see the following folders and files:
+    Astro - El lenguaje utilizado
+    Supabase - Backend
+    Postgresql - Sistema de base de datos
+    Taildwind CSS - Framework de CSS
+    Vitest - Para los test unitarios
+    Cypress - Test Component and end-to-end
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src/
-│   ├── layouts/
-│   │   └── Layout.astro
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Aquí tienes un vistazo rápido a lo que ofrece nuestra página web:
 
-## 🧞 Commands
+## Características Principales:
+- **Información del Torneo:** Detalles completos sobre la organización reglas y programación del torneo.
+- **Colaboradores:** Reconocimiento y agradecimiento a nuestros valiosos patrocinadores y colaboradores con su correspondiente link a su página de contacto.
+- **Calendario de Partidos:** Fechas horarios y ubicaciones de todos los emocionantes encuentros del torneo.
+- **Resultados:** Actualizaciones de los resultados de los partidos a medida que se desarrollan.
+- **Perfiles de Jugadores:** Información detallada sobre los jugadores participantes incluyendo estadísticas individuales y desempeño.
+- **Ranking de Jugadores:** Clasificación de los principales goleadores, asistentes, etc. del torneo destacando sus logros en la cancha.
 
-All commands are run from the root of the project, from a terminal:
+## 🚀 Demo
+(https://cangascup.vercel.app)
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Project Screenshots:
 
-## 👀 Want to learn more?
+[Todas las imágenes de la app , 100% responsive](https://github.com/VicSDN/Cangas-Cup-Maraton/issues/1#issue-2326671231)
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## 🛠️ Installation Steps:
+- Clona este repositorio en tu máquina local.
+- Crea un archivo .env.local(Necesitarás tus propias claves supabase).
+- Instala las dependencias necesarias utilizando npm o yarn.
+- Ejecuta el servidor localmente utilizando el comando `npm start` o `yarn start`.
+- Accede a la página web desde tu navegador en la dirección local proporcionada por el servidor.
+1. Install
+    ```
+    npx install o npm install
+    ```
+
+2. Dev
+    ```
+    astro dev o npm run dev
+    ```
+
+## 🍰 Contribution Guidelines:
+
+¡Tu contribución es fundamental para mejorar y mantener nuestra página web! Aquí hay algunas formas en las que puedes contribuir:
+- Reportar errores o problemas.
+- Sugerir nuevas características o mejoras.
+- Enviar solicitudes de extracción para corregir errores o agregar nuevas funcionalidades.
+
+**Tecnologías Utilizadas:**
+- **Frontend:** HTML, CSS, JavaScript (Astro)
+- **Backend:** Supabase
+- **Base de Datos:** PostgreSQL
+
+## Versionado 📌
+Usamos Git para el versionado. Para las versiones disponibles, consulta la página oficial de Git.
+
+
+¡Esperamos que disfrutes explorando nuestra página web y siguiendo de cerca la emocionante acción de la Maratón de Futsal! Si tienes alguna pregunta o sugerencia no dudes en ponerte en contacto con nosotros. ¡Que comience el juego! 
+
+## 💖 Like my work?
+
+Versión 1.0
+
+Version 2.0 (En desarrollo)
