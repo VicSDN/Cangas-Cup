@@ -1,0 +1,94 @@
+---
+import BentoItem from "./BentoItem.astro";
+---
+<section
+  class={`
+    w-full max-w-[1400px]
+    grid lg:grid-cols-10 auto-rows-[30rem] gap-4
+    mx-auto p-6 md:p-12 lg:p-20
+  `}
+>
+  <BentoItem
+    class="col-span-10 md:col-span-6"
+    title="Cangas del Narcea"
+    subtitle="11.596 habitantes"
+  >
+    <div
+      slot="image"
+      class="background transition-scale absolute bottom-0 left-0 top-0
+        -z-10 h-full w-full bg-blue-950
+        bg-cover bg-center bg-no-repeat opacity-90 bg-blend-luminosity duration-1000 ease-in-out group-hover:scale-110"
+      style="background-image: url('/Cangasdelnarcea.webp');"
+    >
+    </div>
+    <p slot="content" class="max-w-xl">
+      Situado en el Suroccidente de Asturias, Cangas del Narcea es <strong
+        >el municipio más extenso de Asturias.</strong
+      > Tradicionalmente aislado de los grandes centros urbanos debido a su compleja
+      orografía, mantiene un marcado carácter rural con<strong>
+        más de 300 pueblos</strong
+      > y un único centro urbano. Todo el concejo está atravesado por un extensa
+      red fluvial que forma sus numerosos valles.
+    </p>
+  </BentoItem>
+  <BentoItem
+    class="col-span-10 md:col-span-4"
+    title="El Polideportivo Municipal"
+  >
+    <div
+      slot="image"
+      class="background transition-scale absolute bottom-0 left-0 top-0
+        -z-10 h-full w-full bg-blue-950
+        bg-cover bg-center bg-no-repeat opacity-90 bg-blend-luminosity duration-1000 ease-in-out group-hover:scale-110"
+      style="background-image: url('/Piscina-de-Cangas-del-Narcea.jpg.webp');"
+    >
+    </div>
+    <p slot="content" class="max-w-xl">
+      ¡Prepárate para la acción en nuestro campeonato! Con una pista
+      polideportiva de 27 x 45 metros se encuentra la <a
+        href="https://maps.app.goo.gl/Bn5e6YBUtLjGsXJj7"
+        ><strong>Avenida Alejandro Casona</strong></a
+      >.Estamos listos para acoger un emocionante torneo donde se desatará la
+      pasión por el fútbol sala. ¡Únete a nosotros y vive la emoción del deporte
+      en su máxima expresión!
+    </p>
+  </BentoItem>
+  <BentoItem
+    class="col-span-10 md:col-span-4"
+    title="Cangas Cup Futsal"
+    subtitle="El 14 de Junio"
+  >
+    <div
+      slot="image"
+      class="background transition-scale absolute bottom-0 left-0 top-0
+        -z-10 h-full w-full bg-blue-950
+        bg-cover bg-center bg-no-repeat opacity-90 bg-blend-luminosity duration-1000 ease-in-out group-hover:scale-110"
+      style="background-image: url('/Ronaldinho.webp');"
+    >
+    </div>
+    <p slot="content" class="max-w-xl">
+      Desde emocionantes partidos hasta premios especiales y actividades
+      sorpresa, este evento promete ser épico.
+    </p>
+  </BentoItem>
+  <BentoItem
+    class="col-span-10 md:col-span-6"
+    title="Deporte ASTUR"
+    subtitle="Partidos retransmitidos en directo en youtube"
+  >
+    <div
+      slot="image"
+      class="background transition-scale absolute bottom-0 left-0 top-0
+        -z-10 h-full w-full
+        bg-cover bg-center bg-no-repeat opacity-90 bg-blend-luminosity duration-1000 ease-in-out group-hover:scale-110"
+      style="background-image: url('/deporteAstur.png');"
+    >
+    </div>
+    <p slot="content" class="max-w-xl text-blue-100">
+      <strong>
+        Promotores del deporte Asturiano, estarán con nosotros retransmitiendo
+        en directo, con entrevistas etc.</strong
+      >
+    </p>
+  </BentoItem>
+</section>
