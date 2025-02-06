@@ -1,7 +1,7 @@
 ---
 import type { HTMLAttributes } from "astro/types";
 
-import { SponsorId } from "../consts/2024/sponsors-log-catalog";
+import type { SponsorId } from "../consts/2024/sponsors-log-catalog";
 import { SponsorsLogoCatalog } from "../consts/2024/sponsors-log-catalog";
 
 interface Props extends HTMLAttributes<"svg"> {
@@ -9,7 +9,7 @@ interface Props extends HTMLAttributes<"svg"> {
   logo: SponsorId;
 }
 
-const { logo = "alsa", class: className, ...rest } = Astro.props;
+const { logo = "manin", class: className, ...rest } = Astro.props;
 
 const logoDetails = SponsorsLogoCatalog[logo];
 
