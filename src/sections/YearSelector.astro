@@ -1,4 +1,6 @@
 ---
+// YearSelector.astro
+
 export interface Props {
   years: string[];
 }
@@ -25,7 +27,7 @@ const { years } = Astro.props;
 </style>
 
 <script>
-  function onYearChange(event: Event) {
+  function onYearChange(event) {
     const target = event.target as HTMLSelectElement;
     const selectedYear = target.value;
     if (selectedYear) {
@@ -42,8 +44,5 @@ const { years } = Astro.props;
     }
   }
 
-  const yearSelector = document.getElementById('year-selector');
-  if (yearSelector) {
-    yearSelector.addEventListener('change', onYearChange);
-  }
+  document.getElementById('year-selector')?.addEventListener('change', onYearChange);
 </script>

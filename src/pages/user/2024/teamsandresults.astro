@@ -1,0 +1,56 @@
+---
+import ButtonBack from "../../../sections/ButtonBack.astro";
+import Layout from "../../../layouts/Layout2024.astro";
+---
+
+<Layout
+  description="Reglamento Cangas Cup 2024 "
+  title="Reglamento - Cangas Cup Futsal 2024"
+>
+<section><ButtonBack /></section>
+  <section class="flex justify-center items-start h-3/4 pt-24 mb-40 pb-20 ">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <a
+        class="group relative inline-block focus:outline-none focus:ring"
+        href="teams"
+      >
+        <span
+          class="absolute inset-0 translate-x-1.5 translate-y-1.5 bg-blue-300 transition-transform group-hover:translate-x-0 group-hover:translate-y-0"
+        ></span>
+
+        <span
+          class="relative inline-block border-2 border-current px-8 py-3 text-sm font-bold uppercase tracking-widest text-sky-800 group-active:text-opacity-75"
+        >
+          &nbsp; EQUIPOS&nbsp;&nbsp;
+        </span>
+      </a>
+      <a
+        class="group relative inline-block focus:outline-none focus:ring"
+        href="results"
+      >
+        <span
+          class="absolute inset-0 translate-x-0 translate-y-0 bg-sky-600 transition-transform group-hover:translate-x-1.5 group-hover:translate-y-1.5"
+        ></span>
+        <span
+          class="relative inline-block border-2 border-current px-8 py-3 text-sm font-bold uppercase tracking-widest"
+        >
+          RESULTADOS
+        </span>
+      </a>
+      <a
+        class="group relative inline-block focus:outline-none focus:ring"
+        href="/final"
+      >
+        <span
+          class="absolute inset-0 translate-x-1.5 translate-y-1.5 bg-sky-300 transition-transform group-hover:translate-x-0 group-hover:translate-y-0"
+        ></span>
+
+        <span
+          class="relative inline-block border-2 border-current px-8 py-3 text-sm font-bold uppercase tracking-widest text-white group-active:text-opacity-75"
+        >
+          FASE FINAL
+        </span>
+      </a>
+    </div>
+  </section>
+</Layout>

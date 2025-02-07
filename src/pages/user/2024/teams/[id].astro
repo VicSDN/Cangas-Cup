@@ -1,0 +1,176 @@
+---
+import ButtonBack from "../../../../sections/ButtonBack.astro";
+import { supabase } from "../../../../db/supabase";
+import Layout from "../../../../layouts/Layout2024.astro";
+let { id } = Astro.params;
+
+let { data: team, error: teamError } = await supabase
+  .from("team")
+  .select("*")
+  .eq("id", id)
+  .single();
+
+let { data: players, error: playerError } = await supabase
+  .from("player")
+  .select("*")
+  .eq("teamId", id);
+
+// Obtiene todos los equipos del mismo grupo
+let { data: allTeams, error: allTeamsError } = await supabase
+  .from("team")
+  .select("*")
+  .eq("groupId", team?.groupId);
+
+// Calcula la clasificación del grupo
+const groupStandings = allTeams.sort((a, b) => b.points - a.points);
+
+// Consulta los partidos del equipo
+let { data: matches, error: matchesError } = await supabase
+  .from("match")
+  .select("*")
+  .or(`id_team1.eq.${id},id_team2.eq.${id}`);
+
+function findTeam(teamId) {
+  if (!allTeams) return null;
+  const teamAux = allTeams.find((t) => t.id === teamId);
+  return teamAux || { name: "Equipo desconocido" }; // Maneja el caso en el que el equipo no se encuentre
+}
+
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  const monthNames = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+  ];
+
+  const monthName = monthNames[monthIndex];
+  const formattedDate = `${day} de ${monthName}`;
+  const formattedTime = `${hours}:${minutes}`;
+
+  return { formattedDate, formattedTime };
+}
+---
+
+<Layout description="Team Details" title="Cangas Cup Team Details">
+  <section><ButtonBack /></section>
+  <div
+    class="container mx-auto mt-20 pt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-4 md:p-10 px-8"
+  >
+    <!-- Team Info Section -->
+    <div class="md:col-span-1 bg-white bg-opacity-20 p-6 rounded-lg shadow-md">
+      {
+        team && (
+          <div class="text-center">
+            <h1 class="text-2xl font-bold mb-4 text-white">{team.name}</h1>
+            <p class="text-gray-300">
+              <strong>Ubicación:</strong> {team.location}
+            </p>
+            <p class="text-gray-300">
+              <strong>Grupo:</strong> {team.groupId}
+            </p>
+            <p class="text-gray-300">
+              <strong>Puntos:</strong> {team.points}
+            </p>
+            <div class="mt-4">
+              <h2 class="text-xl font-bold mb-2 text-white">Partidos:</h2>
+              <div class="flex flex-col items-center">
+                {matches &&
+                  matches.map((match) => {
+                    const team1 = findTeam(match.id_team1);
+                    const team2 = findTeam(match.id_team2);
+                    return (
+                      <div class="w-full max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105">
+                        <div class="flex flex-col items-center">
+                          <div>
+                            <span class="font-bold">{team1.name}</span> vs.{" "}
+                            <span class="font-bold">{team2.name}</span>
+                          </div>
+                          <div>
+                            {match.finished ? (
+                              <>
+                                <span>{match.goals_team1}</span>
+                                <span class="mx-2">-</span>
+                                <span>{match.goals_team2}</span>
+                              </>
+                            ) : (
+                              <>
+                                <b>{formatDateTime(match.day).formattedTime}</b>
+                                <br />
+                                {formatDateTime(match.day).formattedDate}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div>
+    <div class="md:col-span-1 bg-white bg-opacity-20 p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-bold mb-4 text-center text-white">
+        Grupo {team && team.groupId}
+      </h2>
+      <ul class="divide-y divide-gray-500">
+        {
+          groupStandings &&
+            groupStandings.map((team, index) => (
+              <li class="flex justify-between items-center py-2 text-gray-300">
+                <span class="text-3xl font-bold text-white mr-4">
+                  {index + 1}º
+                </span>
+                <a
+                  href={`/teams/${team.id}`}
+                  class="flex-1 max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105"
+                >
+                  <div class="flex flex-col items-center">
+                    <h3 class="text-lg font-bold">{team.name}</h3>
+                    <p class="text-sm">{team.points} pts</p>
+                  </div>
+                </a>
+              </li>
+            ))
+        }
+      </ul>
+    </div>
+    <div class="md:col-span-1 bg-white bg-opacity-20 p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-bold mb-4 text-center text-white">
+        Jugadores {team && team.name}
+      </h2>
+      <div class="flex flex-col items-center">
+        {
+          players &&
+            players.map((player) => (
+              <a
+                href={`/rankings/${player.id}`}
+                class="w-full max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105"
+              >
+                <div class="flex flex-col items-center">
+                  <h3 class="text-lg font-bold">{player.name}</h3>
+                  <p class="text-sm">{player.secondName}</p>
+                </div>
+              </a>
+            ))
+        }
+      </div>
+    </div>
+  </div>
+</Layout>
