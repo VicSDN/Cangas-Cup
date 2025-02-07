@@ -3,63 +3,48 @@ import FooterContent from "../components/user/2024/FooterContent.astro";
 import HamburgerButton from "./HamburgerButton.astro";
 import SocialButtons from "../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
-import YearSelector from "../sections/YearSelector.astro";  
+import YearSelector from "../sections/YearSelector.astro";
 
-const years = ["2024", "2025"]; 
+const years = ["2024", "2025"];
 
 const pages = [
   { name: "Equipos y Resultados", href: "/teamsandresults" },
   { name: "Año", href: "#", disabled: false, dropdown: true },
   { name: "Reglamento", href: "/regulations" },
   { name: "Rankings", href: "/rankings" },
-].map((page) => ({
-  ...page,
-  active: Astro.url.pathname === page.href,
-}));
-
+];
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
   <nav class="group flex h-full w-full items-center justify-between px-10 lg:justify-center">
-    {
-      pages.map(({ disabled, name, href, active, dropdown }, key) => (
-        <>
-          {dropdown ? (
-            <div
-              class:list={[
-                "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10"
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-              {name === "Año" ? (
-                <YearSelector client:load years={years} />
-              ) : (
-      
-                <select class="text-primary bg-transparent border-2 p-2 rounded-md">
-                  
-                </select>
-              )}
-            </div>
-
-          ) : (
-            <a
-              href={href}
-              class:list={[
-                "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                { "pointer-events-none": disabled },
-                { "current-page text-accent": active },
-                { "text-white": !active },
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-            </a>
-          )}
-          {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
-        </>
-      ))
-    }
+    {pages.map(({ disabled, name, href, dropdown }, key) => (
+      <>
+        {dropdown ? (
+          <div
+            class:list={[
+              "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+            ]}
+            id={`nav-link-${key}`}
+          >
+            <span class="z-10">{name}</span>
+            <YearSelector client:load years={years} />
+          </div>
+        ) : (
+          <a
+            href={href}
+            class:list={[
+              "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+              { "pointer-events-none": disabled },
+              { "text-white": !disabled },
+            ]}
+            id={`nav-link-${key}`}
+          >
+            <span class="z-10">{name}</span>
+          </a>
+        )}
+        {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
+      </>
+    ))}
 
     <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
     <div
@@ -85,28 +70,35 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {
-          pages.map(({ disabled, name, href, active }, key) => (
-            <>
-            
+        {pages.map(({ disabled, name, href, dropdown }, key) => (
+          <>
+            {dropdown ? (
+              <div
+                class:list={[
+                  "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
+                ]}
+              >
+                <span class="z-10 uppercase text-primary">{name}</span>
+                <YearSelector client:load years={years} />
+              </div>
+            ) : (
               <a
                 href={href}
                 class:list={[
                   "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
                   { "pointer-events-none": disabled },
-                  { "current-page-mob": active },
                 ]}
                 id={`navmob-link-${key}`}
               >
                 <span class="z-10 uppercase text-primary">{name}</span>
               </a>
-              <hr
-                class="h-[2px] w-full border-t-0"
-                style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-              />
-            </>
-          ))
-        }
+            )}
+            <hr
+              class="h-[2px] w-full border-t-0"
+              style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+            />
+          </>
+        ))}
         <nav class="my-4 flex flex-col gap-10">
           <FooterContent />
           <SocialButtons class="flex items-center justify-center" />
@@ -121,8 +113,7 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      >
-      </div>
+      ></div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href="/" class="focus-visible:!ring-0">
           <img
@@ -135,8 +126,7 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
         style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%);"
-      >
-      </div>
+      ></div>
     </div>
   </div>
 </header>

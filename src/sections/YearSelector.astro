@@ -1,8 +1,9 @@
 ---
-export const prerender = false; // Asegura que el componente se hidrate en el cliente
+export interface Props {
+  years: string[];
+}
 
-// Lista de años disponibles
-const years = ["2024", "2025"];
+const { years } = Astro.props;
 ---
 
 <select id="year-selector" class="year-selector flex items-center">
@@ -18,14 +19,23 @@ const years = ["2024", "2025"];
     font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
+    background-color: transparent;
+    color: var(--color-primary);
   }
 </style>
 
-<script is:inline>
-  // Función para manejar el cambio de selección
-  function onYearChange(event) {
-    const selectedYear = event.target.value;
+<script>
+  // Función para manejar el cambio de selección con tipo explícito para 'event'
+  function onYearChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const selectedYear = target.value;
     if (selectedYear) {
+      // Cierra el menú móvil si está abierto
+      const menuMobileContent = document.getElementById('menuMobileContent');
+      if (menuMobileContent && menuMobileContent.classList.contains('open')) {
+        menuMobileContent.classList.remove('open');
+        document.body.classList.remove('overflow-hidden');
+      }
       // Guarda el año seleccionado en localStorage
       localStorage.setItem('selectedYear', selectedYear);
       // Redirige a la ruta correspondiente
@@ -33,18 +43,9 @@ const years = ["2024", "2025"];
     }
   }
 
-  // Al cargar la página
-  document.addEventListener('DOMContentLoaded', () => {
-    const yearSelector = document.getElementById('year-selector');
-    if (yearSelector) {
-      // Recupera el año seleccionado de localStorage
-      const storedYear = localStorage.getItem('selectedYear');
-      if (storedYear) {
-        yearSelector.value = storedYear;
-      }
-
-      // Agrega el event listener para manejar cambios
-      yearSelector.addEventListener('change', onYearChange);
-    }
-  });
+  // Asegurar que el selector de años no es 'null' antes de añadir el event listener
+  const yearSelector = document.getElementById('year-selector');
+  if (yearSelector) {
+    yearSelector.addEventListener('change', onYearChange);
+  }
 </script>
