@@ -3,7 +3,7 @@ import FooterContent from "../components/user/2024/FooterContent.astro";
 import HamburgerButton from "./HamburgerButton.astro";
 import SocialButtons from "../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
-import YearSelector from "../sections/YearSelector.astro";
+import YearSelector from "./YearSelector.astro";
 
 const years = ["2024", "2025"];
 
@@ -16,37 +16,40 @@ const pages = [
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
-  <nav class="group flex h-full w-full items-center justify-between px-10 lg:justify-center">
-    {pages.map(({ disabled, name, href, dropdown }, key) => (
-      <>
-        {dropdown ? (
-          <div
-            class:list={[
-              "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-            ]}
-            id={`nav-link-${key}`}
-          >
-            <span class="z-10">{name}</span>
-            <YearSelector client:load years={years} />
-          </div>
-        ) : (
-          <a
-            href={href}
-            class:list={[
-              "nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-              { "pointer-events-none": disabled },
-              { "text-white": !disabled },
-            ]}
-            id={`nav-link-${key}`}
-          >
-            <span class="z-10">{name}</span>
-          </a>
-        )}
-        {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
-      </>
-    ))}
-
+  <nav class="group flex h-full w-full items-center justify-between px-10">
     <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
+
+    <div class="hidden lg:flex flex-1 items-center justify-center">
+      {pages.map(({ disabled, name, href, dropdown }, key) => (
+        <Fragment key={key}>
+          {dropdown ? (
+            <div
+              class:list={[
+                " block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+              ]}
+              id={`nav-link-${key}`}
+            >
+              <span class="z-10">{name}</span>
+              <YearSelector client:load years={years} />
+            </div>
+          ) : (
+            <a
+              href={href}
+              class:list={[
+                "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+                { "pointer-events-none": disabled },
+                { "text-white": !disabled },
+              ]}
+              id={`nav-link-${key}`}
+            >
+              <span class="z-10">{name}</span>
+            </a>
+          )}
+          {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
+        </Fragment>
+      ))}
+    </div>
+
     <div
       class="fixed inset-0 z-[888] flex w-screen flex-col items-center overflow-x-auto bg-[var(--background-color)] px-10 lg:hidden"
       id={MOBILE_MENU_CONTENT_ID}
@@ -70,34 +73,27 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {pages.map(({ disabled, name, href, dropdown }, key) => (
-          <>
-            {dropdown ? (
-              <div
-                class:list={[
-                  "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
-                ]}
-              >
-                <span class="z-10 uppercase text-primary">{name}</span>
-                <YearSelector client:load years={years} />
-              </div>
-            ) : (
-              <a
-                href={href}
-                class:list={[
-                  "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
-                  { "pointer-events-none": disabled },
-                ]}
-                id={`navmob-link-${key}`}
-              >
-                <span class="z-10 uppercase text-primary">{name}</span>
-              </a>
+        {pages.map(({ disabled, name, href }, key) => (
+          <Fragment key={key}>
+            {name !== "Año" && (
+              <>
+                <a
+                  href={href}
+                  class:list={[
+                    "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
+                    { "pointer-events-none": disabled },
+                  ]}
+                  id={`navmob-link-${key}`}
+                >
+                  <span class="z-10 uppercase text-primary">{name}</span>
+                </a>
+                <hr
+                  class="h-[2px] w-full border-t-0"
+                  style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+                />
+              </>
             )}
-            <hr
-              class="h-[2px] w-full border-t-0"
-              style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-            />
-          </>
+          </Fragment>
         ))}
         <nav class="my-4 flex flex-col gap-10">
           <FooterContent />
@@ -235,7 +231,6 @@ const pages = [
     z-index: 10;
   }
 </style>
-
 <script>
   import { $ } from "../lib/dom-selector";
 

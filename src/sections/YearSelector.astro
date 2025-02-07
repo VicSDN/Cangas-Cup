@@ -25,7 +25,6 @@ const { years } = Astro.props;
 </style>
 
 <script>
-  // Función para manejar el cambio de selección con tipo explícito para 'event'
   function onYearChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     const selectedYear = target.value;
@@ -43,7 +42,6 @@ const { years } = Astro.props;
     }
   }
 
-  // Asegurar que el selector de años no es 'null' antes de añadir el event listener
   const yearSelector = document.getElementById('year-selector');
   if (yearSelector) {
     yearSelector.addEventListener('change', onYearChange);
