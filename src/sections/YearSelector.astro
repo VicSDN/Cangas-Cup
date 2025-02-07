@@ -5,7 +5,7 @@ export const prerender = false; // Asegura que el componente se hidrate en el cl
 const years = ["2024", "2025"];
 ---
 
-<select id="year-selector" class="year-selector">
+<select id="year-selector" class="year-selector flex items-center">
   <option value="">Selecciona año</option>
   {years.map((year) => (
     <option value={year}>{year}</option>
