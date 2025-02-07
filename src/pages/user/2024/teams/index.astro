@@ -2,17 +2,22 @@
 import ButtonBack from "../../../../sections/ButtonBack.astro";
 import { supabase } from "../../../../db/supabase";
 import Layout from "../../../../layouts/Layout2024.astro";
+
 let { data: team, error } = await supabase.from("team").select("*");
+
+if (error) {
+  console.error("Error al obtener equipos:", error.message);
+}
 ---
 
 <Layout
-  description="Reglamento Cangas Cup 2024 "
+  description="Reglamento Cangas Cup 2024"
   title="Reglamento - Cangas Cup Futsal 2024"
 >
   <section><ButtonBack /></section>
   <div class="flex justify-center mt-20 p-8">
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 m-10">
-      {
+      {team && team.length > 0 ? (
         team.map((team) => (
           <div class="w-full max-w-sm bg-gray-300 bg-opacity-20 bg-blend-luminosity duration-1000 bg-cover border border-gray-400 rounded-lg shadow-md">
             <div class="flex flex-col items-center pb-10">
@@ -36,7 +41,9 @@ let { data: team, error } = await supabase.from("team").select("*");
             </div>
           </div>
         ))
-      }
+      ) : (
+        <p>No se han encontrado equipos.</p>
+      )}
     </div>
   </div>
 </Layout>
