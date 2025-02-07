@@ -1,0 +1,50 @@
+---
+export const prerender = false; // Asegura que el componente se hidrate en el cliente
+
+// Lista de años disponibles
+const years = ["2024", "2025"];
+---
+
+<select id="year-selector" class="year-selector">
+  <option value="">Selecciona año</option>
+  {years.map((year) => (
+    <option value={year}>{year}</option>
+  ))}
+</select>
+
+<style>
+  .year-selector {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+</style>
+
+<script is:inline>
+  // Función para manejar el cambio de selección
+  function onYearChange(event) {
+    const selectedYear = event.target.value;
+    if (selectedYear) {
+      // Guarda el año seleccionado en localStorage
+      localStorage.setItem('selectedYear', selectedYear);
+      // Redirige a la ruta correspondiente
+      window.location.href = `/user/${selectedYear}`;
+    }
+  }
+
+  // Al cargar la página
+  document.addEventListener('DOMContentLoaded', () => {
+    const yearSelector = document.getElementById('year-selector');
+    if (yearSelector) {
+      // Recupera el año seleccionado de localStorage
+      const storedYear = localStorage.getItem('selectedYear');
+      if (storedYear) {
+        yearSelector.value = storedYear;
+      }
+
+      // Agrega el event listener para manejar cambios
+      yearSelector.addEventListener('change', onYearChange);
+    }
+  });
+</script>

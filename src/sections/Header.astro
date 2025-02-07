@@ -3,36 +3,26 @@ import FooterContent from "../components/user/2024/FooterContent.astro";
 import HamburgerButton from "./HamburgerButton.astro";
 import SocialButtons from "../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
+import YearSelector from "../sections/YearSelector.astro";  
 
-type Page = {
-  name: string;
-  href: string;
-  active: boolean;
-  disabled?: boolean;
-  dropdown?: boolean;
-  years?: string[];
-  soonDate?: string;
-};
+const years = ["2024", "2025"]; 
 
-const pages: Page[] = [
-  { name: "Equipos y Resultados", href: "/teamsandresults", active: Astro.url.pathname === "/teamsandresults" },
-  {
-    name: "Año",
-    href: "#",
-    active: Astro.url.pathname === "#",
-    disabled: false,
-    dropdown: true,
-    years: ["2024", "2025"],
-  },
-  { name: "Reglamento", href: "/regulations", active: Astro.url.pathname === "/regulations" },
-  { name: "Rankings", href: "/rankings", active: Astro.url.pathname === "/rankings" },
-];
+const pages = [
+  { name: "Equipos y Resultados", href: "/teamsandresults" },
+  { name: "Año", href: "#", disabled: false, dropdown: true },
+  { name: "Reglamento", href: "/regulations" },
+  { name: "Rankings", href: "/rankings" },
+].map((page) => ({
+  ...page,
+  active: Astro.url.pathname === page.href,
+}));
+
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
   <nav class="group flex h-full w-full items-center justify-between px-10 lg:justify-center">
     {
-      pages.map(({ disabled, name, href, active, dropdown, years }, key) => (
+      pages.map(({ disabled, name, href, active, dropdown }, key) => (
         <>
           {dropdown ? (
             <div
@@ -42,16 +32,16 @@ const pages: Page[] = [
               id={`nav-link-${key}`}
             >
               <span class="z-10">{name}</span>
-              <select
-                class="text-primary bg-transparent border-2 p-2 rounded-md"
-                onchange="window.location.href = '/user/' + this.value"
-              >
-                <option value="">Selecciona año</option>
-                {years?.map(year => (
-                  <option value={year}>{year}</option>
-                ))}
-              </select>
+              {name === "Año" ? (
+                <YearSelector client:load years={years} />
+              ) : (
+      
+                <select class="text-primary bg-transparent border-2 p-2 rounded-md">
+                  
+                </select>
+              )}
             </div>
+
           ) : (
             <a
               href={href}
@@ -70,7 +60,6 @@ const pages: Page[] = [
         </>
       ))
     }
-
 
     <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
     <div
@@ -97,20 +86,19 @@ const pages: Page[] = [
           />
         </a>
         {
-          pages.map(({ disabled, name, href, active, soonDate }, key) => (
+          pages.map(({ disabled, name, href, active }, key) => (
             <>
+            
               <a
-                data-href={href}
                 href={href}
                 class:list={[
-                  "relative flex flex-col items-center justify-center gap-2 text-xl capitalize year-dependent",
+                  "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
                   { "pointer-events-none": disabled },
                   { "current-page-mob": active },
                 ]}
                 id={`navmob-link-${key}`}
               >
                 <span class="z-10 uppercase text-primary">{name}</span>
-                {disabled && soonDate && <span class="text-accent">{soonDate}</span>}
               </a>
               <hr
                 class="h-[2px] w-full border-t-0"
@@ -127,11 +115,14 @@ const pages: Page[] = [
     </div>
   </nav>
   <div class="relative flex h-2 w-full flex-col items-center">
-    <div class="gridBottomBarContainer absolute grid w-full items-center justify-between">
+    <div
+      class="gridBottomBarContainer absolute grid w-full items-center justify-between"
+    >
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href="/" class="focus-visible:!ring-0">
           <img
@@ -143,47 +134,12 @@ const pages: Page[] = [
       </div>
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
-        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
-      />
+        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%);"
+      >
+      </div>
     </div>
   </div>
 </header>
-
-<!-- Script inline para manejar el año seleccionado -->
-<script is:inline>
-  // Recupera el año seleccionado (si existe)
-  let selectedYear = localStorage.getItem('selectedYear') || '';
-
-  // Función para actualizar los enlaces que dependen del año
-  function updateYearDependentLinks() {
-    const links = document.querySelectorAll('.year-dependent');
-    links.forEach(link => {
-      const originalHref = link.getAttribute('data-href');
-      if(selectedYear && originalHref !== '#') {
-        // Prependemos el segmento de año a la ruta original
-        link.href = `/user/${selectedYear}${originalHref}`;
-      } else {
-        link.href = originalHref;
-      }
-    });
-  }
-
-  // Función que se llama al cambiar la selección de año
-  function onYearChange(e) {
-    selectedYear = e.target.value;
-    localStorage.setItem('selectedYear', selectedYear);
-    // Actualizamos los enlaces de navegación
-    updateYearDependentLinks();
-    // Opcional: redirigir inmediatamente a la página actual con el año actualizado
-    // window.location.href = `/user/${selectedYear}/teamsandresults`;
-  }
-
-  // Asignamos la función globalmente para que sea accesible desde el atributo inline
-  window.onYearChange = onYearChange;
-
-  // Al cargar la página, actualizamos los enlaces si ya hay un año seleccionado
-  document.addEventListener('DOMContentLoaded', updateYearDependentLinks);
-</script>
 
 <style>
   .nav-item .background {
@@ -199,13 +155,16 @@ const pages: Page[] = [
     );
     transition: opacity 0.3s;
   }
+
   .nav-item:hover .background,
   .nav-item:focus .background {
     opacity: 1;
   }
+
   .focus-within-ring {
     @apply focus-within:ring-1 focus-within:ring-white focus-within:ring-offset-1;
   }
+
   #menuMobileContent {
     opacity: 0;
     pointer-events: none;
@@ -213,13 +172,16 @@ const pages: Page[] = [
     scrollbar-gutter: stable;
     background-color: #062e3b;
   }
+
   #menuMobileContent.open {
     opacity: 1 !important;
     pointer-events: all;
   }
+
   .accent-drop-shadow {
     filter: drop-shadow(0px 0px 25px rgba(var(--color-accent-rgb), 0.25));
   }
+
   .current-page:before {
     view-transition-name: nav-item;
     background: var(--color-accent);
@@ -230,6 +192,7 @@ const pages: Page[] = [
     left: 0;
     height: 8px;
   }
+
   .current-page-mob:before {
     background: var(--color-accent);
     width: 10px;
@@ -241,10 +204,12 @@ const pages: Page[] = [
     border-radius: 100%;
     transform: translateY(-50%);
   }
+
   .gridBottomBarContainer {
     grid-template-columns: 1fr 6rem 1fr;
     grid-template-rows: 4px;
   }
+
   @media (min-width: 1024px) {
     .gridBottomBarContainer {
       grid-template-columns: 1fr 9rem 1fr;
@@ -254,14 +219,17 @@ const pages: Page[] = [
     .nav-item .background {
       transition: opacity 0s;
     }
+
     .nav-item:hover .background,
     .nav-item:focus .background {
       opacity: 1;
     }
+
     #menuMobileContent {
       transition: opacity 0s;
     }
   }
+
   .fixed-bottom-bar {
     position: fixed;
     bottom: 0;
@@ -276,25 +244,48 @@ const pages: Page[] = [
     );
     z-index: 10;
   }
-  select {
-    appearance: none;
-    border: 2px solid var(--color-primary);
-    background-color: transparent;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    color: var(--color-primary);
-    font-size: 1rem;
+</style>
+
+<script>
+  import { $ } from "../lib/dom-selector";
+
+  function toggleMenu(
+    nav: HTMLElement | null,
+    menuMobileContent: HTMLElement | null,
+    navContent: HTMLElement | null
+  ) {
+    menuMobileContent?.classList.toggle("open");
+    nav?.classList.toggle("open");
+    navContent?.classList.toggle("animate-bounce-fade-in");
+    document.body.classList.toggle("overflow-hidden");
+    document.body.classList.toggle("lg:overflow-auto");
   }
-  select:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 5px var(--color-accent);
-  }
-  /* Asegurar que el select se muestre correctamente en móviles */
-  @media (max-width: 1024px) {
-    select {
-      display: block;
-      margin-top: 10px;
+
+  function onYearChange(e: Event) {
+    const target = e.target as HTMLSelectElement;
+    const selectedYear = target.value;
+    if (selectedYear) {
+      // Redirige a la ruta correspondiente con el año seleccionado
+      window.location.href = `/user/${selectedYear}`;
     }
   }
-</style>
+
+  document.addEventListener("astro:page-load", () => {
+    const nav = $("nav");
+    const menuButton = $("#menuButton");
+    const innerMenuButton = $("#innerMenuButton");
+    const menuMobileContext = $("#menuMobileContent");
+    const navContent = $(".navContent");
+
+    menuButton?.addEventListener("hamburgerButtonClicked", () =>
+      toggleMenu(nav, menuMobileContext, navContent)
+    );
+    innerMenuButton?.addEventListener("hamburgerButtonClicked", () =>
+      toggleMenu(nav, menuMobileContext, navContent)
+    );
+
+    if (menuMobileContext?.classList.contains("open")) {
+      toggleMenu(nav, menuMobileContext, navContent);
+    }
+  });
+</script>
