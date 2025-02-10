@@ -73,32 +73,42 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {pages.map(({ disabled, name, href }, key) => (
+        {pages.map(({ disabled, name, href, dropdown }, key) => (
           <Fragment key={key}>
-            {name !== "Año" && (
-              <>
-                <a
-                  href={href}
-                  class:list={[
-                    "relative flex flex-col items-center justify-center gap-2 text-xl capitalize",
-                    { "pointer-events-none": disabled },
-                  ]}
-                  id={`navmob-link-${key}`}
-                >
-                  <span class="z-10 uppercase text-primary">{name}</span>
-                </a>
+            {dropdown ? (
+              <div
+                class:list={[
+                  "block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                <YearSelector client:load years={years} />
+              </div>
+            ) : (
+              <a
+                href={href}
+                class:list={[
+                  "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+                  { "pointer-events-none": disabled },
+                  { "text-white": !disabled },
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
                 <hr
-                  class="h-[2px] w-full border-t-0"
-                  style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-                />
-              </>
+        class="h-[2px] w-full border-t-0"
+        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+      />
+              </a>
             )}
+            
           </Fragment>
         ))}
-        <nav class="my-4 flex flex-col gap-10">
-          <FooterContent />
-          <SocialButtons class="flex items-center justify-center" />
-        </nav>
+      </nav>
+      <nav class="my-4 flex flex-col gap-10">
+        <FooterContent />
+        <SocialButtons class="flex items-center justify-center" />
       </nav>
     </div>
   </nav>
@@ -250,7 +260,7 @@ const pages = [
     const target = e.target as HTMLSelectElement;
     const selectedYear = target.value;
     if (selectedYear) {
-      // Redirige a la ruta correspondiente con el año seleccionado
+
       window.location.href = `/user/${selectedYear}`;
     }
   }
@@ -259,18 +269,23 @@ const pages = [
     const nav = $("nav");
     const menuButton = $("#menuButton");
     const innerMenuButton = $("#innerMenuButton");
-    const menuMobileContext = $("#menuMobileContent");
+    const menuMobileContent = $("#menuMobileContent");
     const navContent = $(".navContent");
 
     menuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContext, navContent)
+      toggleMenu(nav, menuMobileContent, navContent)
     );
     innerMenuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContext, navContent)
+      toggleMenu(nav, menuMobileContent, navContent)
     );
 
-    if (menuMobileContext?.classList.contains("open")) {
-      toggleMenu(nav, menuMobileContext, navContent);
+    if (menuMobileContent?.classList.contains("open")) {
+      toggleMenu(nav, menuMobileContent, navContent);
     }
+
+    const yearSelectors = document.querySelectorAll("#year-selector");
+    yearSelectors.forEach((yearSelector) => {
+      yearSelector.addEventListener("change", onYearChange);
+    });
   });
 </script>

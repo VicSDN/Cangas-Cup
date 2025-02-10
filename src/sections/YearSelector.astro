@@ -1,48 +1,69 @@
 ---
-// YearSelector.astro
-
 export interface Props {
   years: string[];
 }
 
 const { years } = Astro.props;
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
 ---
 
 <select id="year-selector" class="year-selector flex items-center">
-  <option value="">Selecciona año</option>
   {years.map((year) => (
-    <option value={year}>{year}</option>
+    <option value={year} selected={year === selectedYear}>{year}</option>
   ))}
 </select>
-
 <style>
+.year-selector {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  border: 2px inset #ffffff;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #b6d6cc;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  position: relative;
+}
+
+.year-selector::-ms-expand {
+  display: none;
+}
+
+.year-selector:hover {
+  color: #000000;
+  background-color: #ffffff;
+  opacity: 0.6;
+}
+
+.year-selector:focus {
+  border-color: #b6d6cc;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 7px;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.7);
+  outline: none;
+}
+
+.year-selector option {
+  background-color:transparent; 
+  color: #ffffff; 
+  padding: 10px; 
+  font-size: 1rem;
+}
+
+.year-selector:focus option {
+  background-color: transparent; 
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
   .year-selector {
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: transparent;
-    color: var(--color-primary);
+    width: 100%;
+    font-size: 1.2rem;
+    padding: 0.75rem;
   }
+}
 </style>
-
-<script>
-  function onYearChange(event) {
-    const target = event.target as HTMLSelectElement;
-    const selectedYear = target.value;
-    if (selectedYear) {
-      // Cierra el menú móvil si está abierto
-      const menuMobileContent = document.getElementById('menuMobileContent');
-      if (menuMobileContent && menuMobileContent.classList.contains('open')) {
-        menuMobileContent.classList.remove('open');
-        document.body.classList.remove('overflow-hidden');
-      }
-      // Guarda el año seleccionado en localStorage
-      localStorage.setItem('selectedYear', selectedYear);
-      // Redirige a la ruta correspondiente
-      window.location.href = `/user/${selectedYear}`;
-    }
-  }
-
-  document.getElementById('year-selector')?.addEventListener('change', onYearChange);
-</script>
