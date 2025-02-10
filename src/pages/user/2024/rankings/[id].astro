@@ -1,0 +1,89 @@
+---
+import Layout from "./../../../../layouts/Layout2024.astro";
+import ButtonBack from "../../../../sections/ButtonBack.astro";
+import { getPlayerById } from "../../../../consts/2024/players";
+import { getTeamById } from "../../../../consts/2024/teams";
+
+let { id } = Astro.params;
+
+let player = null;
+let team = null;
+
+if (id) {
+  player = await getPlayerById(id);
+  if (player) {
+    team = await getTeamById(player.teamId);
+  }
+}
+---
+
+<Layout description="Detalle de jugador" title="Detalle jugador">
+  <ButtonBack />
+
+  {
+    player && team && (
+      <section class="bg-sky-100 mt-20 sm:mt-32 md:mt-32 lg:mt-28">
+        <div class="mx-auto max-w-screen-xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+          <div class="mx-auto max-w-3xl text-center">
+            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">
+              {player.name} {player.secondName}
+            </h2>
+
+            <p class="mt-4 text-gray-500 sm:text-xl">
+              Todos los datos del jugador
+            </p>
+          </div>
+
+          <div class="mt-8 sm:mt-12">
+            <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:divide-x sm:divide-gray-100">
+              <div class="flex flex-col px-4 py-8 text-center">
+                <dt class="order-last text-lg font-medium text-gray-500">
+                  Goles totales
+                </dt>
+                <dd
+                  class={`text-4xl font-extrabold ${player.goal === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                >
+                  {player.goal}
+                </dd>
+              </div>
+              <div class="flex flex-col px-4 py-8 text-center">
+                <dt class="order-last text-lg font-medium text-gray-500">
+                  Tarjetas Rojas
+                </dt>
+                <dd
+                  class={`text-4xl font-extrabold ${player.redCard === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                >
+                  {player.redCard}
+                </dd>
+              </div>
+
+              <div class="flex flex-col px-4 py-8 text-center">
+                <dt class="order-last text-lg font-medium text-gray-500">
+                  Tarjetas Amarillas
+                </dt>
+                <dd
+                  class={`text-4xl font-extrabold ${player.yellowCard === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                >
+                  {player.yellowCard}
+                </dd>
+              </div>
+              <a
+                href={`/teams/${player.teamId}`}
+                class="flex flex-col bg-blue-300 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 transition transform hover:scale-105"
+              >
+                <div class="flex flex-col px-4 py-8 text-center">
+                  <dt class="order-last text-lg font-medium text-gray-500">
+                    Equipo
+                  </dt>
+                  <dd class="text-3xl font-extrabold text-blue-600 md:text-2xl">
+                    {team.name}
+                  </dd>
+                </div>
+              </a>
+            </dl>
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Layout>
