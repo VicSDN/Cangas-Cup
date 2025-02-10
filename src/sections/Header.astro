@@ -5,13 +5,16 @@ import SocialButtons from "../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
 import YearSelector from "./YearSelector.astro";
 
+
 const years = ["2024", "2025"];
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
 
 const pages = [
-  { name: "Equipos y Resultados", href: "/teamsandresults" },
+  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults` },
   { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: "/regulations" },
-  { name: "Rankings", href: "/rankings" },
+  { name: "Reglamento", href: `/user/${selectedYear}/regulations` },
+  { name: "Rankings", href: `/user/${selectedYear}/rankings` },
 ];
 ---
 
