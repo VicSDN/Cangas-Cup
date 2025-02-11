@@ -68,7 +68,7 @@ const pages = [
         />
       </div>
       <nav class="flex w-full flex-col items-center gap-5">
-        <a href="/">
+        <a href={`/user/${selectedYear}`} >
           <img
             src="/cangasCupLogo.webp"
             alt="logo"
@@ -124,7 +124,7 @@ const pages = [
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
       ></div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
-        <a href="/" class="focus-visible:!ring-0">
+        <a href={`/user/${selectedYear}`} class="focus-visible:!ring-0">
           <img
             src="/cangasCupLogo.webp"
             alt="Logo"
