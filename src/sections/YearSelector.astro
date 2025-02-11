@@ -13,6 +13,7 @@ const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user
     <option value={year} selected={year === selectedYear}>{year}</option>
   ))}
 </select>
+</select>
 <style>
 .year-selector {
   padding: 0.5rem 1.5rem;
@@ -43,7 +44,7 @@ const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user
   border-width: 3px;
   border-style: solid;
   border-radius: 7px;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.7);
+  box-shadow: 0 0 8px #b6d6cc;
   outline: none;
 }
 

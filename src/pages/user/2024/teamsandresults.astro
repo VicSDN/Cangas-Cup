@@ -1,6 +1,10 @@
 ---
 import ButtonBack from "../../../sections/ButtonBack.astro";
 import Layout from "../../../layouts/Layout2024.astro";
+
+const years = ["2024", "2025"];
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
 ---
 
 <Layout
@@ -39,7 +43,7 @@ import Layout from "../../../layouts/Layout2024.astro";
       </a>
       <a
         class="group relative inline-block focus:outline-none focus:ring"
-        href="/final"
+        href={`/user/${selectedYear}/final`}  
       >
         <span
           class="absolute inset-0 translate-x-1.5 translate-y-1.5 bg-sky-300 transition-transform group-hover:translate-x-0 group-hover:translate-y-0"
