@@ -2,6 +2,11 @@
 import ButtonBack from "../../../../sections/ButtonBack.astro";
 import { supabase } from "../../../../db/supabase";
 import Layout from "../../../../layouts/Layout2024.astro";
+
+const years = ["2024", "2025"];
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
+
 let { id } = Astro.params;
 
 let { data: team, error: teamError } = await supabase
@@ -21,22 +26,22 @@ let { data: allTeams, error: allTeamsError } = await supabase
   .select("*")
   .eq("groupId", team?.groupId);
 
-// Calcula la clasificación del grupo
-const groupStandings = allTeams.sort((a, b) => b.points - a.points);
+const groupStandings = allTeams ? [...allTeams].sort((a, b) => b.points - a.points) : [];
 
-// Consulta los partidos del equipo
 let { data: matches, error: matchesError } = await supabase
   .from("match")
   .select("*")
   .or(`id_team1.eq.${id},id_team2.eq.${id}`);
 
-function findTeam(teamId) {
+  function findTeam(teamId: string | number) {
   if (!allTeams) return null;
   const teamAux = allTeams.find((t) => t.id === teamId);
-  return teamAux || { name: "Equipo desconocido" }; // Maneja el caso en el que el equipo no se encuentre
+  return teamAux || { name: "Equipo desconocido" };
 }
 
-function formatDateTime(dateString) {
+
+function formatDateTime(dateString: string) 
+  {
   const date = new Date(dateString);
   const day = date.getDate();
   const monthIndex = date.getMonth();
@@ -71,7 +76,6 @@ function formatDateTime(dateString) {
   <div
     class="container mx-auto mt-20 pt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-4 md:p-10 px-8"
   >
-    <!-- Team Info Section -->
     <div class="md:col-span-1 bg-white bg-opacity-20 p-6 rounded-lg shadow-md">
       {
         team && (
@@ -138,7 +142,7 @@ function formatDateTime(dateString) {
                   {index + 1}º
                 </span>
                 <a
-                  href={`/teams/${team.id}`}
+                  href={`/user/${selectedYear}/teams/${team.id}`}
                   class="flex-1 max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105"
                 >
                   <div class="flex flex-col items-center">
@@ -160,7 +164,7 @@ function formatDateTime(dateString) {
           players &&
             players.map((player) => (
               <a
-                href={`/rankings/${player.id}`}
+                href={`/user/${selectedYear}/rankings/${player.id}`}
                 class="w-full max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105"
               >
                 <div class="flex flex-col items-center">
