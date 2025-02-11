@@ -6,6 +6,9 @@ import { getTeamById } from "../../../../consts/2024/teams";
 
 let { id } = Astro.params;
 
+const years = ["2024", "2025"];
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
 let player = null;
 let team = null;
 
@@ -68,7 +71,7 @@ if (id) {
                 </dd>
               </div>
               <a
-                href={`/teams/${player.teamId}`}
+                href={`/user/${selectedYear}/teams/${player.teamId}`}
                 class="flex flex-col bg-blue-300 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 transition transform hover:scale-105"
               >
                 <div class="flex flex-col px-4 py-8 text-center">
