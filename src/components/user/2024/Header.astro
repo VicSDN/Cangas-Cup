@@ -1,5 +1,5 @@
 ---
-import FooterContent from "./FooterContent.astro";
+import FooterContent from "../2024/FooterContent.astro";
 import HamburgerButton from "../../../sections/HamburgerButton.astro";
 import SocialButtons from "../../../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../../../consts/mobile-menu";
@@ -32,7 +32,7 @@ const pages = [
               id={`nav-link-${key}`}
             >
               <span class="z-10">{name}</span>
-              <YearSelector client:load years={years} />
+              <YearSelector years={years} />
             </div>
           ) : (
             <a
@@ -85,7 +85,7 @@ const pages = [
                 id={`nav-link-${key}`}
               >
                 <span class="z-10">{name}</span>
-                <YearSelector client:load years={years} />
+                <YearSelector years={years} />
               </div>
             ) : (
               <a

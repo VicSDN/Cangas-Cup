@@ -7,7 +7,7 @@ import YearSelector from "../../../sections/YearSelector.astro";
 
 const years = ["2024", "2025"];
 const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
+const selectedYear = urlParts.includes("user") && years.includes(urlParts[urlParts.indexOf("user") + 1]) ? urlParts[urlParts.indexOf("user") + 1] : years[0];
 
 const pages = [
   { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults` },
@@ -32,7 +32,7 @@ const pages = [
               id={`nav-link-${key}`}
             >
               <span class="z-10">{name}</span>
-              <YearSelector client:load years={years} />
+              <YearSelector years={years} />
             </div>
           ) : (
             <a
@@ -85,7 +85,7 @@ const pages = [
                 id={`nav-link-${key}`}
               >
                 <span class="z-10">{name}</span>
-                <YearSelector client:load years={years} />
+                <YearSelector years={years} />
               </div>
             ) : (
               <a
@@ -168,7 +168,7 @@ const pages = [
     pointer-events: none;
     transition: opacity 0.3s;
     scrollbar-gutter: stable;
-    background-color: #29339B;
+    background-color:#29339B;
   }
 
   #menuMobileContent.open {
@@ -262,7 +262,6 @@ const pages = [
     const target = e.target as HTMLSelectElement;
     const selectedYear = target.value;
     if (selectedYear) {
-
       window.location.href = `/user/${selectedYear}`;
     }
   }
