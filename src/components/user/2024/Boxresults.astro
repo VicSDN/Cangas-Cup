@@ -2,6 +2,10 @@
 import { supabase } from "../../../db/supabase";
 
 
+const years = ["2024", "2025"];
+const urlParts = Astro.url.pathname.split("/");
+const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
+
 const { data: matches } = await supabase
   .from("match")
   .select("*");
@@ -9,11 +13,11 @@ const { data: teams } = await supabase
   .from("team")
   .select("*");
 
-const findTeam = (teamId) => {
-  return teams.find((team) => team.id === teamId);
+const findTeam = (teamId: number) => {
+  return teams ? teams.find((team) => team.id === teamId) : null;
 };
 
-const formatDateTime = (dateString) => {
+const formatDateTime = (dateString: string) => {
   const date = new Date(dateString);
   const day = date.getDate();
   const monthIndex = date.getMonth();
@@ -44,18 +48,18 @@ const formatDateTime = (dateString) => {
 
 const matchesPerPage = 8;
 
-matches.sort((a, b) => {
+matches?.sort((a, b) => {
   if (a.finished && !b.finished) return -1;
   if (!a.finished && b.finished) return 1;
   return new Date(a.day).getTime() - new Date(b.day).getTime();
 });
 
-const totalPages = Math.ceil(matches.length / matchesPerPage);
+const totalPages = matches ? Math.ceil(matches.length / matchesPerPage) : 0;
 const currentPage = parseInt(Astro.url.searchParams.get("page") || "1", 8);
-const currentMatches = matches.slice(
+const currentMatches = matches ? matches.slice(
   (currentPage - 1) * matchesPerPage,
   currentPage * matchesPerPage
-);
+) : [];
 ---
 
 <section
@@ -85,7 +89,7 @@ const currentMatches = matches.slice(
                 <span>{match.goals_team2}</span>
               </div>
               <a
-                href={`/teams/${match.id_team2}`}
+                href={`/user/${selectedYear}/teams/${match.id_team2}`}
                 class="flex flex-col bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 transition transform hover:scale-105"
               >
                 <span class="col-span-1 text-left pl-4 text-xs md:text-sm lg:text-base">
@@ -98,7 +102,7 @@ const currentMatches = matches.slice(
           <article class="w-full bg-whit relative rounded-xl backdrop-blur-md border border-black/10 shadow-inner shadow-white/10 overflow-hidden bg-white bg-opacity-20 group">
             <div class="relative z-20 grid grid-cols-3 items-center justify-between p-4">
               <a
-                href={`/teams/${match.id_team1}`}
+                href={`/user/${selectedYear}/teams/${match.id_team1}`}
                 class="flex flex-col bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 transition transform hover:scale-105"
               >
                 <span class="col-span-1 text-right pr-4 text-xs md:text-sm lg:text-base">

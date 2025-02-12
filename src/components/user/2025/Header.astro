@@ -10,10 +10,10 @@ const urlParts = Astro.url.pathname.split("/");
 const selectedYear = urlParts.includes("user") && years.includes(urlParts[urlParts.indexOf("user") + 1]) ? urlParts[urlParts.indexOf("user") + 1] : years[0];
 
 const pages = [
-  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults` },
+  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults`, disabled: true,soonDate: "Próximamente" },
   { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: `/user/${selectedYear}/regulations` },
-  { name: "Rankings", href: `/user/${selectedYear}/rankings` },
+  { name: "Reglamento", href: `/user/${selectedYear}/regulations`,disabled: true,soonDate: "Próximamente" },
+  { name: "Rankings", href: `/user/${selectedYear}/rankings`, disabled: true,soonDate: "Próximamente"},
 ];
 ---
 
@@ -22,7 +22,7 @@ const pages = [
     <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
 
     <div class="hidden lg:flex flex-1 items-center justify-center">
-      {pages.map(({ disabled, name, href, dropdown }, key) => (
+      {pages.map(({ disabled, name, href, dropdown,soonDate}, key) => (
         <Fragment key={key}>
           {dropdown ? (
             <div
@@ -44,6 +44,13 @@ const pages = [
               ]}
               id={`nav-link-${key}`}
             >
+               {disabled ? (
+              <span class="absolute mt-10 -skew-x-6 text-xs text-accent">
+                {soonDate}
+              </span>
+            ) : (
+              <div class="background absolute -z-10 h-full w-full" />
+            )}
               <span class="z-10">{name}</span>
             </a>
           )}
@@ -75,39 +82,48 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {pages.map(({ disabled, name, href, dropdown }, key) => (
-          <Fragment key={key}>
-            {dropdown ? (
-              <div
-                class:list={[
-                  "block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <YearSelector years={years} />
-              </div>
-            ) : (
-              <a
-                href={href}
-                class:list={[
-                  "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                  { "pointer-events-none": disabled },
-                  { "text-white": !disabled },
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <hr
+        {pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
+  <Fragment key={key}>
+    {dropdown ? (
+      <div
+        class:list={[
+          "block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+        ]}
+        id={`nav-link-${key}`}
+      >
+        <span class="z-10">{name}</span>
+        <YearSelector years={years} />
+      </div>
+    ) : (
+      <a
+        href={href}
+        class:list={[
+          "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+          { "pointer-events-none": disabled },
+          { "text-white": !disabled },
+        ]}
+        id={`nav-link-${key}`}
+      >
+        {disabled ? (
+            <span class="z-10 mr-2">{name}</span>
+            <span class="absolute mt-2 text-xs text-accent">{soonDate}</span>
+            <hr
         class="h-[2px] w-full border-t-0"
         style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
       />
-              </a>
-            )}
-            
-          </Fragment>
-        ))}
-      </nav>
+        ) : (
+          <div class="background absolute -z-10 h-full w-full" />
+          <hr
+        class="h-[2px] w-full border-t-0"
+        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+      />
+        )}
+      </a>
+    )}
+    {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
+  </Fragment>
+))}
+
       <nav class="my-4 flex flex-col gap-10">
         <FooterContent />
         <SocialButtons class="flex items-center justify-center" />
