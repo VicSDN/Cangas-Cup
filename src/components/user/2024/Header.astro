@@ -1,10 +1,9 @@
 ---
-import FooterContent from "../components/user/2024/FooterContent.astro";
-import HamburgerButton from "./HamburgerButton.astro";
-import SocialButtons from "../sections/SocialButtons.astro";
-import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
-import YearSelector from "./YearSelector.astro";
-
+import FooterContent from "./FooterContent.astro";
+import HamburgerButton from "../../../sections/HamburgerButton.astro";
+import SocialButtons from "../../../sections/SocialButtons.astro";
+import { MOBILE_MENU_CONTENT_ID } from "../../../consts/mobile-menu";
+import YearSelector from "../../../sections/YearSelector.astro";
 
 const years = ["2024", "2025"];
 const urlParts = Astro.url.pathname.split("/");
@@ -245,7 +244,7 @@ const pages = [
   }
 </style>
 <script>
-  import { $ } from "../lib/dom-selector";
+  import { $ } from "../../../lib/dom-selector";
 
   function toggleMenu(
     nav: HTMLElement | null,
