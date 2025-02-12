@@ -3,6 +3,13 @@ import ButtonBack from "../../../../sections/ButtonBack.astro";
 import { supabase } from "../../../../db/supabase";
 import Layout from "../../../../layouts/Layout2024.astro";
 
+export async function getStaticPaths() {
+const teamIds = Array.from(new Set([7,8,9,10,11,12,13,14,17,19,21,22,23,24,25,26,27]));
+return teamIds.map(id => ({
+    params: { id: id.toString() }
+}));
+}
+
 const years = ["2024", "2025"];
 const urlParts = Astro.url.pathname.split("/");
 const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
@@ -20,7 +27,6 @@ let { data: players, error: playerError } = await supabase
   .select("*")
   .eq("teamId", id);
 
-// Obtiene todos los equipos del mismo grupo
 let { data: allTeams, error: allTeamsError } = await supabase
   .from("team")
   .select("*")
