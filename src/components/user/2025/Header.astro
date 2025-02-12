@@ -1,5 +1,5 @@
 ---
-import FooterContent from "../2024/FooterContent.astro";
+import FooterContent from "./FooterContent.astro";
 import HamburgerButton from "../../../sections/HamburgerButton.astro";
 import SocialButtons from "../../../sections/SocialButtons.astro";
 import { MOBILE_MENU_CONTENT_ID } from "../../../consts/mobile-menu";
@@ -38,12 +38,12 @@ const pages = [
             <a
               href={href}
               class:list={[
-                "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                { "pointer-events-none": disabled },
-                { "text-white": !disabled },
-              ]}
-              id={`nav-link-${key}`}
-            >
+							"nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+              { "current-page": true, "text-accent": true },
+              { "text-white": true },
+						]}
+						id={`nav-link-${key}`}
+					>
                {disabled ? (
               <span class="absolute mt-10 -skew-x-6 text-xs text-accent">
                 {soonDate}
@@ -73,7 +73,7 @@ const pages = [
           style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
         />
       </div>
-      <nav class="flex w-full flex-col items-center gap-5">
+      <nav class="flex w-full flex-col items-center gap-4">
         <a href={`/user/${selectedYear}`} >
           <img
             src="/cangasCupLogo.webp"
@@ -105,18 +105,12 @@ const pages = [
         id={`nav-link-${key}`}
       >
         {disabled ? (
+        <div class="flex flex-col">
             <span class="z-10 mr-2">{name}</span>
-            <span class="absolute mt-2 text-xs text-accent">{soonDate}</span>
-            <hr
-        class="h-[2px] w-full border-t-0"
-        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-      />
+            <span class="mt-2 text-xs text-accent">{soonDate}</span>
+      </div>
         ) : (
           <div class="background absolute -z-10 h-full w-full" />
-          <hr
-        class="h-[2px] w-full border-t-0"
-        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-      />
         )}
       </a>
     )}
@@ -157,23 +151,19 @@ const pages = [
 
 <style>
   .nav-item .background {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(221, 221, 221, 20%) 0%,
-      transparent 100%
-    );
-    transition: opacity 0.3s;
-  }
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		background: linear-gradient(to bottom, rgba(221, 221, 221, 20%) 0%, transparent 100%);
+		transition: opacity 0.3s;
+	}
 
-  .nav-item:hover .background,
-  .nav-item:focus .background {
-    opacity: 1;
-  }
+	.nav-item:hover .background,
+	.nav-item:focus .background {
+		opacity: 1;
+	}
 
   .focus-within-ring {
     @apply focus-within:ring-1 focus-within:ring-white focus-within:ring-offset-1;
@@ -184,7 +174,7 @@ const pages = [
     pointer-events: none;
     transition: opacity 0.3s;
     scrollbar-gutter: stable;
-    background-color:#29339B;
+    background-color:#7F8C8D;
   }
 
   #menuMobileContent.open {
@@ -244,6 +234,7 @@ const pages = [
     }
   }
 
+
   .fixed-bottom-bar {
     position: fixed;
     bottom: 0;
@@ -288,6 +279,13 @@ const pages = [
     const innerMenuButton = $("#innerMenuButton");
     const menuMobileContent = $("#menuMobileContent");
     const navContent = $(".navContent");
+
+    menuMobileContent?.classList.toggle("open")
+		nav?.classList.toggle("open")
+		navContent?.classList.toggle("animate-bounce-fade-in")
+		document.body.classList.toggle("overflow-hidden")
+		document.body.classList.toggle("lg:overflow-auto")
+	
 
     menuButton?.addEventListener("hamburgerButtonClicked", () =>
       toggleMenu(nav, menuMobileContent, navContent)
