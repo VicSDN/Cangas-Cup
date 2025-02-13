@@ -1,7 +1,7 @@
 ---
 import "../../../styles/tailwind.css";
 import Layout from "../../../layouts/Layout2025.astro";
-import ButtonBack from "../../../sections/ButtonBack.astro";
+import Video from "../../../components/user/2025/Video.astro";
 export const prerender = true
 ---
 
@@ -9,20 +9,9 @@ export const prerender = true
   description="Bienvenido a la Cangas Cup 2025, prometemos que no te arrepentirás"
   title="Cangas Cup Futsal 2025"
 >
-  <main>
-  <ButtonBack />
-  <div 
-    class="w-full h-screen bg-cover bg-center bg-no-repeat" 
-    style="background-image: url('/comming.webp'); max-height:2024px; background-size: contain;"
-  >
-    <div class="w-full h-full flex flex-col items-center justify-between py-8">
-      <div class="flex-1 flex flex-col items-center justify-center">
-        
-        <h1 class="text-6xl lg:text-7xl xl:text-8xl text-gray-200 tracking-wider font-bold font-serif mt-12 text-center">Coming Soon</h1>
-      </div>
-    </div>
-  </div>
-  </main>
+<main>
+  <Video class="no-select" />
+</main>
 </Layout>
 
 <style>
