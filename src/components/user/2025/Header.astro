@@ -8,13 +8,23 @@ import YearSelector from "../../../sections/YearSelector.astro";
 const years = ["2024", "2025"];
 const urlParts = Astro.url.pathname.split("/");
 const selectedYear = urlParts.includes("user") && years.includes(urlParts[urlParts.indexOf("user") + 1]) ? urlParts[urlParts.indexOf("user") + 1] : years[0];
+/*
+const pages = [
+  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults`, disabled: true, soonDate: "Próximamente" },
+  { name: "Año", href: "#", disabled: false, dropdown: true },
+  { name: "Reglamento", href: `/user/${selectedYear}/regulations`, disabled: true, soonDate: "Próximamente" },
+  { name: "Rankings", href: `/user/${selectedYear}/rankings`, disabled: true, soonDate: "Próximamente"},
+];
+*/
+
 
 const pages = [
-  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults`, disabled: true,soonDate: "Próximamente" },
+  { name: "Equipos y Resultados", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente" },
   { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: `/user/${selectedYear}/regulations`,disabled: true,soonDate: "Próximamente" },
-  { name: "Rankings", href: `/user/${selectedYear}/rankings`, disabled: true,soonDate: "Próximamente"},
+  { name: "Reglamento", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente" },
+  { name: "Rankings", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente"},
 ];
+
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
