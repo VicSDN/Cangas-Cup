@@ -1,0 +1,62 @@
+---
+import Layout from "../../layouts/Layout2025.astro";
+
+let errorMessage = "";
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const email = formData.get("email")?.toString();
+  const password = formData.get("password")?.toString();
+
+  if (!email || !password) {
+    errorMessage = "Correo electrónico y contraseña son obligatorios";
+  } else {
+    const response = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (response.ok) {
+      return Astro.redirect('/dashboard');
+    } else {
+      errorMessage = "Error al autenticar";
+    }
+  }
+}
+---
+
+<Layout description="Panel de administración" title="Iniciar sesión">
+  <h1>Iniciar sesión</h1>
+  <form id="signin-form">
+    <label for="email">Correo electrónico</label>
+    <input type="email" name="email" id="email" required />
+    <label for="password">Contraseña</label>
+    <input type="password" name="password" id="password" required />
+    <button type="submit">Iniciar sesión</button>
+  </form>
+
+  {errorMessage && <p>{errorMessage}</p>}
+</Layout>
+
+<script>
+  document.getElementById('signin-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.target as HTMLFormElement | null;
+    if (form) {
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        window.location.href = '/dashboard';
+      } else {
+        alert('Error al autenticar');
+      }
+    }
+  });
+</script>
