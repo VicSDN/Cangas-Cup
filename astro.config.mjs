@@ -7,6 +7,7 @@ import vercel from '@astrojs/vercel';
 export default defineConfig({
   redirects: {
     '/': '/user/2025',
+    '/admin': '/admin/signin'
   },
   integrations: [ tailwind()],
   prefetch: true,

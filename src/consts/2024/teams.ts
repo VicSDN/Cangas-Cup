@@ -1,4 +1,4 @@
-import { supabase } from "../../db/supabase";
+import { supabase } from "../../lib/supabase";
 
 export async function getTeamById(id: string) {
   const { data: team, error } = await supabase
