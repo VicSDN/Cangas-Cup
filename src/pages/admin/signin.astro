@@ -1,22 +1,31 @@
----
-
----
-
 <html lang="es">
   <head>
-    <title>Inicio de Sesión</title>
+    <meta charset="UTF-8" />
+    <meta name="description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="icon" href="/cangasCupLogo.webp" />
+    <title>Inicio de Sesión Admin</title>
   </head>
   <body>
-    <h1>Iniciar Sesión</h1>
-      <form action="/api/auth/signin" method="post">
-      <label for="email">Correo Electrónico</label>
-      <input type="email" name="email" id="email" required />
-
-      <label for="password">Contraseña</label>
-      <input type="password" name="password" id="password" required />
-
-      <button type="submit">Iniciar Sesión</button>
-    </form>
+<div class="bg-sky-100 flex justify-center items-center h-screen">
+<div class="w-1/2 h-screen hidden lg:block">
+  <img src="/comming.webp" alt="Placeholder Image" class="object-cover w-full h-full">
+</div>
+<div class= "lg:p-36 md:p-52 sm:20 p-8 w-full lg:w-1/2">
+  <h1 class="text-2xl font-semibold mb-4">Login</h1>
+  <form action="/api/auth/signin" method="post">
+    <div class="mb-4" "bg-sky-100">
+      <label for="email" class="block text-gray-600">Email</label>
+      <input type="email" name="email" id="email" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" autocomplete="off">
+    </div>
+    <div class="mb-4">
+      <label for="password" class="block text-gray-800">Password</label>
+      <input type="password" name="password" id="password" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" autocomplete="off">
+    </div>
+    <button type="submit" class="bg-red-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 px-4 w-full">Login</button>
+  </form>
+</div>
+</div>
   </body>
 </html>
 <style>
