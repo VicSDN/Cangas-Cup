@@ -1,0 +1,54 @@
+---
+import { getPlayerById2025 } from "../../consts/2025/players";
+import { getTeamById2025 } from "../../consts/2025/teams";
+
+let { id } = Astro.params;
+
+let player = null;
+let team = null;
+
+if (id) {
+  player = await getPlayerById2025(id);
+  if (player) {
+    team = await getTeamById2025(player.teamId);
+  }
+}
+---
+
+<div class="flex items-center h-screen w-full justify-center">
+  <div class="max-w-xs">
+    <div class="bg-white shadow-xl rounded-lg py-3">
+      <div class="photo-wrapper p-2">
+        <img 
+          class="w-32 h-32 rounded-full mx-auto" 
+          src="https://www.gravatar.com/avatar/2acfb745ecf9d4dccb3364752d17f65f?s=260&d=mp" 
+          alt="{player ? player.name : 'Unknown Player'}"
+        />
+      </div>
+      <div class="p-2">
+        {player ? (
+          <>
+            <h3 class="text-center text-xl text-gray-900 font-medium leading-8">{player.name}</h3>
+            <div class="text-center text-gray-400 text-xs font-semibold">
+              <p>{team ? team.name : "No Team"}</p>
+            </div>
+            <table class="text-xs my-3">
+              <tbody>
+                <tr>
+                  <td class="px-2 py-2 text-gray-500 font-semibold">Posición</td>
+                  
+                </tr>
+                <tr>
+                  <td class="px-2 py-2 text-gray-500 font-semibold">Equipo</td>
+                  <td class="px-2 py-2">{team ? team.name : "Sin equipo"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <p class="text-center text-gray-500">Jugador no encontrado</p>
+        )}
+      </div>
+    </div>
+  </div>
+</div>

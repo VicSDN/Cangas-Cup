@@ -1,4 +1,7 @@
 ---
+import DetailPlayer from "../../components/admin/DetailPlayer.astro";
+import ListPlayers from "../../components/admin/ListPlayers.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 import { supabase } from "../../lib/supabase";
 export const prerender = false;
 const accessToken = Astro.cookies.get("sb-access-token");
@@ -33,10 +36,9 @@ try {
   return Astro.redirect("/signin");
 }
 
-const email = session.data.user?.email;
+
 ---
-  <h1>Welcome {email}</h1>
-  <p>We are happy to see you here</p>
-  <form action="/api/auth/signout">
-    <button type="submit">Sign out</button>
-  </form>
+   <LayoutAdmin description="La plataforma del Administrador" title="Admin Dashboard">
+    <DetailPlayer />
+    <ListPlayers />
+   </LayoutAdmin>

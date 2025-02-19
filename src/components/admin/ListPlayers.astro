@@ -1,0 +1,154 @@
+---
+import { getAllPlayers2025 } from "../../consts/2025/players";
+import { getTeamById2025 } from "../../consts/2025/teams";
+
+// Obtiene todos los jugadores
+const players = await getAllPlayers2025();
+
+// Prepara un objeto para almacenar los equipos, evitando llamadas repetidas
+const teams: { [key: string]: any } = {};
+for (const player of players) {
+  if (player.teamId && !teams[player.teamId]) {
+    teams[player.teamId] = await getTeamById2025(player.teamId);
+  }
+}
+
+// Serializamos los datos para inyectarlos en el cliente
+const playersJson = JSON.stringify(players);
+const teamsJson = JSON.stringify(teams);
+
+declare global {
+
+interface Window {
+
+  playersData: any;
+
+  teamsData: any;
+
+}
+
+}
+
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lista de Jugadores</title>
+    <!-- Inyecta los datos en el objeto global -->
+    <script>
+      window.playersData = JSON.parse('<%= playersJson %>');
+      window.teamsData = JSON.parse('<%= teamsJson %>');
+    </script>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div class="container mx-auto p-4">
+      <h1 class="text-2xl font-bold mb-4">Lista de Jugadores</h1>
+      
+      <!-- Lista de jugadores -->
+      <ul id="playersList" class="list-disc">
+        {players.map((player) => (
+          <li class="cursor-pointer hover:underline" data-id={player.id}>
+            {player.name}
+          </li>
+        ))}
+      </ul>
+  
+      <!-- Tarjeta de jugador (oculta por defecto) -->
+      <div
+        id="playerCard"
+        class="hidden mt-6 max-w-xs bg-white text-black shadow-xl rounded-lg py-3"
+      >
+        <div class="photo-wrapper p-2">
+          <img
+            id="playerImage"
+            class="w-32 h-32 rounded-full mx-auto"
+            src=""
+            alt=""
+          />
+        </div>
+        <div class="p-2">
+          <h3 id="playerName" class="text-center text-xl font-medium leading-8"></h3>
+          <div
+            id="playerTeam"
+            class="text-center text-gray-400 text-xs font-semibold"
+          ></div>
+          <table class="text-xs my-3 w-full">
+            <tbody>
+              <tr>
+                <td class="px-2 py-2 text-gray-500 font-semibold">
+                  Posición
+                </td>
+                <td id="playerPosition" class="px-2 py-2"></td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+            id="closeCard"
+            class="w-full mt-3 bg-red-500 hover:bg-red-600 text-white py-1 rounded-lg"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script para manejar la interacción sin type assertions -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Selecciona todos los elementos de la lista de jugadores
+        const playersListItems = document.querySelectorAll("#playersList li");
+
+        playersListItems.forEach(function (item) {
+          item.addEventListener("click", function () {
+            const id = item.getAttribute("data-id");
+            // Busca el jugador correspondiente en la variable global
+            const player = window.playersData.find(function (p: any) {
+              return p.id == id;
+            });
+            if (player) {
+              // Obtiene el elemento de imagen y verifica que sea del tipo correcto
+              const playerImage = document.getElementById("playerImage");
+              if (playerImage && playerImage instanceof HTMLImageElement) {
+                playerImage.src = "https://www.gravatar.com/avatar/" + player.id + "?s=260&d=mp";
+                playerImage.alt = player.name;
+              }
+              // Rellena el resto de la tarjeta
+              const playerName = document.getElementById("playerName");
+              if (playerName) {
+                playerName.textContent = player.name;
+              }
+              const playerTeam = document.getElementById("playerTeam");
+              if (playerTeam) {
+                playerTeam.textContent =
+                  window.teamsData[player.teamId] !== undefined
+                    ? window.teamsData[player.teamId].name
+                    : "Sin equipo";
+              }
+              const playerPosition = document.getElementById("playerPosition");
+              if (playerPosition) {
+                playerPosition.textContent = player.position || "No definida";
+              }
+              // Muestra la tarjeta
+              const playerCard = document.getElementById("playerCard");
+              if (playerCard) {
+                playerCard.classList.remove("hidden");
+              }
+            }
+          });
+        });
+
+        // Botón para cerrar la tarjeta
+        const closeCardButton = document.getElementById("closeCard");
+        if (closeCardButton) {
+          closeCardButton.addEventListener("click", function () {
+            const playerCard = document.getElementById("playerCard");
+            if (playerCard) {
+              playerCard.classList.add("hidden");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
