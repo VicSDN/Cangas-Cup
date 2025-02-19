@@ -14,3 +14,4 @@ export async function getPlayerById(id: string) {
 
   return player;
 }
+

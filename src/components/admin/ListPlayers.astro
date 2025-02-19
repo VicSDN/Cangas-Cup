@@ -2,10 +2,7 @@
 import { getAllPlayers2025 } from "../../consts/2025/players";
 import { getTeamById2025 } from "../../consts/2025/teams";
 
-// Obtiene todos los jugadores
 const players = await getAllPlayers2025();
-
-// Prepara un objeto para almacenar los equipos, evitando llamadas repetidas
 const teams: { [key: string]: any } = {};
 for (const player of players) {
   if (player.teamId && !teams[player.teamId]) {
@@ -13,7 +10,6 @@ for (const player of players) {
   }
 }
 
-// Serializamos los datos para inyectarlos en el cliente
 const playersJson = JSON.stringify(players);
 const teamsJson = JSON.stringify(teams);
 
@@ -30,17 +26,6 @@ interface Window {
 }
 
 ---
-
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Lista de Jugadores</title>
-    <!-- Inyecta los datos en el objeto global -->
-    <script>
-      window.playersData = JSON.parse('<%= playersJson %>');
-      window.teamsData = JSON.parse('<%= teamsJson %>');
-    </script>
-  </head>
   <body class="bg-gray-900 text-white">
     <div class="container mx-auto p-4">
       <h1 class="text-2xl font-bold mb-4">Lista de Jugadores</h1>
@@ -92,22 +77,19 @@ interface Window {
         </div>
       </div>
     </div>
-
-    <!-- Script para manejar la interacción sin type assertions -->
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Selecciona todos los elementos de la lista de jugadores
         const playersListItems = document.querySelectorAll("#playersList li");
-
+        window.playersData = JSON.parse('<%= playersJson %>');
+      window.teamsData = JSON.parse('<%= teamsJson %>');
+    
         playersListItems.forEach(function (item) {
           item.addEventListener("click", function () {
             const id = item.getAttribute("data-id");
-            // Busca el jugador correspondiente en la variable global
             const player = window.playersData.find(function (p: any) {
               return p.id == id;
             });
             if (player) {
-              // Obtiene el elemento de imagen y verifica que sea del tipo correcto
               const playerImage = document.getElementById("playerImage");
               if (playerImage && playerImage instanceof HTMLImageElement) {
                 playerImage.src = "https://www.gravatar.com/avatar/" + player.id + "?s=260&d=mp";
@@ -150,5 +132,3 @@ interface Window {
         }
       });
     </script>
-  </body>
-</html>

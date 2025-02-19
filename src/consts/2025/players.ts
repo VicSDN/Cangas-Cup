@@ -27,3 +27,18 @@ export async function getAllPlayers2025() {
   
     return players;
   }
+
+
+  export async function getTotalPlayers2025() {
+    const { count, error } = await supabase
+      .from("tournament_player")
+      .select("*", { count: "exact", head: true });
+  
+    if (error) {
+      console.error("Error fetching total players:", error);
+      throw error;
+    }
+  
+    return count;
+  }
+  
