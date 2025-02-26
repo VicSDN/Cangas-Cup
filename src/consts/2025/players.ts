@@ -29,7 +29,7 @@ export async function getAllPlayers2025() {
   }
 
 
-  export async function getTotalPlayers2025() {
+  export async function getTotalPlayers() {
     const { count, error } = await supabase
       .from("tournament_player")
       .select("*", { count: "exact", head: true });
@@ -40,5 +40,22 @@ export async function getAllPlayers2025() {
     }
   
     return count;
+  }
+  
+  export async function addPlayer(playerData: any) {
+    const { data, error } = await supabase.from("tournament_player").insert([playerData]);
+    if (error) throw error;
+    return data;
+  }
+  
+  export async function updatePlayer(id: string, updates: any) {
+    const { data, error } = await supabase.from("tournament_player").update(updates).eq("id", id);
+    if (error) throw error;
+    return data;
+  }
+  
+  export async function deletePlayer(id: string) {
+    const { error } = await supabase.from("tournament_player").delete().eq("id", id);
+    if (error) throw error;
   }
   

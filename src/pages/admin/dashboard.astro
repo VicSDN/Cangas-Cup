@@ -1,10 +1,7 @@
 ---
-import DetailPlayer from "../../components/admin/DetailPlayer.astro";
-import ListPlayers from "../../components/admin/ListPlayers.astro";
 import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
+import TotalDetails from "../../components/admin/TotalDetails.astro";
 import { supabase } from "../../lib/supabase";
-import { getTotalPlayers2025 } from "../../consts/2025/players";
-import { getTotalTeams2025 } from "../../consts/2025/teams";
 export const prerender = false;
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
@@ -16,7 +13,7 @@ if (!accessToken || !refreshToken) {
 let session;
 try {
   session = await supabase.auth.setSession({
-    refresh_token: refreshToken.value,
+    refresh_token: refreshToken?.value || "",
     access_token: accessToken.value,
   });
   if (session.error) {
@@ -38,19 +35,8 @@ try {
   return Astro.redirect("/signin");
 }
 
-const totalPlayers = await getTotalPlayers2025();
-const totalTeams = await getTotalTeams2025();
+
 ---
    <LayoutAdmin description="La plataforma del Administrador" title="Admin Dashboard">
-  
-<div class="font-bold grid grid-cols-3 grid-rows-5 gap-4 bg-slate-700 opacity-80 p-8">
-  <div class="col-span-3 text-center">Numeros del torneo</div>
-  <div class="row-start-2 text-center">Equipos</div>
-  <div class="row-start-2 text-center">Jugadores</div>
-  <div class="row-start-2 text-center">Partidos</div>
-  <div class="row-span-3 text-center">5</div>
-  <div class="row-span-3 row-start-3 text-center">{totalTeams}</div>
-  <div class="row-span-3 row-start-3 text-center">{totalPlayers}</div>
-</div>
-  
+   <TotalDetails />
    </LayoutAdmin>

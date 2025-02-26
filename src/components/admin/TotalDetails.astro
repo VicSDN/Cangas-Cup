@@ -1,0 +1,18 @@
+---
+import { getTotalPlayers2025 } from "../../consts/2025/players";
+import { getTotalTeams2025 } from "../../consts/2025/teams";
+import { getTotalMatchs2025 } from "../../consts/2025/matchs";
+const totalPlayers = await getTotalPlayers2025();
+const totalTeams = await getTotalTeams2025();
+const totalMatchs = await getTotalMatchs2025();
+---
+
+<div class="font-bold grid grid-cols-3 grid-rows-5 gap-4 bg-slate-700 opacity-80 p-4">
+    <div class="col-span-3 text-center ">Numeros del torneo</div>
+    <div class="row-start-2 text-center">Equipos</div>
+    <div class="row-start-2 text-center">Jugadores</div>
+    <div class="row-start-2 text-center">Partidos</div>
+    <div class="row-span-3 text-center">{totalMatchs}</div>
+    <div class="row-span-3 row-start-3 text-center">{totalTeams}</div>
+    <div class="row-span-3 row-start-3 text-center">{totalPlayers}</div>
+  </div>

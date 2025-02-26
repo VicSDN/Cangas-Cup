@@ -27,3 +27,20 @@ export async function getTotalTeams2025() {
 
   return count;
 }
+
+export async function addTeam(teamData: any) {
+  const { data, error } = await supabase.from("tournament_team").insert([teamData]);
+  if (error) throw error;
+  return data;
+}
+
+export async function updateTeam(id: string, updates: any) {
+  const { data, error } = await supabase.from("tournament_team").update(updates).eq("id", id);
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTeam(id: string) {
+  const { error } = await supabase.from("tournament_team").delete().eq("id", id);
+  if (error) throw error;
+}
