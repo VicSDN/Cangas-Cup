@@ -4,28 +4,27 @@ import Instagram from "../../../icons/Instagram.astro";
 ---
 
 <section class="flex justify-center mt-2 text-center items-center gap-6 flex-row">
-  <p class="text-2xl italic mb-0">Nuestro instagram</p>
+  <p class="text-2xl italic mb-0">Nuestro Instagram</p>
   <a
     href="https://www.instagram.com/cangascup/"
     target="_blank"
-    class="flex items-center"
+    rel="noopener noreferrer"
+    class="flex flex-col items-center justify-center gap-1 hover:text-blue-600 transition"
   >
-    <section class="flex flex-col items-center justify-center">
-      <div><Instagram /></div>
-      Pulse aquí
-    </section>
+    <Instagram class="w-8 h-8" />
+    <span class="text-sm">Pulse aquí</span>
   </a>
 </section>
-<section class="flex justify-center text-center items-center gap-6 flex-row">
+
+<section class="flex justify-center mt-2 text-center items-center gap-6 flex-row">
   <p class="text-2xl italic mb-0">Todavía quedan plazas para inscribirte</p>
   <a
-    href="https://wa.me/34687344994" 
+    href="https://wa.me/34687344994"
     target="_blank"
-    class="flex items-center"
+    rel="noopener noreferrer"
+    class="flex flex-col items-center justify-center gap-1 hover:text-green-600 transition"
   >
-    <section class="flex flex-col items-center justify-center">
-      <div><Whatsapp /></div>
-      Pulse aquí
-    </section>
+    <Whatsapp class="w-8 h-8" />
+    <span class="text-sm">Pulse aquí</span>
   </a>
 </section>

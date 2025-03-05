@@ -1,61 +1,81 @@
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="description" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="icon" href="/cangasCupLogo.webp" />
-    <title>Inicio de Sesión Admin</title>
-  </head>
-  <body>
-<div class="bg-sky-100 flex justify-center items-center h-screen">
-<div class="w-1/2 h-screen hidden lg:block">
-  <img src="/comming.webp" alt="Placeholder Image" class="object-cover w-full h-full">
-</div>
-<div class= "lg:p-36 md:p-52 sm:20 p-8 w-full lg:w-1/2">
-  <h1 class="text-2xl font-semibold mb-4">Login</h1>
-  <form action="/api/auth/signin" method="post">
-    <div class="mb-4" "bg-sky-100">
-      <label for="email" class="block text-gray-600">Email</label>
-      <input type="email" name="email" id="email" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" autocomplete="off">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="Inicio de sesión para administradores" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/webp" href="/cangasCupLogo.webp" />
+  <title>Inicio de Sesión Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="flex w-full max-w-4xl shadow-lg rounded-lg overflow-hidden">
+    <div class="hidden lg:block w-1/2">
+      <img src="/comming.webp" alt="Imagen de fondo" class="object-cover w-full h-full" />
     </div>
-    <div class="mb-4">
-      <label for="password" class="block text-gray-800">Password</label>
-      <input type="password" name="password" id="password" required class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" autocomplete="off">
+    <div class="w-full lg:w-1/2 bg-white p-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">Inicio de Sesión</h1>
+      <form action="/api/auth/signin" method="POST" class="space-y-6">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            required
+            class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+            autocomplete="email"
+          />
+        </div>
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <div class="relative">
+            <input
+              type="password"
+              name="password"
+              id="password"
+              required
+              class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10"
+              autocomplete="current-password"
+            />
+            <button type="button" id="togglePassword" class="absolute inset-y-0 right-3 flex items-center">
+              <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 3C5 3 1.73 7.11.46 9.36a1.29 1.29 0 000 1.28C1.73 12.89 5 17 10 17s8.27-4.11 9.54-6.36a1.29 1.29 0 000-1.28C18.27 7.11 15 3 10 3zm0 12a5 5 0 110-10 5 5 0 010 10z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+          <label for="remember" class="ml-2 text-sm text-gray-600">Recordar contraseña</label>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition">
+          Iniciar Sesión
+        </button>
+      </form>
     </div>
-    <button type="submit" class="bg-red-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 px-4 w-full">Login</button>
-  </form>
-</div>
-</div>
-  </body>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const togglePasswordButton = document.getElementById("togglePassword");
+      const passwordField = document.getElementById("password") as HTMLInputElement;
+      const eyeIcon = document.getElementById("eyeIcon");
+  
+      if (togglePasswordButton && passwordField && eyeIcon) {
+        togglePasswordButton.addEventListener("click", function () {
+          if (passwordField.type === "password") {
+            passwordField.type = "text";
+            eyeIcon.innerHTML =
+              '<path d="M2 10s3-6 10-6 10 6 10 6-3 6-10 6-10-6-10-6zm10 4a4 4 0 100-8 4 4 0 000 8z"/>'; // Ícono de ojo abierto
+          } else {
+            passwordField.type = "password";
+            eyeIcon.innerHTML =
+              '<path d="M12 4.5C7 4.5 3.27 8.61 2 10.86a1.29 1.29 0 000 1.28C3.27 14.39 7 18.5 12 18.5s8.73-4.11 10-6.36a1.29 1.29 0 000-1.28C20.73 8.61 17 4.5 12 4.5zM12 16a4 4 0 110-8 4 4 0 010 8zm4-4a4 4 0 11-8 0 4 4 0 018 0z"/>'; // Ícono de ojo cerrado
+          }
+        });
+      }
+    });
+  </script>
+  
+</body>
 </html>
-<style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-
-    form {
-      max-width: 300px;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 10px;
-      width: 100%;
-    }
-
-    p {
-      color: red;
-    }
-  </style>
