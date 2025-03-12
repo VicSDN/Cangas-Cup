@@ -3,6 +3,9 @@ import { getTotalTeams, getAllTeams, Team } from '../../consts/2025/teams';
 
 let teams: Team[] = [];
 let totalTeams: number = 0;
+const teamsPerPage: number = 9;
+
+const currentPage = parseInt(Astro.url.searchParams.get("page") || "1");
 
 const fetchTeams = async () => {
   try {
@@ -17,11 +20,14 @@ const fetchTeams = async () => {
 
 await fetchTeams();
 
-const allTeams = () => {
-  return teams;
+const paginatedTeams = () => {
+  const start = (currentPage - 1) * teamsPerPage;
+  const end = start + teamsPerPage;
+  return teams.slice(start, end);
 };
----
 
+const totalPages = Math.ceil(totalTeams / teamsPerPage);
+---
 <section class="container px-4 mx-auto">
   <div class="sm:flex sm:items-center sm:justify-between">
     <div>
@@ -32,16 +38,18 @@ const allTeams = () => {
         </span>
       </div>
     </div>
-
+  <a href="/admin/teams/addTeam">
     <div class="flex items-center mt-4 gap-x-3">
       <button class="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-blue-500 rounded-lg shrink-0 sm:w-auto gap-x-2 hover:bg-blue-600 dark:hover:bg-blue-500 dark:bg-blue-600">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>Añadir Equipo</span>
+        <a href="/admin/teams/addTeam" class="flex items-center gap-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Añadir Equipo</span>
+        </a>
       </button>
     </div>
-  </div>
+      </div>
 
   <div class="mt-6 md:flex md:items-center md:justify-between">
     <div class="relative flex items-center mt-4 md:mt-0">
@@ -50,91 +58,78 @@ const allTeams = () => {
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
         </svg>
       </span>
-
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Buscar equipo por nombre, ID o grupo"
-        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-      />
+      <input id="searchInput" type="text" placeholder="Buscar equipo por nombre, ID o grupo" class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40" />
     </div>
   </div>
 
   <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {allTeams().map((team) => (
+    {paginatedTeams().map((team) => (
+        <a href={`${team.id}`} class="block">
       <div class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md" data-key={team.id} data-name={team.name} data-group_id={team.group_id} data-year={team.year}>
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
+      
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
+       
         <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
         <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
       </div>
+     </a>
     ))}
-    <div id="noResultsMessage" class="col-span-full flex flex-col items-center text-center">
-      <p class="text-gray-500 dark:text-gray-400">No se encontraron equipos.</p>
-    </div>
   </div>
 
-  <div class="mt-6 sm:flex sm:items-center sm:justify-between">
-    <div class="text-sm text-gray-500 dark:text-gray-400">
-      Page <span class="font-medium text-gray-700 dark:text-gray-100">1 of 10</span>
+  <div class="mt-6 flex justify-center items-center gap-4">
+    <a
+      href={`?page=${Math.max(currentPage - 1, 1)}`}
+      class="flex items-center gap-2 px-6 py-3 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-lg select-none bg-gray-700 hover:bg-gray-400 active:bg-gray-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      Anterior
+    </a>
+    <div class="flex items-center gap-2">
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <a
+          href={`?page=${page}`}
+          class={`relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-lg ${
+            currentPage === page
+              ? "bg-gray-500 text-white shadow-md"
+              : "bg-gray-200 text-gray-900"
+          } text-center align-middle font-sans text-xs font-medium uppercase transition-all hover:bg-gray-400 active:bg-gray-500`}
+        >
+          <span class="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
+            {page}
+          </span>
+        </a>
+      ))}
     </div>
-
-    <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-      <a href="#" class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-        </svg>
-        <span>previous</span>
-      </a>
-
-      <a href="#" class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700 dark:hover:bg-gray-800">
-        <span>Next</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-        </svg>
-      </a>
-    </div>
+    <a
+      href={`?page=${Math.min(currentPage + 1, totalPages)}`}
+      class="flex items-center gap-2 px-6 py-3 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-lg select-none bg-gray-700 hover:bg-gray-400 active:bg-gray-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+    >
+      Siguiente
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+      </svg>
+    </a>
   </div>
+</section>
 
-  <script>
-    const searchInput = document.getElementById('searchInput');
-    const teamElements = document.querySelectorAll('.team');
-    const noResultsMessage = document.getElementById('noResultsMessage');
-
-    function filterTeams() {
-      const query = (searchInput as HTMLInputElement)?.value.toLowerCase() || '';
-      let hasMatches = false;
-      teamElements.forEach((team) => {
-        const name = (team as HTMLElement).dataset.name?.toLowerCase() || '';
-        const id = (team as HTMLElement).dataset.key;
-        const group_id = (team as HTMLElement).dataset.group_id;
-        const matches = (
-          name.includes(query) ||
-          (id && id.toString().includes(query)) ||
-          (group_id ?? '').toString().includes(query)
-        );
-        if (matches) {
-          team.classList.remove('hidden');
-          hasMatches = true;
+<script>
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const query = (this as HTMLInputElement).value.toLowerCase();
+      document.querySelectorAll('.team').forEach((team) => {
+        const teamElement = team;
+        const name = (teamElement as HTMLElement).dataset.name?.toLowerCase() || '';
+        const id = (teamElement as HTMLElement).dataset.key;
+        const group_id = (teamElement as HTMLElement).dataset.group_id;
+        if (name.includes(query) || (id ?? '').includes(query) || (group_id ?? '').includes(query)) {
+          teamElement.classList.remove('hidden');
         } else {
-          team.classList.add('hidden');
+          teamElement.classList.add('hidden');
         }
       });
-
-      if (hasMatches) {
-        if (noResultsMessage) {
-          noResultsMessage.classList.add('hidden');
-        }
-      } else {
-        if (noResultsMessage) {
-          noResultsMessage.classList.remove('hidden');
-        }
-      }
-    }
-
-    if (searchInput) {
-      searchInput.addEventListener('input', filterTeams);
-    }
-
-    filterTeams();
-  </script>
-</section>
+    });
+  }
+</script>
