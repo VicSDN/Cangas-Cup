@@ -8,6 +8,31 @@ import Header from "../components/admin/Header.astro";
 import "@fontsource-variable/onest";
 import ButtonUp from "../sections/ButtonUp.astro";
 import { ClientRouter } from "astro:transitions";
+import { supabase } from "../lib/supabase";
+
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+  return Astro.redirect("/admin/signin");
+}
+
+let session;
+try {
+  session = await supabase.auth.setSession({
+    refresh_token: refreshToken?.value || "",
+    access_token: accessToken?.value || "",
+  });
+  if (session.error) {
+    Astro.cookies.delete("sb-access-token", { path: "/" });
+    Astro.cookies.delete("sb-refresh-token", { path: "/" });
+    return Astro.redirect("/admin/signin");
+  }
+} catch (error) {
+  Astro.cookies.delete("sb-access-token", { path: "/" });
+  Astro.cookies.delete("sb-refresh-token", { path: "/" });
+  return Astro.redirect("/admin/signin");
+}
 ---
 
 <!doctype html>

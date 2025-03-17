@@ -1,8 +1,9 @@
 ---
 import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 import TotalDetails from "../../components/admin/TotalDetails.astro";
-import { supabase } from "../../lib/supabase";
 export const prerender = false;
+import { supabase } from "../../lib/supabase";
+
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
 
@@ -16,26 +17,17 @@ try {
     refresh_token: refreshToken?.value || "",
     access_token: accessToken?.value || "",
   });
+
   if (session.error) {
-    Astro.cookies.delete("sb-access-token", {
-      path: "/",
-    });
-    Astro.cookies.delete("sb-refresh-token", {
-      path: "/",
-    });
+    Astro.cookies.delete("sb-access-token", { path: "/" });
+    Astro.cookies.delete("sb-refresh-token", { path: "/" });
     return Astro.redirect("/admin/signin");
   }
 } catch (error) {
-  Astro.cookies.delete("sb-access-token", {
-    path: "/",
-  });
-  Astro.cookies.delete("sb-refresh-token", {
-    path: "/",
-  });
-  return Astro.redirect("admin/signin");
+  Astro.cookies.delete("sb-access-token", { path: "/" });
+  Astro.cookies.delete("sb-refresh-token", { path: "/" });
+  return Astro.redirect("/admin/signin");
 }
-
-
 ---
    <LayoutAdmin description="La plataforma del Administrador" title="Admin Dashboard">
    <TotalDetails />
