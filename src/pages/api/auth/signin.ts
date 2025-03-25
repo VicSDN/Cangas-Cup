@@ -1,27 +1,31 @@
 export const prerender = false;
 
 import type { APIRoute } from "astro";
-import { supabase } from "../../../lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_KEY
+);
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
-    console.log("Content-Type:", request.headers.get("content-type"));
-
-    const bodyText = await request.text();
-    console.log("Body Text:", bodyText);
-
-    const params = new URLSearchParams(bodyText);
-    console.log("URLSearchParams:", params);
-
-    const email = params.get("email");
-    const password = params.get("password");
-
-    console.log("Parsed Email:", email);
-    console.log("Parsed Password:", password);
+    const formData = await request.formData();
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     if (!email || !password) {
-      console.error("Email o contraseña faltantes.");
-      return new Response("Email y contraseña son requeridos", { status: 400 });
+      return new Response(
+        JSON.stringify({
+          error: "Email y contraseña son requeridos",
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -30,54 +34,53 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     });
 
     if (error) {
-      console.error("Error al iniciar sesión:", error);
-      return new Response("Email o contraseña inválidos", { status: 401 });
+      return new Response(
+        JSON.stringify({
+          error: error.message,
+        }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
 
-    const { session } = data;
-
-    if (session) {
-      // Guardar el token en cookies para mantener la sesión
-      cookies.set("sb-access-token", session.access_token, {
-        httpOnly: true,
+    // Guardar el token en las cookies
+    if (data.session?.access_token) {
+      cookies.set("sb-access-token", data.session.access_token, {
         path: "/",
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24 * 7,
-      });
-      cookies.set("sb-refresh-token", session.refresh_token, {
+        secure: true,
         httpOnly: true,
-        path: "/",
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 días
       });
-
-      // Guardar el token en window.__ACCESS_TOKEN__ para que esté disponible en el cliente
-      const script = `<script>window.__ACCESS_TOKEN__ = "${session.access_token}";</script>`;
-
-      // Redirigir al dashboard con el token asignado al cliente
-      const redirectHTML = `
-        <!DOCTYPE html>
-        <html lang="es">
-          <head>
-            <meta charset="UTF-8" />
-            <meta http-equiv="refresh" content="0;url='/admin/dashboard'" />
-          </head>
-          <body>
-            ${script}
-            Redirigiendo...
-          </body>
-        </html>
-      `;
-      return new Response(redirectHTML, {
-        status: 200,
-        headers: { "Content-Type": "text/html" },
-      });
-    } else {
-      console.error("No se pudo obtener la sesión del usuario.");
-      return new Response("No se pudo obtener la sesión", { status: 500 });
     }
+
+    if (data.session?.refresh_token) {
+      cookies.set("sb-refresh-token", data.session.refresh_token, {
+        path: "/",
+        secure: true,
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, // 7 días
+      });
+    }
+
+    return redirect("/admin/dashboard");
   } catch (error) {
-    console.error("Error al procesar la solicitud:", error);
-    return new Response("Error interno del servidor", { status: 500 });
+    console.error("Error en signin:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Error interno del servidor",
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 };

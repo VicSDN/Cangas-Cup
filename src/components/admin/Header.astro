@@ -17,18 +17,39 @@ const pages = [
   <nav class="group flex h-full w-full items-center justify-between px-10">
     <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
     <div class="hidden lg:flex flex-1 items-center justify-between">
-      {pages.map(({  name, href }, key) => (
-        <a
-              href={href}
-              class:list={[
-                "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-            </a>
-          )
-       )}
+      <div class="flex items-center gap-8">
+        {pages.map(({  name, href }, key) => (
+          <a
+            href={href}
+            class:list={[
+              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex",
+            ]}
+            id={`nav-link-${key}`}
+          >
+            <span class="z-10">{name}</span>
+          </a>
+        ))}
+      </div>
+      <button
+        id="logoutButton"
+        class="p-2 text-white hover:text-gray-300 transition-colors"
+        title="Cerrar sesión"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+      </button>
     </div>
 
     <div
@@ -58,7 +79,7 @@ const pages = [
           <a
             href={href}
             class:list={[
-              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex",
             ]}
             id={`nav-link-${key}`}
           >
@@ -69,6 +90,26 @@ const pages = [
             />
           </a>
         ))}
+        <button
+          id="mobileLogoutButton"
+          class="mt-4 p-2 text-white hover:text-gray-300 transition-colors"
+          title="Cerrar sesión"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+        </button>
       </nav>
     </div>
   </nav>
@@ -98,47 +139,34 @@ const pages = [
 </header>
 
 <style>
-  .nav-item .background {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(221, 221, 221, 20%) 0%,
-      transparent 100%
-    );
-    transition: opacity 0.3s;
+  .nav-item {
+    @apply relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase;
   }
 
-  .nav-item:hover .background,
-  .nav-item:focus .background {
-    opacity: 1;
+  .nav-item::after {
+    @apply absolute bottom-0 left-0 h-[2px] w-full scale-x-0 transform bg-white transition-transform duration-300 ease-in-out;
+    content: "";
   }
 
-  .focus-within-ring {
-    @apply focus-within:ring-1 focus-within:ring-white focus-within:ring-offset-1;
+  .nav-item:hover::after {
+    @apply scale-x-100;
   }
 
-  #menuMobileContent {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease-in-out;
-    background-color: #4b4b4b;
-    display: none;
+  .gridBottomBarContainer {
+    grid-template-columns: 1fr 6rem 1fr;
+    grid-template-rows: 4px;
   }
 
-  #menuMobileContent.open {
-    opacity: 1 !important;
-    pointer-events: all !important;
-    display: flex !important;
+  @media (min-width: 1024px) {
+    .gridBottomBarContainer {
+      grid-template-columns: 1fr 9rem 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion) {
+    .nav-item::after {
+      transition: transform 0s;
+    }
   }
 
   .accent-drop-shadow {
@@ -168,46 +196,27 @@ const pages = [
     transform: translateY(-50%);
   }
 
-  .gridBottomBarContainer {
-    grid-template-columns: 1fr 6rem 1fr;
-    grid-template-rows: 4px;
-  }
-
-  @media (min-width: 1024px) {
-    .gridBottomBarContainer {
-      grid-template-columns: 1fr 9rem 1fr;
-    }
-  }
-  @media (prefers-reduced-motion) {
-    .nav-item .background {
-      transition: opacity 0s;
-    }
-
-    .nav-item:hover .background,
-    .nav-item:focus .background {
-      opacity: 1;
-    }
-
-    #menuMobileContent {
-      transition: opacity 0s;
-    }
-  }
-
-  .fixed-bottom-bar {
+  #menuMobileContent {
     position: fixed;
-    bottom: 0;
+    top: 0;
     left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      white 50%,
-      transparent 100%
-    );
-    z-index: 10;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+    background-color: #4b4b4b;
+    display: none;
+  }
+
+  #menuMobileContent.open {
+    opacity: 1 !important;
+    pointer-events: all !important;
+    display: flex !important;
   }
 </style>
+
 <script>
   import { $ } from "../../lib/dom-selector";
   import { MOBILE_MENU_CONTENT_ID } from "../../consts/mobile-menu";
@@ -228,4 +237,23 @@ const pages = [
       menuMobileContent.style.pointerEvents = "none";
     }
   });
+
+  // Función para cerrar sesión
+  async function logout() {
+    try {
+      // Limpiar el localStorage
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('sb-refresh-token');
+      
+      // Redirigir al login
+      window.location.href = '/admin/signin';
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      alert('Error al cerrar sesión. Por favor, intenta de nuevo.');
+    }
+  }
+
+  // Agregar event listeners a los botones de cerrar sesión
+  document.getElementById('logoutButton')?.addEventListener('click', logout);
+  document.getElementById('mobileLogoutButton')?.addEventListener('click', logout);
 </script>
