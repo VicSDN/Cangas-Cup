@@ -32,7 +32,7 @@ const pages = [
     </div>
 
     <div
-      class="fixed inset-0 z-[888] flex w-screen flex-col items-center overflow-x-auto bg-[var(--background-color)] px-10 lg:hidden"
+      class="fixed inset-0 z-[888] flex w-screen flex-col items-center overflow-y-auto bg-[var(--background-color)] px-10 lg:hidden"
       id={MOBILE_MENU_CONTENT_ID}
     >
       <aside class="flex min-h-16 w-full items-center justify-between">
@@ -55,25 +55,20 @@ const pages = [
           />
         </a>
         {pages.map(({  name, href }, key) => (
-          
-              <a
-                href={href}
-                class:list={[
-                  "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <hr
-        class="h-[2px] w-full border-t-0"
-        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-      />
-              </a>
-            )
-        )}
-      </nav>
-      <nav class="my-4 flex flex-col gap-10">
+          <a
+            href={href}
+            class:list={[
+              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
+            ]}
+            id={`nav-link-${key}`}
+          >
+            <span class="z-10">{name}</span>
+            <hr
+              class="h-[2px] w-full border-t-0"
+              style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+            />
+          </a>
+        ))}
       </nav>
     </div>
   </nav>
@@ -127,16 +122,23 @@ const pages = [
   }
 
   #menuMobileContent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s;
-    scrollbar-gutter: stable;
+    transition: opacity 0.3s ease-in-out;
     background-color: #4b4b4b;
+    display: none;
   }
 
   #menuMobileContent.open {
     opacity: 1 !important;
-    pointer-events: all;
+    pointer-events: all !important;
+    display: flex !important;
   }
 
   .accent-drop-shadow {
@@ -208,49 +210,22 @@ const pages = [
 </style>
 <script>
   import { $ } from "../../lib/dom-selector";
-
-  function toggleMenu(
-    nav: HTMLElement | null,
-    menuMobileContent: HTMLElement | null,
-    navContent: HTMLElement | null
-  ) {
-    menuMobileContent?.classList.toggle("open");
-    nav?.classList.toggle("open");
-    navContent?.classList.toggle("animate-bounce-fade-in");
-    document.body.classList.toggle("overflow-hidden");
-    document.body.classList.toggle("lg:overflow-auto");
-  }
+  import { MOBILE_MENU_CONTENT_ID } from "../../consts/mobile-menu";
 
   function onYearChange(e: Event) {
     const target = e.target as HTMLSelectElement;
     const selectedYear = target.value;
     if (selectedYear) {
-
       window.location.href = `/user/${selectedYear}`;
     }
   }
 
   document.addEventListener("astro:page-load", () => {
-    const nav = $("nav");
-    const menuButton = $("#menuButton");
-    const innerMenuButton = $("#innerMenuButton");
-    const menuMobileContent = $("#menuMobileContent");
-    const navContent = $(".navContent");
-
-    menuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContent, navContent)
-    );
-    innerMenuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContent, navContent)
-    );
-
-    if (menuMobileContent?.classList.contains("open")) {
-      toggleMenu(nav, menuMobileContent, navContent);
+    const menuMobileContent = $(MOBILE_MENU_CONTENT_ID);
+    if (menuMobileContent) {
+      menuMobileContent.style.display = "none";
+      menuMobileContent.style.opacity = "0";
+      menuMobileContent.style.pointerEvents = "none";
     }
-
-    const yearSelectors = document.querySelectorAll("#year-selector");
-    yearSelectors.forEach((yearSelector) => {
-      yearSelector.addEventListener("change", onYearChange);
-    });
   });
 </script>

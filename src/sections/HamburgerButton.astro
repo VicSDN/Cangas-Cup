@@ -35,33 +35,56 @@ const genericHamburgerLine = `h-[2px] ${width} bg-gray-300 transition ease trans
 
 <script>
   import { $, $$ } from "../lib/dom-selector";
+  import { MOBILE_MENU_CONTENT_ID } from "../consts/mobile-menu";
 
-  const DISPLAY = {
-    hamburgerMenuClass: ".hamburgerButton",
-    open: "open",
-    hamburgerButtonClicked: "hamburgerButtonClicked",
-  } as const;
+  function toggleMenu() {
+    const menuContent = document.getElementById(MOBILE_MENU_CONTENT_ID);
+    const buttons = document.querySelectorAll('.hamburgerButton');
+    const isOpen = menuContent?.classList.contains('open') ?? false;
 
-  document.addEventListener("astro:page-load", () => {
-    const hamburgerButton = $(DISPLAY.hamburgerMenuClass);
-
-    $$(DISPLAY.hamburgerMenuClass).forEach((button) => {
-      button.addEventListener("click", () => {
-        const hamburgerButton = $(DISPLAY.hamburgerMenuClass)!;
-        hamburgerButton.classList.toggle(DISPLAY.open);
-        const isMenuOpen = hamburgerButton.classList.contains(DISPLAY.open);
-        hamburgerButton.setAttribute("aria-expanded", String(isMenuOpen));
-        hamburgerButton.setAttribute(
-          "aria-label",
-          isMenuOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"
-        );
-        const hamburgerButtonClick = new CustomEvent(
-          DISPLAY.hamburgerButtonClicked
-        );
-        hamburgerButton.dispatchEvent(hamburgerButtonClick);
-      });
+    // Toggle clases en los botones
+    buttons.forEach(button => {
+      button.classList.toggle('open');
+      button.setAttribute('aria-expanded', String(!isOpen));
+      button.setAttribute(
+        'aria-label',
+        !isOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
+      );
     });
-    if (hamburgerButton?.classList?.contains(DISPLAY.open))
-      hamburgerButton?.classList?.remove(DISPLAY.open);
-  });
+
+    // Toggle menú
+    if (menuContent) {
+      menuContent.classList.toggle('open');
+      
+      if (!isOpen) {
+        menuContent.style.display = 'flex';
+        menuContent.style.opacity = '1';
+        menuContent.style.pointerEvents = 'all';
+        document.body.style.overflow = 'hidden';
+      } else {
+        menuContent.style.display = 'none';
+        menuContent.style.opacity = '0';
+        menuContent.style.pointerEvents = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+  }
+
+  function setupHamburgerButtons() {
+    const buttons = document.querySelectorAll('.hamburgerButton');
+    
+    buttons.forEach(button => {
+      button.addEventListener('click', toggleMenu);
+    });
+  }
+
+  // Configurar cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupHamburgerButtons);
+  } else {
+    setupHamburgerButtons();
+  }
+
+  // Configurar cuando Astro cargue la página
+  document.addEventListener('astro:page-load', setupHamburgerButtons);
 </script>
