@@ -17,13 +17,13 @@ if (!accessTokenCookie || !refreshTokenCookie) {
   return Astro.redirect("/admin/signin");
 }
 
-// Actualizar la sesión usando las cookies (método setSession en Supabase v2)
 const { data: { session }, error } = await supabase.auth.setSession({
   refresh_token: refreshTokenCookie.value,
   access_token: accessTokenCookie.value,
 });
 
 if (error || !session) {
+  console.error("Error al renovar sesión:", error?.message || "Sesión no encontrada");
   Astro.cookies.delete("sb-access-token", { path: "/" });
   Astro.cookies.delete("sb-refresh-token", { path: "/" });
   return Astro.redirect("/admin/signin");
@@ -42,7 +42,7 @@ if (error || !session) {
   <body>
     <Header class="mb-4" />
     <script>
-      window.__ACCESS_TOKEN__ = "{session.access_token}"; 
+      window.__ACCESS_TOKEN__ = "${session.access_token}";
     </script>
     <slot />
     <ButtonUp />

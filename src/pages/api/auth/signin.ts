@@ -1,4 +1,4 @@
-export const prerender = false; 
+export const prerender = false;
 
 import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase";
@@ -37,6 +37,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const { session } = data;
 
     if (session) {
+      // Guardar el token en cookies para mantener la sesión
       cookies.set("sb-access-token", session.access_token, {
         httpOnly: true,
         path: "/",
@@ -50,7 +51,27 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         maxAge: 60 * 60 * 24 * 7,
       });
 
-      return redirect("/admin/dashboard");
+      // Guardar el token en window.__ACCESS_TOKEN__ para que esté disponible en el cliente
+      const script = `<script>window.__ACCESS_TOKEN__ = "${session.access_token}";</script>`;
+
+      // Redirigir al dashboard con el token asignado al cliente
+      const redirectHTML = `
+        <!DOCTYPE html>
+        <html lang="es">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="refresh" content="0;url='/admin/dashboard'" />
+          </head>
+          <body>
+            ${script}
+            Redirigiendo...
+          </body>
+        </html>
+      `;
+      return new Response(redirectHTML, {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      });
     } else {
       console.error("No se pudo obtener la sesión del usuario.");
       return new Response("No se pudo obtener la sesión", { status: 500 });

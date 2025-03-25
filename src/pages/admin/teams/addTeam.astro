@@ -1,5 +1,6 @@
 ---
 import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
+
 ---
 <LayoutAdmin description="La plataforma del Administrador" title="Añadir Nuevo Equipo">
   <section class="max-w-4xl mt-14 lg:mt-28 p-6 mx-auto bg-white rounded-md shadow-md dark:bg-gray-800">
@@ -21,8 +22,13 @@ import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
 </LayoutAdmin>
 
 <script type="module">
-  // Recuperar el token inyectado por el layout
-  const token = window.__ACCESS_TOKEN__;
+ const token = window.__ACCESS_TOKEN__;
+if (!token) {
+  alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
+  window.location.href = "/admin/signin"; // Redirigir al inicio de sesión si no hay token
+  throw new Error("Token no disponible");
+}
+
   const form = document.getElementById("add-team-form");
 
   if (form) {
