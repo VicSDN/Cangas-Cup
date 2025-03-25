@@ -1,7 +1,8 @@
 ---
 import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../../lib/supabase.ts";
 import TeamsList from "../../../components/admin/TeamsList.astro";
+
 export const prerender = false;
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
@@ -35,7 +36,14 @@ try {
   return Astro.redirect("/signin");
 }
 
+const url = new URL(Astro.request.url);
+const currentYear = url.searchParams.get("year") || "2025";
+
+const years = ["2025", "2026"];
 ---
+
 <LayoutAdmin description="La plataforma del Administrador" title="Equipos Dashboard">
-  <TeamsList />
+  <div class="container mx-auto px-4 py-8">
+    <TeamsList currentYear={currentYear} />
+  </div>
 </LayoutAdmin>

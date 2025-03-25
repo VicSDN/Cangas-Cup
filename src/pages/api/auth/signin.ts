@@ -47,14 +47,13 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
 
-    // Guardar el token en las cookies
     if (data.session?.access_token) {
       cookies.set("sb-access-token", data.session.access_token, {
         path: "/",
         secure: true,
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 días
+        maxAge: 60 * 60 * 24 * 7, 
       });
     }
 
@@ -64,7 +63,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         secure: true,
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 días
+        maxAge: 60 * 60 * 24 * 7, 
       });
     }
 

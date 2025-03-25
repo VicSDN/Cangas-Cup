@@ -71,14 +71,12 @@ import Layout from "../../layouts/Layout.astro";
       }
 
       if (data.session) {
-        // Guardar el token en localStorage
+ 
         localStorage.setItem('sb-access-token', data.session.access_token);
         localStorage.setItem('sb-refresh-token', data.session.refresh_token);
-        
-        // También guardar en window.__ACCESS_TOKEN__ para compatibilidad
+   
         (window as any).__ACCESS_TOKEN__ = data.session.access_token;
-        
-        // Redirigir al dashboard
+     
         window.location.href = '/admin/dashboard';
       }
     } catch (error) {

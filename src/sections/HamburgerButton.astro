@@ -42,7 +42,6 @@ const genericHamburgerLine = `h-[2px] ${width} bg-gray-300 transition ease trans
     const buttons = document.querySelectorAll('.hamburgerButton');
     const isOpen = menuContent?.classList.contains('open') ?? false;
 
-    // Toggle clases en los botones
     buttons.forEach(button => {
       button.classList.toggle('open');
       button.setAttribute('aria-expanded', String(!isOpen));
@@ -52,7 +51,6 @@ const genericHamburgerLine = `h-[2px] ${width} bg-gray-300 transition ease trans
       );
     });
 
-    // Toggle menú
     if (menuContent) {
       menuContent.classList.toggle('open');
       
@@ -78,13 +76,11 @@ const genericHamburgerLine = `h-[2px] ${width} bg-gray-300 transition ease trans
     });
   }
 
-  // Configurar cuando el DOM esté listo
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupHamburgerButtons);
   } else {
     setupHamburgerButtons();
   }
 
-  // Configurar cuando Astro cargue la página
   document.addEventListener('astro:page-load', setupHamburgerButtons);
 </script>

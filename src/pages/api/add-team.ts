@@ -8,7 +8,6 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const { name, group_id, year } = await request.json();
 
-    // Validar los datos
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return new Response(
         JSON.stringify({ message: "El nombre del equipo es requerido" }),
@@ -30,7 +29,6 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Extraer el encabezado de autorización
     const authHeader = request.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -40,7 +38,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
     const token = authHeader.replace("Bearer ", "");
 
-    // Crear un cliente Supabase con el token
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
         headers: {
@@ -49,7 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
       }
     });
 
-    // Verificar al usuario
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       console.error("Error de autenticación:", authError);
@@ -73,7 +70,6 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Verificar si el equipo ya existe
     const { data: existingTeam, error: checkError } = await supabase
       .from("tournament_team")
       .select("id")
@@ -81,7 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
       .eq("year", year)
       .single();
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 es "no se encontraron registros"
+    if (checkError && checkError.code !== 'PGRST116') { 
       console.error("Error al verificar equipo existente:", checkError);
       return new Response(
         JSON.stringify({ message: "Error al verificar si el equipo existe" }),
@@ -96,7 +92,6 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Insertar el nuevo equipo
     const { data, error } = await supabase
       .from("tournament_team")
       .insert([{ 

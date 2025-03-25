@@ -1,0 +1,35 @@
+---
+interface Props {
+  currentYear: string;
+  years: string[];
+}
+
+const { currentYear, years } = Astro.props;
+---
+
+<div class="flex items-center gap-4">
+  {years.map((year) => (
+    <button
+      class:list={[
+        "px-3 py-1 text-sm rounded-full transition-colors",
+        currentYear === year
+          ? "bg-blue-500 text-white"
+          : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+      ]}
+      data-year={year}
+    >
+      {year}
+    </button>
+  ))}
+</div>
+
+<script>
+  document.querySelectorAll('button[data-year]').forEach(button => {
+    button.addEventListener('click', () => {
+      const year = button.getAttribute('data-year');
+      if (year) {
+        window.location.href = `/admin/teams?year=${year}`;
+      }
+    });
+  });
+</script> 

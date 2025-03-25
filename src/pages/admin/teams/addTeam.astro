@@ -27,7 +27,6 @@ import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
 </LayoutAdmin>
 
 <script>
-  // Obtener el token del localStorage
   const token = localStorage.getItem('sb-access-token');
   
   if (!token) {
@@ -68,11 +67,7 @@ import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
         if (!response.ok) {
           throw new Error(result.message || "Error al añadir el equipo");
         }
-
-        alert("Equipo añadido con éxito");
-        (form as HTMLFormElement).reset();
-        // Opcional: redirigir a la lista de equipos
-        // window.location.href = "/admin/teams";
+        window.location.href = "/admin/dashboard";
       } catch (error) {
         console.error("Error al insertar equipo:", error);
         alert(error instanceof Error ? error.message : "Error al añadir el equipo");
