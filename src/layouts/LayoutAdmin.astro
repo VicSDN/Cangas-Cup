@@ -7,50 +7,43 @@ const { title, description } = Astro.props;
 import Header from "../components/admin/Header.astro";
 import "@fontsource-variable/onest";
 import ButtonUp from "../sections/ButtonUp.astro";
-import { ClientRouter } from "astro:transitions";
 import { supabase } from "../lib/supabase";
 
-const accessToken = Astro.cookies.get("sb-access-token");
-const refreshToken = Astro.cookies.get("sb-refresh-token");
+// Obtener cookies de autenticación
+const accessTokenCookie = Astro.cookies.get("sb-access-token");
+const refreshTokenCookie = Astro.cookies.get("sb-refresh-token");
 
-if (!accessToken || !refreshToken) {
+if (!accessTokenCookie || !refreshTokenCookie) {
   return Astro.redirect("/admin/signin");
 }
 
-let session;
-try {
-  session = await supabase.auth.setSession({
-    refresh_token: refreshToken?.value || "",
-    access_token: accessToken?.value || "",
-  });
-  if (session.error) {
-    Astro.cookies.delete("sb-access-token", { path: "/" });
-    Astro.cookies.delete("sb-refresh-token", { path: "/" });
-    return Astro.redirect("/admin/signin");
-  }
-} catch (error) {
+// Actualizar la sesión usando las cookies (método setSession en Supabase v2)
+const { data: { session }, error } = await supabase.auth.setSession({
+  refresh_token: refreshTokenCookie.value,
+  access_token: accessTokenCookie.value,
+});
+
+if (error || !session) {
   Astro.cookies.delete("sb-access-token", { path: "/" });
   Astro.cookies.delete("sb-refresh-token", { path: "/" });
   return Astro.redirect("/admin/signin");
 }
 ---
-
 <!doctype html>
 <html lang="es">
   <head>
-    <meta
-      name="google-site-verification"
-      content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI"
-    />
+    <meta name="google-site-verification" content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI" />
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="icon" href="/cangasCupLogo.webp" />
     <title>{title}</title>
-    <ClientRouter />
   </head>
   <body>
     <Header class="mb-4" />
+    <script>
+      window.__ACCESS_TOKEN__ = "{session.access_token}"; 
+    </script>
     <slot />
     <ButtonUp />
     <style is:global>
@@ -62,7 +55,7 @@ try {
         background: #9333ea;
       }
       p {
-        color: #000000;
+        color: #000;
         line-height: 1.4;
         margin-bottom: 1em;
         font-weight: 100;
