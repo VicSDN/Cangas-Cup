@@ -1,49 +1,64 @@
 ---
-import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
-import { supabase } from "../../../lib/supabase.ts";
+import Layout from "../../../layouts/Layout.astro";
+import Header from "../../../components/admin/Header.astro";
+import YearFilter from "../../../components/admin/YearFilter.astro";
 import TeamsList from "../../../components/admin/TeamsList.astro";
 
-export const prerender = false;
-const accessToken = Astro.cookies.get("sb-access-token");
-const refreshToken = Astro.cookies.get("sb-refresh-token");
-
-if (!accessToken || !refreshToken) {
-  return Astro.redirect("admin/signin");
-}
-
-let session;
-try {
-  session = await supabase.auth.setSession({
-    refresh_token: refreshToken?.value || "",
-    access_token: accessToken?.value || "",
-  });
-  if (session.error) {
-    Astro.cookies.delete("sb-access-token", {
-      path: "/",
-    });
-    Astro.cookies.delete("sb-refresh-token", {
-      path: "/",
-    });
-    return Astro.redirect("admin/signin");
-  }
-} catch (error) {
-  Astro.cookies.delete("sb-access-token", {
-    path: "/",
-  });
-  Astro.cookies.delete("sb-refresh-token", {
-    path: "/",
-  });
-  return Astro.redirect("/signin");
-}
-
+// Obtener el año de la URL o usar 2025 como valor predeterminado
 const url = new URL(Astro.request.url);
 const currentYear = url.searchParams.get("year") || "2025";
 
+// Lista de años disponibles
 const years = ["2025", "2026"];
 ---
 
-<LayoutAdmin description="La plataforma del Administrador" title="Equipos Dashboard">
-  <div class="container mx-auto px-4 py-8">
+<Layout title="Equipos">
+  <Header />
+  <main class="container mx-auto px-4 py-8">
+    <YearFilter currentYear={currentYear} years={years} />
     <TeamsList currentYear={currentYear} />
-  </div>
-</LayoutAdmin>
+  </main>
+</Layout>
+
+<script>
+  // Obtener el token del localStorage
+  const token = localStorage.getItem('sb-access-token');
+  
+  if (!token) {
+    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
+    window.location.href = "/admin/signin";
+    throw new Error("Token no disponible");
+  }
+
+  // Función para cerrar sesión
+  async function logout() {
+    try {
+      // Eliminar el token del localStorage
+      localStorage.removeItem('sb-access-token');
+      
+      // Eliminar la cookie del servidor
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        window.location.href = '/admin/signin';
+      } else {
+        throw new Error('Error al cerrar sesión');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al cerrar sesión');
+    }
+  }
+
+  // Añadir el evento de click al botón de logout
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', logout);
+  }
+</script>

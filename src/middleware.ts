@@ -1,14 +1,13 @@
 import { defineMiddleware } from "astro:middleware";
+import type { APIRoute } from "astro";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
-  
-  if (url.pathname.startsWith("/admin/")) {
-    if (url.pathname === "/admin/signin") {
-      return next();
-    }
+  const isAdminRoute = url.pathname.startsWith("/admin/");
+  const isSigninPage = url.pathname === "/admin/signin";
 
-    const token = context.request.headers.get("cookie")?.split("sb-access-token=")[1]?.split(";")[0];
+  if (isAdminRoute && !isSigninPage) {
+    const token = context.cookies.get("sb-access-token")?.value;
 
     if (!token) {
       return context.redirect("/admin/signin");
