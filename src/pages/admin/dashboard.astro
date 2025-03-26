@@ -3,6 +3,7 @@ import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 import TotalDetails from "../../components/admin/TotalDetails.astro";
 export const prerender = false;
 import { supabase } from "../../lib/supabase";
+import AddTeamButton from "../../components/admin/AddTeamButton.astro";
 
 const accessToken = Astro.cookies.get("sb-access-token");
 const refreshToken = Astro.cookies.get("sb-refresh-token");
@@ -31,4 +32,5 @@ try {
 ---
    <LayoutAdmin description="La plataforma del Administrador" title="Admin Dashboard">
    <TotalDetails />
+   <AddTeamButton />
    </LayoutAdmin>

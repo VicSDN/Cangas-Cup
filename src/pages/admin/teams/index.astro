@@ -1,27 +1,21 @@
 ---
-import Layout from "../../../layouts/Layout.astro";
-import Header from "../../../components/admin/Header.astro";
-import YearFilter from "../../../components/admin/YearFilter.astro";
+import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
 import TeamsList from "../../../components/admin/TeamsList.astro";
 
-// Obtener el año de la URL o usar 2025 como valor predeterminado
 const url = new URL(Astro.request.url);
 const currentYear = url.searchParams.get("year") || "2025";
 
-// Lista de años disponibles
 const years = ["2025", "2026"];
 ---
 
-<Layout title="Equipos">
-  <Header />
+<LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
   <main class="container mx-auto px-4 py-8">
-    <YearFilter currentYear={currentYear} years={years} />
     <TeamsList currentYear={currentYear} />
   </main>
-</Layout>
+</LayoutAdmin>
 
 <script>
-  // Obtener el token del localStorage
+
   const token = localStorage.getItem('sb-access-token');
   
   if (!token) {
@@ -30,13 +24,10 @@ const years = ["2025", "2026"];
     throw new Error("Token no disponible");
   }
 
-  // Función para cerrar sesión
   async function logout() {
     try {
-      // Eliminar el token del localStorage
       localStorage.removeItem('sb-access-token');
-      
-      // Eliminar la cookie del servidor
+     
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
@@ -56,7 +47,6 @@ const years = ["2025", "2026"];
     }
   }
 
-  // Añadir el evento de click al botón de logout
   const logoutButton = document.getElementById('logout-button');
   if (logoutButton) {
     logoutButton.addEventListener('click', logout);
