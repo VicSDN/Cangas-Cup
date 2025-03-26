@@ -1,0 +1,210 @@
+---
+import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
+import ButtonBack from "../../../sections/ButtonBack.astro";
+
+const url = new URL(Astro.request.url);
+const currentYear = url.searchParams.get("year") || "2025";
+
+const years = ["2025", "2026"];
+---
+
+<LayoutAdmin title="Partidos" description="Gestiona los partidos de la Cangas Cup">
+  <ButtonBack />
+  <main class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Partidos</h1>
+      <div class="flex gap-4">
+        <select id="year-select" class="px-4 py-2 border rounded-lg">
+          {years.map((year) => (
+            <option value={year} selected={year === currentYear}>
+              {year}
+            </option>
+          ))}
+        </select>
+        <a
+          href={`/admin/matches/addMatch?year=${currentYear}`}
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Programar Partido
+        </a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Fecha
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Grupo
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Local
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Visitante
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Resultado
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody id="matches-table-body" class="bg-white divide-y divide-gray-200">
+          <!-- Los partidos se cargarán dinámicamente aquí -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+</LayoutAdmin>
+
+<script>
+  const token = localStorage.getItem('sb-access-token');
+  
+  if (!token) {
+    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
+    window.location.href = "/admin/signin";
+    throw new Error("Token no disponible");
+  }
+
+  const currentYear = new URL(window.location.href).searchParams.get("year") || "2025";
+
+  async function loadMatches() {
+    try {
+      const response = await fetch(`/api/matches?year=${currentYear}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Error al cargar partidos: ${response.status}`);
+      }
+      const matches = await response.json();
+      
+      const tbody = document.getElementById("matches-table-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = "";
+      
+      if (!Array.isArray(matches)) {
+        console.error("Los partidos no son un array:", matches);
+        return;
+      }
+
+      matches.forEach((match) => {
+        const row = document.createElement("tr");
+        const matchDate = new Date(match.match_date);
+        const formattedDate = matchDate.toLocaleDateString();
+        const formattedTime = matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${formattedDate} ${formattedTime}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${match.group?.name || "Sin grupo"}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${match.home_team?.name || "Equipo no encontrado"}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${match.away_team?.name || "Equipo no encontrado"}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            ${match.home_score !== null ? `${match.home_score} - ${match.away_score}` : "Pendiente"}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <button
+              onclick="updateScore('${match.id}')"
+              class="text-blue-600 hover:text-blue-900"
+            >
+              Actualizar Resultado
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } catch (error) {
+      console.error("Error al cargar partidos:", error);
+      alert("Error al cargar los partidos. Por favor, recarga la página.");
+    }
+  }
+
+  async function updateScore(matchId: string) {
+    const homeScore = prompt("Ingresa el resultado del equipo local:");
+    if (homeScore === null) return;
+
+    const awayScore = prompt("Ingresa el resultado del equipo visitante:");
+    if (awayScore === null) return;
+
+    try {
+      const response = await fetch(`/api/matches/${matchId}/score`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          home_score: parseInt(homeScore),
+          away_score: parseInt(awayScore)
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al actualizar el resultado");
+      }
+
+      alert("Resultado actualizado correctamente");
+      loadMatches(); // Recargar la lista de partidos
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al actualizar el resultado");
+    }
+  }
+
+  // Cargar partidos al iniciar
+  document.addEventListener("DOMContentLoaded", () => {
+    loadMatches();
+  });
+
+  // Manejar cambio de año
+  const yearSelect = document.getElementById("year-select") as HTMLSelectElement;
+  if (yearSelect) {
+    yearSelect.addEventListener("change", (e) => {
+      const year = (e.target as HTMLSelectElement).value;
+      window.location.href = `/admin/matches?year=${year}`;
+    });
+  }
+
+  async function logout() {
+    try {
+      localStorage.removeItem('sb-access-token');
+     
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        window.location.href = '/admin/signin';
+      } else {
+        throw new Error('Error al cerrar sesión');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al cerrar sesión');
+    }
+  }
+
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', logout);
+  }
+</script> 

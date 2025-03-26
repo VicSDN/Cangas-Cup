@@ -59,7 +59,7 @@ if (error) {
     <>
       <div id="teamsGrid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
         {(teams as Team[]).map((team) => (
-          <a href={`${team.id}`} class="block h-full">
+          <a href={`/admin/teams/${team.id}`} class="block h-full">
             <div class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full" data-key={team.id} data-name={team.name} data-group_id={team.group_id} data-year={team.year}>
               <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
               <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>

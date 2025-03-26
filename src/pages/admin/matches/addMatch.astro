@@ -1,0 +1,244 @@
+---
+import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
+import ButtonBack from "../../../sections/ButtonBack.astro";
+
+const url = new URL(Astro.request.url);
+const currentYear = url.searchParams.get("year") || "2025";
+
+const years = ["2025", "2026"];
+---
+
+<LayoutAdmin title="Programar Nuevo Partido" description="Programa un nuevo partido para la Cangas Cup">
+  <ButtonBack />
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-2xl font-bold mb-6">Programar Nuevo Partido</h1>
+
+      <form id="match-form" class="space-y-6">
+        <div>
+          <label for="home_team" class="block text-sm font-medium text-gray-700">
+            Equipo Local
+          </label>
+          <select
+            id="home_team"
+            name="home_team"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Selecciona un equipo</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="away_team" class="block text-sm font-medium text-gray-700">
+            Equipo Visitante
+          </label>
+          <select
+            id="away_team"
+            name="away_team"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Selecciona un equipo</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="group_id" class="block text-sm font-medium text-gray-700">
+            Grupo
+          </label>
+          <select
+            id="group_id"
+            name="group_id"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Selecciona un grupo</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="match_date" class="block text-sm font-medium text-gray-700">
+            Fecha del Partido
+          </label>
+          <input
+            type="date"
+            id="match_date"
+            name="match_date"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label for="match_time" class="block text-sm font-medium text-gray-700">
+            Hora del Partido
+          </label>
+          <input
+            type="time"
+            id="match_time"
+            name="match_time"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            type="submit"
+            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          >
+            Programar Partido
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</LayoutAdmin>
+
+<script>
+  const token = localStorage.getItem('sb-access-token');
+  
+  if (!token) {
+    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
+    window.location.href = "/admin/signin";
+    throw new Error("Token no disponible");
+  }
+
+  const currentYear = new URL(window.location.href).searchParams.get("year") || "2025";
+
+  async function loadTeams() {
+    try {
+      const response = await fetch(`/api/teams?year=${currentYear}`);
+      if (!response.ok) {
+        throw new Error(`Error al cargar equipos: ${response.status}`);
+      }
+      const teams = await response.json();
+      
+      const homeTeamSelect = document.getElementById("home_team") as HTMLSelectElement;
+      const awayTeamSelect = document.getElementById("away_team") as HTMLSelectElement;
+      
+      if (homeTeamSelect && awayTeamSelect) {
+        homeTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
+        awayTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
+        
+        teams.forEach((team: { id: string; name: string }) => {
+          const option = document.createElement("option");
+          option.value = team.id;
+          option.textContent = team.name;
+          homeTeamSelect.appendChild(option.cloneNode(true));
+          awayTeamSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error("Error al cargar equipos:", error);
+      alert("Error al cargar los equipos. Por favor, recarga la página.");
+    }
+  }
+
+  async function loadGroups() {
+    try {
+      const response = await fetch(`/api/groups?year=${currentYear}`);
+      if (!response.ok) {
+        throw new Error(`Error al cargar grupos: ${response.status}`);
+      }
+      const groups = await response.json();
+      
+      const groupSelect = document.getElementById("group_id") as HTMLSelectElement;
+      if (groupSelect) {
+        groupSelect.innerHTML = '<option value="">Selecciona un grupo</option>';
+        groups.forEach((group: { id: string; name: string }) => {
+          const option = document.createElement("option");
+          option.value = group.id;
+          option.textContent = group.name;
+          groupSelect.appendChild(option);
+        });
+      }
+    } catch (error) {
+      console.error("Error al cargar grupos:", error);
+      alert("Error al cargar los grupos. Por favor, recarga la página.");
+    }
+  }
+
+  // Cargar datos al iniciar
+  document.addEventListener("DOMContentLoaded", () => {
+    loadTeams();
+    loadGroups();
+  });
+
+  // Manejar el envío del formulario
+  const form = document.getElementById("match-form") as HTMLFormElement;
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      const matchDate = formData.get("match_date") as string;
+      const matchTime = formData.get("match_time") as string;
+      
+      // Combinar fecha y hora en un solo timestamp ISO
+      const matchDateTime = new Date(`${matchDate}T${matchTime}`).toISOString();
+
+      const data = {
+        home_team: formData.get("home_team"),
+        away_team: formData.get("away_team"),
+        group_id: formData.get("group_id"),
+        match_date: matchDateTime,
+        year: currentYear
+      };
+
+      console.log("Datos a enviar:", data);
+
+      try {
+        const response = await fetch("/api/matches", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.details || "Error desconocido");
+        }
+
+        const result = await response.json();
+        alert("Partido programado exitosamente");
+        window.location.href = `/admin/matches?year=${currentYear}`;
+      } catch (error) {
+        console.error("Error:", error);
+        alert(error instanceof Error ? error.message : "Error desconocido");
+      }
+    });
+  }
+
+  async function logout() {
+    try {
+      localStorage.removeItem('sb-access-token');
+     
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        window.location.href = '/admin/signin';
+      } else {
+        throw new Error('Error al cerrar sesión');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al cerrar sesión');
+    }
+  }
+
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', logout);
+  }
+</script> 

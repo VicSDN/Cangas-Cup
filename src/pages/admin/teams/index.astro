@@ -1,5 +1,6 @@
 ---
 import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
+import ButtonBack from "../../../sections/ButtonBack.astro";
 import TeamsList from "../../../components/admin/TeamsList.astro";
 
 const url = new URL(Astro.request.url);
@@ -9,6 +10,7 @@ const years = ["2025", "2026"];
 ---
 
 <LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
+  <ButtonBack />
   <main class="container mx-auto px-4 py-8">
     <TeamsList currentYear={currentYear} />
   </main>
