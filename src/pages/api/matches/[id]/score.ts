@@ -10,6 +10,9 @@ export const POST: APIRoute = async ({ request, params }) => {
     const body = await request.json();
     const { home_score, away_score } = body;
 
+    console.log("Actualizando resultado del partido:", id);
+    console.log("Nuevo resultado:", { home_score, away_score });
+
     if (!id || home_score === undefined || away_score === undefined) {
       return new Response(JSON.stringify({ 
         error: "Faltan campos requeridos",
@@ -37,7 +40,7 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     if (fetchError) {
       console.error("Error al obtener el partido:", fetchError);
-      throw fetchError;
+      throw new Error("Error al verificar el partido");
     }
 
     if (!match) {
@@ -52,6 +55,8 @@ export const POST: APIRoute = async ({ request, params }) => {
       });
     }
 
+    console.log("Partido encontrado:", match);
+
     // Actualizamos el resultado
     const { data, error: updateError } = await supabase
       .from("tournament_match")
@@ -60,13 +65,27 @@ export const POST: APIRoute = async ({ request, params }) => {
         away_score
       })
       .eq("id", id)
-      .select();
+      .select(`
+        id,
+        home_team,
+        away_team,
+        group_id,
+        match_date,
+        match_time,
+        year,
+        home_score,
+        away_score,
+        home_team:tournament_team!tournament_match_home_team_fkey(name),
+        away_team:tournament_team!tournament_match_away_team_fkey(name),
+        group:tournament_group!tournament_match_group_id_fkey(name)
+      `);
 
     if (updateError) {
       console.error("Error al actualizar el resultado:", updateError);
-      throw updateError;
+      throw new Error("Error al actualizar el resultado");
     }
 
+    console.log("Resultado actualizado exitosamente:", data);
     return new Response(JSON.stringify(data[0]), {
       status: 200,
       headers: {
@@ -77,7 +96,8 @@ export const POST: APIRoute = async ({ request, params }) => {
     console.error("Error en POST /api/matches/[id]/score:", error);
     return new Response(JSON.stringify({ 
       error: "Error al actualizar el resultado",
-      details: error instanceof Error ? error.message : "Error desconocido"
+      details: error instanceof Error ? error.message : "Error desconocido",
+      stack: error instanceof Error ? error.stack : undefined
     }), {
       status: 500,
       headers: {

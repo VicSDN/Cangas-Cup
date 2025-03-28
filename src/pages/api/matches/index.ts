@@ -19,19 +19,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verificar la conexión
-    const { data: testData, error: testError } = await supabase
-      .from("tournament_match")
-      .select("count")
-      .limit(1);
-
-    if (testError) {
-      console.error("Error de conexión con Supabase:", testError);
-      throw testError;
-    }
-
-    console.log("Conexión exitosa con Supabase");
-
+    // Consulta simplificada para obtener los partidos con sus relaciones
     const { data: matches, error } = await supabase
       .from("tournament_match")
       .select(`
@@ -40,9 +28,8 @@ export const GET: APIRoute = async ({ request }) => {
         away_team,
         group_id,
         match_date,
+        match_time,
         year,
-        home_score,
-        away_score,
         home_team:tournament_team!tournament_match_home_team_fkey(name),
         away_team:tournament_team!tournament_match_away_team_fkey(name),
         group:tournament_group!tournament_match_group_id_fkey(name)
@@ -55,8 +42,22 @@ export const GET: APIRoute = async ({ request }) => {
       throw error;
     }
 
-    console.log("Partidos obtenidos:", matches);
-    return new Response(JSON.stringify(matches || []), {
+    console.log("Partidos obtenidos:", matches || []);
+    
+    // Transformar los datos para que coincidan con la estructura esperada
+    const transformedMatches = matches?.map(match => ({
+      id: match.id,
+      match_date: match.match_date,
+      match_time: match.match_time,
+      year: match.year,
+      home_team_name: match.home_team?.name,
+      away_team_name: match.away_team?.name,
+      group_name: match.group?.name,
+      home_score: null,
+      away_score: null
+    })) || [];
+
+    return new Response(JSON.stringify(transformedMatches), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -176,13 +177,25 @@ export const POST: APIRoute = async ({ request }) => {
           home_team,
           away_team,
           group_id,
-          match_date,
+          match_date: match_date || null,
           year,
           home_score: 0,
           away_score: 0
         },
       ])
-      .select();
+      .select(`
+        id,
+        home_team,
+        away_team,
+        group_id,
+        match_date,
+        year,
+        home_score,
+        away_score,
+        home_team:tournament_team!tournament_match_home_team_fkey(name),
+        away_team:tournament_team!tournament_match_away_team_fkey(name),
+        group:tournament_group!tournament_match_group_id_fkey(name)
+      `);
 
     if (error) {
       console.error("Error de Supabase al insertar:", error);

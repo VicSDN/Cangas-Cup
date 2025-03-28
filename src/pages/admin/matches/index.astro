@@ -60,6 +60,59 @@ const years = ["2025", "2026"];
       </table>
     </div>
   </main>
+
+  <!-- Modal para actualizar resultado -->
+  <div id="update-score-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Actualizar Resultado</h3>
+        <form id="update-score-form" class="space-y-4">
+          <input type="hidden" id="match-id" name="matchId">
+          <div>
+            <label for="home-score" class="block text-sm font-medium text-gray-700">
+              Resultado Local
+            </label>
+            <input
+              type="number"
+              id="home-score"
+              name="homeScore"
+              required
+              min="0"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+          </div>
+          <div>
+            <label for="away-score" class="block text-sm font-medium text-gray-700">
+              Resultado Visitante
+            </label>
+            <input
+              type="number"
+              id="away-score"
+              name="awayScore"
+              required
+              min="0"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+          </div>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button
+              type="button"
+              id="cancel-update"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+            >
+              Actualizar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </LayoutAdmin>
 
 <script>
@@ -75,73 +128,160 @@ const years = ["2025", "2026"];
 
   async function loadMatches() {
     try {
+      console.log("Iniciando carga de partidos para el año:", currentYear);
       const response = await fetch(`/api/matches?year=${currentYear}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
+
       if (!response.ok) {
-        throw new Error(`Error al cargar partidos: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.details || `Error al cargar partidos: ${response.status}`);
       }
+
       const matches = await response.json();
+      console.log("Partidos recibidos:", matches);
       
       const tbody = document.getElementById("matches-table-body");
-      if (!tbody) return;
+      if (!tbody) {
+        console.error("No se encontró el elemento tbody");
+        return;
+      }
 
       tbody.innerHTML = "";
       
       if (!Array.isArray(matches)) {
         console.error("Los partidos no son un array:", matches);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+              Error al cargar los partidos
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (matches.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+              No hay partidos programados para este año
+            </td>
+          </tr>
+        `;
         return;
       }
 
       matches.forEach((match) => {
-        const row = document.createElement("tr");
-        const matchDate = new Date(match.match_date);
-        const formattedDate = matchDate.toLocaleDateString();
-        const formattedTime = matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        row.innerHTML = `
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            ${formattedDate} ${formattedTime}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            ${match.group?.name || "Sin grupo"}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            ${match.home_team?.name || "Equipo no encontrado"}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            ${match.away_team?.name || "Equipo no encontrado"}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            ${match.home_score !== null ? `${match.home_score} - ${match.away_score}` : "Pendiente"}
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            <button
-              onclick="updateScore('${match.id}')"
-              class="text-blue-600 hover:text-blue-900"
-            >
-              Actualizar Resultado
-            </button>
-          </td>
-        `;
-        tbody.appendChild(row);
+        try {
+          console.log("Procesando partido:", match);
+          const row = document.createElement("tr");
+          
+          // Manejar el caso cuando match_date es null
+          let dateDisplay = "Fecha no establecida";
+          if (match.match_date) {
+            const matchDate = new Date(match.match_date);
+            const formattedDate = matchDate.toLocaleDateString();
+            let formattedTime = "";
+            
+            if (match.match_time) {
+              const [hours, minutes] = match.match_time.split(':');
+              formattedTime = `${hours}:${minutes}`;
+            }
+            
+            dateDisplay = `${formattedDate} ${formattedTime}`;
+          }
+          
+          // Verificar que los datos existan antes de mostrarlos
+          const homeTeamName = match.home_team_name || "Equipo no encontrado";
+          const awayTeamName = match.away_team_name || "Equipo no encontrado";
+          const groupName = match.group_name || "Sin grupo";
+          const result = match.home_score !== null && match.away_score !== null 
+            ? `${match.home_score} - ${match.away_score}` 
+            : "Pendiente";
+          
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${dateDisplay}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${groupName}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${homeTeamName}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${awayTeamName}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${result}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <button
+                onclick="updateScore('${match.id}')"
+                class="text-blue-600 hover:text-blue-900"
+              >
+                Actualizar Resultado
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        } catch (error) {
+          console.error("Error al procesar partido:", match, error);
+        }
       });
     } catch (error) {
       console.error("Error al cargar partidos:", error);
-      alert("Error al cargar los partidos. Por favor, recarga la página.");
+      const tbody = document.getElementById("matches-table-body");
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">
+              Error al cargar los partidos: ${error instanceof Error ? error.message : "Error desconocido"}
+            </td>
+          </tr>
+        `;
+      }
     }
   }
 
-  async function updateScore(matchId: string) {
-    const homeScore = prompt("Ingresa el resultado del equipo local:");
-    if (homeScore === null) return;
+  // Funciones para el modal
+  function showUpdateScoreModal(matchId: string) {
+    const modal = document.getElementById('update-score-modal');
+    const matchIdInput = document.getElementById('match-id') as HTMLInputElement;
+    if (modal && matchIdInput) {
+      matchIdInput.value = matchId;
+      modal.classList.remove('hidden');
+    }
+  }
 
-    const awayScore = prompt("Ingresa el resultado del equipo visitante:");
-    if (awayScore === null) return;
+  function hideUpdateScoreModal() {
+    const modal = document.getElementById('update-score-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  // Event listeners para el modal
+  document.getElementById('cancel-update')?.addEventListener('click', hideUpdateScoreModal);
+  
+  document.getElementById('update-score-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const matchId = formData.get('matchId') as string;
+    const homeScore = parseInt(formData.get('homeScore') as string);
+    const awayScore = parseInt(formData.get('awayScore') as string);
 
     try {
+      console.log("Enviando actualización de resultado:", {
+        matchId,
+        homeScore,
+        awayScore
+      });
+
       const response = await fetch(`/api/matches/${matchId}/score`, {
         method: "POST",
         headers: {
@@ -149,21 +289,30 @@ const years = ["2025", "2026"];
           "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          home_score: parseInt(homeScore),
-          away_score: parseInt(awayScore)
+          home_score: homeScore,
+          away_score: awayScore
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Error al actualizar el resultado");
+        const errorData = await response.json();
+        throw new Error(errorData.details || "Error al actualizar el resultado");
       }
 
+      const result = await response.json();
+      console.log("Resultado actualizado:", result);
       alert("Resultado actualizado correctamente");
+      hideUpdateScoreModal();
       loadMatches(); // Recargar la lista de partidos
     } catch (error) {
-      console.error("Error:", error);
-      alert("Error al actualizar el resultado");
+      console.error("Error al actualizar resultado:", error);
+      alert(error instanceof Error ? error.message : "Error al actualizar el resultado");
     }
+  });
+
+  // Modificar la función updateScore para usar el modal
+  function updateScore(matchId: string) {
+    showUpdateScoreModal(matchId);
   }
 
   // Cargar partidos al iniciar
