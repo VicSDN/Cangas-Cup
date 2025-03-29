@@ -1,12 +1,12 @@
 ---
-import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
-import ButtonBack from "../../../sections/ButtonBack.astro";
-import TeamsList from "../../../components/admin/TeamsList.astro";
+import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro';
+import TeamsList from '../../../components/admin/TeamsList.astro';
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get("year") || "2025";
+const currentYear = url.searchParams.get('year') || '2025';
 
-const years = ["2025", "2026"];
+const years = ['2025', '2026'];
 ---
 
 <LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
@@ -17,25 +17,24 @@ const years = ["2025", "2026"];
 </LayoutAdmin>
 
 <script>
-
   const token = localStorage.getItem('sb-access-token');
-  
+
   if (!token) {
-    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
-    window.location.href = "/admin/signin";
-    throw new Error("Token no disponible");
+    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
+    window.location.href = '/admin/signin';
+    throw new Error('Token no disponible');
   }
 
   async function logout() {
     try {
       localStorage.removeItem('sb-access-token');
-     
+
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {

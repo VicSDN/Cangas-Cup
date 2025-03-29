@@ -1,14 +1,17 @@
 ---
-import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
-import ButtonBack from "../../../sections/ButtonBack.astro";
+import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro';
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get("year") || "2025";
+const currentYear = url.searchParams.get('year') || '2025';
 
-const years = ["2025", "2026"];
+const years = ['2025', '2026'];
 ---
 
-<LayoutAdmin title="Programar Nuevo Partido" description="Programa un nuevo partido para la Cangas Cup">
+<LayoutAdmin
+  title="Programar Nuevo Partido"
+  description="Programa un nuevo partido para la Cangas Cup"
+>
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
@@ -44,9 +47,7 @@ const years = ["2025", "2026"];
         </div>
 
         <div>
-          <label for="group_id" class="block text-sm font-medium text-gray-700">
-            Grupo
-          </label>
+          <label for="group_id" class="block text-sm font-medium text-gray-700"> Grupo </label>
           <select
             id="group_id"
             name="group_id"
@@ -98,14 +99,14 @@ const years = ["2025", "2026"];
 
 <script>
   const token = localStorage.getItem('sb-access-token');
-  
+
   if (!token) {
-    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
-    window.location.href = "/admin/signin";
-    throw new Error("Token no disponible");
+    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
+    window.location.href = '/admin/signin';
+    throw new Error('Token no disponible');
   }
 
-  const currentYear = new URL(window.location.href).searchParams.get("year") || "2025";
+  const currentYear = new URL(window.location.href).searchParams.get('year') || '2025';
 
   async function loadTeams() {
     try {
@@ -114,16 +115,16 @@ const years = ["2025", "2026"];
         throw new Error(`Error al cargar equipos: ${response.status}`);
       }
       const teams = await response.json();
-      
-      const homeTeamSelect = document.getElementById("home_team") as HTMLSelectElement;
-      const awayTeamSelect = document.getElementById("away_team") as HTMLSelectElement;
-      
+
+      const homeTeamSelect = document.getElementById('home_team') as HTMLSelectElement;
+      const awayTeamSelect = document.getElementById('away_team') as HTMLSelectElement;
+
       if (homeTeamSelect && awayTeamSelect) {
         homeTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
         awayTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
-        
+
         teams.forEach((team: { id: string; name: string }) => {
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.value = team.id;
           option.textContent = team.name;
           homeTeamSelect.appendChild(option.cloneNode(true));
@@ -131,8 +132,8 @@ const years = ["2025", "2026"];
         });
       }
     } catch (error) {
-      console.error("Error al cargar equipos:", error);
-      alert("Error al cargar los equipos. Por favor, recarga la página.");
+      console.error('Error al cargar equipos:', error);
+      alert('Error al cargar los equipos. Por favor, recarga la página.');
     }
   }
 
@@ -143,73 +144,70 @@ const years = ["2025", "2026"];
         throw new Error(`Error al cargar grupos: ${response.status}`);
       }
       const groups = await response.json();
-      
-      const groupSelect = document.getElementById("group_id") as HTMLSelectElement;
+
+      const groupSelect = document.getElementById('group_id') as HTMLSelectElement;
       if (groupSelect) {
         groupSelect.innerHTML = '<option value="">Selecciona un grupo</option>';
         groups.forEach((group: { id: string; name: string }) => {
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.value = group.id;
           option.textContent = group.name;
           groupSelect.appendChild(option);
         });
       }
     } catch (error) {
-      console.error("Error al cargar grupos:", error);
-      alert("Error al cargar los grupos. Por favor, recarga la página.");
+      console.error('Error al cargar grupos:', error);
+      alert('Error al cargar los grupos. Por favor, recarga la página.');
     }
   }
 
-  // Cargar datos al iniciar
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener('DOMContentLoaded', () => {
     loadTeams();
     loadGroups();
   });
 
-  // Manejar el envío del formulario
-  const form = document.getElementById("match-form") as HTMLFormElement;
+  const form = document.getElementById('match-form') as HTMLFormElement;
   if (form) {
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const formData = new FormData(form);
-      const matchDate = formData.get("match_date") as string;
-      const matchTime = formData.get("match_time") as string;
-      
-      // Combinar fecha y hora en un solo timestamp ISO
+      const matchDate = formData.get('match_date') as string;
+      const matchTime = formData.get('match_time') as string;
+
       const matchDateTime = new Date(`${matchDate}T${matchTime}`).toISOString();
 
       const data = {
-        home_team: formData.get("home_team"),
-        away_team: formData.get("away_team"),
-        group_id: formData.get("group_id"),
+        home_team: formData.get('home_team'),
+        away_team: formData.get('away_team'),
+        group_id: formData.get('group_id'),
         match_date: matchDateTime,
-        year: currentYear
+        year: currentYear,
       };
 
-      console.log("Datos a enviar:", data);
+      console.log('Datos a enviar:', data);
 
       try {
-        const response = await fetch("/api/matches", {
-          method: "POST",
+        const response = await fetch('/api/matches', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(data),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.details || "Error desconocido");
+          throw new Error(errorData.details || 'Error desconocido');
         }
 
         const result = await response.json();
-        alert("Partido programado exitosamente");
+        alert('Partido programado exitosamente');
         window.location.href = `/admin/matches?year=${currentYear}`;
       } catch (error) {
-        console.error("Error:", error);
-        alert(error instanceof Error ? error.message : "Error desconocido");
+        console.error('Error:', error);
+        alert(error instanceof Error ? error.message : 'Error desconocido');
       }
     });
   }
@@ -217,13 +215,13 @@ const years = ["2025", "2026"];
   async function logout() {
     try {
       localStorage.removeItem('sb-access-token');
-     
+
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -241,4 +239,4 @@ const years = ["2025", "2026"];
   if (logoutButton) {
     logoutButton.addEventListener('click', logout);
   }
-</script> 
+</script>

@@ -1,7 +1,7 @@
 ---
-import { supabase } from "../../lib/supabase.ts";
-import YearFilter from "./YearFilter.astro";
-import AddTeamButton from "./AddTeamButton.astro";
+import { supabase } from '../../lib/supabase.ts';
+import YearFilter from './YearFilter.astro';
+import AddTeamButton from './AddTeamButton.astro';
 interface Props {
   currentYear: string;
 }
@@ -15,16 +15,16 @@ interface Team {
 
 const { currentYear } = Astro.props;
 
-const years = ["2025", "2026"];
+const years = ['2025', '2026'];
 
 const { data: teams, error } = await supabase
-  .from("tournament_team")
-  .select("*")
-  .eq("year", currentYear)
-  .order("name");
+  .from('tournament_team')
+  .select('*')
+  .eq('year', currentYear)
+  .order('name');
 
 if (error) {
-  console.error("Error al obtener equipos:", error);
+  console.error('Error al obtener equipos:', error);
 }
 ---
 
@@ -33,7 +33,9 @@ if (error) {
     <div>
       <div class="flex items-center gap-x-3">
         <h2 class="text-lg font-medium text-gray-800 dark:text-white">EQUIPOS</h2>
-        <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400">
+        <span
+          class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400"
+        >
           {teams?.length || 0} equipos
         </span>
         <YearFilter currentYear={currentYear} years={years} />
@@ -45,96 +47,133 @@ if (error) {
   <div class="mt-6 md:flex md:items-center md:justify-between">
     <div class="relative flex items-center mt-4 md:mt-0">
       <span class="absolute">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        <svg
+          xmlns="http:
+          fill="
+          none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
         </svg>
       </span>
-      <input id="searchInput" type="text" placeholder="Buscar equipo por nombre, ID o grupo" class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40" />
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Buscar equipo por nombre, ID o grupo"
+        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+      />
     </div>
   </div>
 
-  {error ? (
-    <div class="text-red-500">Error al cargar los equipos</div>
-  ) : teams && teams.length > 0 ? (
-    <>
-      <div id="teamsGrid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
-        {(teams as Team[]).map((team) => (
-          <a href={`/admin/teams/${team.id}`} class="block h-full">
-            <div class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full" data-key={team.id} data-name={team.name} data-group_id={team.group_id} data-year={team.year}>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
-            </div>
-          </a>
-        ))}
+  {
+    error ? (
+      <div class="text-red-500">Error al cargar los equipos</div>
+    ) : teams && teams.length > 0 ? (
+      <>
+        <div
+          id="teamsGrid"
+          class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+        >
+          {(teams as Team[]).map((team) => (
+            <a href={`/admin/teams/${team.id}`} class="block h-full">
+              <div
+                class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full"
+                data-key={team.id}
+                data-name={team.name}
+                data-group_id={team.group_id}
+                data-year={team.year}
+              >
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div id="noResults" class="hidden mt-6 text-center">
+          <p class="text-gray-500 dark:text-gray-400 text-lg">
+            No se encontraron equipos que coincidan con tu búsqueda
+          </p>
+        </div>
+      </>
+    ) : (
+      <div class="text-center text-gray-300">
+        No hay equipos registrados para el año {currentYear}
       </div>
-      <div id="noResults" class="hidden mt-6 text-center">
-        <p class="text-gray-500 dark:text-gray-400 text-lg">No se encontraron equipos que coincidan con tu búsqueda</p>
-      </div>
-    </>
-  ) : (
-    <div class="text-center text-gray-300">
-      No hay equipos registrados para el año {currentYear}
-    </div>
-  )}
+    )
+  }
 </section>
 
 <script>
   const searchInput = document.getElementById('searchInput');
   const teamsGrid = document.getElementById('teamsGrid');
   const noResults = document.getElementById('noResults');
-  
+
   if (searchInput && teamsGrid && noResults) {
     searchInput.addEventListener('input', function () {
-      const query = (this as HTMLInputElement).value.toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      
+      const query = (this as HTMLInputElement).value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
       let visibleTeams = 0;
       const teams = document.querySelectorAll('.team');
       const teamsArray = Array.from(teams);
-      
-      // Ordenar las tarjetas: visibles primero, ocultas después
+
       teamsArray.sort((a, b) => {
-        const aName = (a as HTMLElement).dataset.name?.toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") || '';
-        const bName = (b as HTMLElement).dataset.name?.toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") || '';
+        const aName =
+          (a as HTMLElement).dataset.name
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') || '';
+        const bName =
+          (b as HTMLElement).dataset.name
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') || '';
         const aId = (a as HTMLElement).dataset.key;
         const bId = (b as HTMLElement).dataset.key;
         const aGroup = (a as HTMLElement).dataset.group_id;
         const bGroup = (b as HTMLElement).dataset.group_id;
-        
-        const aMatches = aName.includes(query) || (aId ?? '').includes(query) || (aGroup ?? '').includes(query);
-        const bMatches = bName.includes(query) || (bId ?? '').includes(query) || (bGroup ?? '').includes(query);
-        
+
+        const aMatches =
+          aName.includes(query) || (aId ?? '').includes(query) || (aGroup ?? '').includes(query);
+        const bMatches =
+          bName.includes(query) || (bId ?? '').includes(query) || (bGroup ?? '').includes(query);
+
         if (aMatches && !bMatches) return -1;
         if (!aMatches && bMatches) return 1;
         return 0;
       });
 
-      // Reordenar las tarjetas en el DOM
-      teamsArray.forEach(team => {
+      teamsArray.forEach((team) => {
         const parent = team.parentElement;
         if (parent) {
           teamsGrid.appendChild(parent);
         }
       });
 
-      // Actualizar visibilidad y contador
       teams.forEach((team) => {
         const teamElement = team;
-        const name = (teamElement as HTMLElement).dataset.name?.toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") || '';
+        const name =
+          (teamElement as HTMLElement).dataset.name
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') || '';
         const id = (teamElement as HTMLElement).dataset.key;
         const group_id = (teamElement as HTMLElement).dataset.group_id;
-        
-        if (name.includes(query) || 
-            (id ?? '').includes(query) || 
-            (group_id ?? '').includes(query)) {
+
+        if (
+          name.includes(query) ||
+          (id ?? '').includes(query) ||
+          (group_id ?? '').includes(query)
+        ) {
           teamElement.classList.remove('hidden');
           visibleTeams++;
         } else {
@@ -142,7 +181,6 @@ if (error) {
         }
       });
 
-      // Mostrar/ocultar mensaje de no resultados
       if (visibleTeams === 0) {
         teamsGrid.classList.add('hidden');
         noResults.classList.remove('hidden');

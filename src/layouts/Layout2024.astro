@@ -4,20 +4,17 @@ interface Props {
   description: string;
 }
 const { title, description } = Astro.props;
-import Header from "../components/user/2024/Header.astro";  
-import Footer from "../components/user/2024/Footer.astro";
-import "@fontsource-variable/onest";
-import ButtonUp from "../sections/ButtonUp.astro";
-import { ClientRouter } from "astro:transitions";
+import Header from '../components/user/2024/Header.astro';
+import Footer from '../components/user/2024/Footer.astro';
+import '@fontsource-variable/onest';
+import ButtonUp from '../sections/ButtonUp.astro';
+import { ClientRouter } from 'astro:transitions';
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <meta
-      name="google-site-verification"
-      content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI"
-    />
+    <meta name="google-site-verification" content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI" />
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width" />
@@ -35,7 +32,7 @@ import { ClientRouter } from "astro:transitions";
         color-scheme: dark;
       }
       html {
-        font-family: "Onest Variable", system-ui, sans-serif;
+        font-family: 'Onest Variable', system-ui, sans-serif;
         background: black;
       }
       p {

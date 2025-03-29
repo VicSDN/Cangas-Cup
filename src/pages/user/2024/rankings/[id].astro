@@ -1,15 +1,15 @@
 ---
 export const prerender = false;
-import Layout from "./../../../../layouts/Layout2024.astro";
-import ButtonBack from "../../../../sections/ButtonBack.astro";
-import { getPlayerById } from "../../../../consts/2024/players";
-import { getTeamById } from "../../../../consts/2024/teams";
+import Layout from './../../../../layouts/Layout2024.astro';
+import ButtonBack from '../../../../sections/ButtonBack.astro';
+import { getPlayerById } from '../../../../consts/2024/players';
+import { getTeamById } from '../../../../consts/2024/teams';
 
 let { id } = Astro.params;
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 let player = null;
 let team = null;
 
@@ -33,40 +33,32 @@ if (id) {
               {player.name} {player.secondName}
             </h2>
 
-            <p class="mt-4 text-gray-500 sm:text-xl">
-              Todos los datos del jugador
-            </p>
+            <p class="mt-4 text-gray-500 sm:text-xl">Todos los datos del jugador</p>
           </div>
 
           <div class="mt-8 sm:mt-12">
             <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:divide-x sm:divide-gray-100">
               <div class="flex flex-col px-4 py-8 text-center">
-                <dt class="order-last text-lg font-medium text-gray-500">
-                  Goles totales
-                </dt>
+                <dt class="order-last text-lg font-medium text-gray-500">Goles totales</dt>
                 <dd
-                  class={`text-4xl font-extrabold ${player.goal === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                  class={`text-4xl font-extrabold ${player.goal === 0 ? 'text-gray-800' : 'text-blue-600'} md:text-5xl`}
                 >
                   {player.goal}
                 </dd>
               </div>
               <div class="flex flex-col px-4 py-8 text-center">
-                <dt class="order-last text-lg font-medium text-gray-500">
-                  Tarjetas Rojas
-                </dt>
+                <dt class="order-last text-lg font-medium text-gray-500">Tarjetas Rojas</dt>
                 <dd
-                  class={`text-4xl font-extrabold ${player.redCard === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                  class={`text-4xl font-extrabold ${player.redCard === 0 ? 'text-gray-800' : 'text-blue-600'} md:text-5xl`}
                 >
                   {player.redCard}
                 </dd>
               </div>
 
               <div class="flex flex-col px-4 py-8 text-center">
-                <dt class="order-last text-lg font-medium text-gray-500">
-                  Tarjetas Amarillas
-                </dt>
+                <dt class="order-last text-lg font-medium text-gray-500">Tarjetas Amarillas</dt>
                 <dd
-                  class={`text-4xl font-extrabold ${player.yellowCard === 0 ? "text-gray-800" : "text-blue-600"} md:text-5xl`}
+                  class={`text-4xl font-extrabold ${player.yellowCard === 0 ? 'text-gray-800' : 'text-blue-600'} md:text-5xl`}
                 >
                   {player.yellowCard}
                 </dd>
@@ -76,12 +68,8 @@ if (id) {
                 class="flex flex-col bg-blue-300 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 transition transform hover:scale-105"
               >
                 <div class="flex flex-col px-4 py-8 text-center">
-                  <dt class="order-last text-lg font-medium text-gray-500">
-                    Equipo
-                  </dt>
-                  <dd class="text-3xl font-extrabold text-blue-600 md:text-2xl">
-                    {team.name}
-                  </dd>
+                  <dt class="order-last text-lg font-medium text-gray-500">Equipo</dt>
+                  <dd class="text-3xl font-extrabold text-blue-600 md:text-2xl">{team.name}</dd>
                 </div>
               </a>
             </dl>

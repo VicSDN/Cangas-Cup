@@ -1,34 +1,37 @@
 ---
-import HamburgerButton from "../../sections/HamburgerButton.astro";
-import { MOBILE_MENU_CONTENT_ID } from "../../consts/mobile-menu";
+import HamburgerButton from '../../sections/HamburgerButton.astro';
+import { MOBILE_MENU_CONTENT_ID } from '../../consts/mobile-menu';
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 
 const pages = [
-  { name: "Equipos", href: `/admin/teams` },
-  { name: "Jugadores", href: `/admin/players` },
-  { name: "Partidos", href: `/admin/matches` },
-  { name: "Dashboard", href: `/admin/dashboard` },
+  { name: 'Equipos', href: `/admin/teams` },
+  { name: 'Jugadores', href: `/admin/players` },
+  { name: 'Partidos', href: `/admin/matches` },
+  { name: 'Dashboard', href: `/admin/dashboard` },
 ];
 ---
+
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
   <nav class="group flex h-full w-full items-center justify-between px-10">
-    <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
+    <HamburgerButton class:list={'block lg:hidden'} id="menuButton" />
     <div class="hidden lg:flex flex-1 items-center justify-between">
       <div class="flex items-center gap-8">
-        {pages.map(({  name, href }, key) => (
-          <a
-            href={href}
-            class:list={[
-              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex",
-            ]}
-            id={`nav-link-${key}`}
-          >
-            <span class="z-10">{name}</span>
-          </a>
-        ))}
+        {
+          pages.map(({ name, href }, key) => (
+            <a
+              href={href}
+              class:list={[
+                'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex',
+              ]}
+              id={`nav-link-${key}`}
+            >
+              <span class="z-10">{name}</span>
+            </a>
+          ))
+        }
       </div>
       <button
         id="logoutButton"
@@ -67,7 +70,7 @@ const pages = [
         />
       </div>
       <nav class="flex w-full flex-col items-center gap-5">
-        <a href={`/admin/dashboard`} >
+        <a href={`/admin/dashboard`}>
           <img
             src="/cangasCupLogo.webp"
             alt="logo"
@@ -75,21 +78,25 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {pages.map(({  name, href }, key) => (
-          <a
-            href={href}
-            class:list={[
-              "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex",
-            ]}
-            id={`nav-link-${key}`}
-          >
-            <span class="z-10">{name}</span>
-            <hr
-              class="h-[2px] w-full border-t-0"
-              style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-            />
-          </a>
-        ))}
+        {
+          pages.map(({ name, href }, key) => (
+            <Fragment key={key}>
+              <a
+                href={href}
+                class:list={[
+                  'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex',
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+              </a>
+              <hr
+                class="h-[2px] w-full border-t-0"
+                style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+              />
+            </Fragment>
+          ))
+        }
         <button
           id="mobileLogoutButton"
           class="mt-4 p-2 text-white hover:text-gray-300 transition-colors"
@@ -114,26 +121,20 @@ const pages = [
     </div>
   </nav>
   <div class="relative flex h-2 w-full flex-col items-center">
-    <div
-      class="gridBottomBarContainer absolute grid w-full items-center justify-between"
-    >
+    <div class="gridBottomBarContainer absolute grid w-full items-center justify-between">
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      ></div>
+      />
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/admin/dashboard`} class="focus-visible:!ring-0">
-          <img
-            src="/cangasCupLogo.webp"
-            alt="Logo"
-            class="h-auto w-[100%] z-2 mb-4"
-          />
+          <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
         </a>
       </div>
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
-        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%);"
-      ></div>
+        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
+      />
     </div>
   </div>
 </header>
@@ -145,7 +146,7 @@ const pages = [
 
   .nav-item::after {
     @apply absolute bottom-0 left-0 h-[2px] w-full scale-x-0 transform bg-white transition-transform duration-300 ease-in-out;
-    content: "";
+    content: '';
   }
 
   .nav-item:hover::after {
@@ -177,7 +178,7 @@ const pages = [
     view-transition-name: nav-item;
     background: var(--color-accent);
     width: 100%;
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -187,7 +188,7 @@ const pages = [
   .current-page-mob:before {
     background: var(--color-accent);
     width: 10px;
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: -20px;
@@ -218,8 +219,8 @@ const pages = [
 </style>
 
 <script>
-  import { $ } from "../../lib/dom-selector";
-  import { MOBILE_MENU_CONTENT_ID } from "../../consts/mobile-menu";
+  import { $ } from '../../lib/dom-selector';
+  import { MOBILE_MENU_CONTENT_ID } from '../../consts/mobile-menu';
 
   function onYearChange(e: Event) {
     const target = e.target as HTMLSelectElement;
@@ -229,23 +230,20 @@ const pages = [
     }
   }
 
-  document.addEventListener("astro:page-load", () => {
+  document.addEventListener('astro:page-load', () => {
     const menuMobileContent = $(MOBILE_MENU_CONTENT_ID);
     if (menuMobileContent) {
-      menuMobileContent.style.display = "none";
-      menuMobileContent.style.opacity = "0";
-      menuMobileContent.style.pointerEvents = "none";
+      menuMobileContent.style.display = 'none';
+      menuMobileContent.style.opacity = '0';
+      menuMobileContent.style.pointerEvents = 'none';
     }
   });
 
-  // Función para cerrar sesión
   async function logout() {
     try {
-      // Limpiar el localStorage
       localStorage.removeItem('sb-access-token');
       localStorage.removeItem('sb-refresh-token');
-      
-      // Redirigir al login
+
       window.location.href = '/admin/signin';
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
@@ -253,7 +251,6 @@ const pages = [
     }
   }
 
-  // Agregar event listeners a los botones de cerrar sesión
   document.getElementById('logoutButton')?.addEventListener('click', logout);
   document.getElementById('mobileLogoutButton')?.addEventListener('click', logout);
 </script>

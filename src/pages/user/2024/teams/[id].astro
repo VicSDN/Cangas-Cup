@@ -1,72 +1,75 @@
 ---
-import ButtonBack from "../../../../sections/ButtonBack.astro";
-import { supabase } from "../../../../lib/supabase";
-import Layout from "../../../../layouts/Layout2024.astro";
+import ButtonBack from '../../../../sections/ButtonBack.astro';
+import { supabase } from '../../../../lib/supabase';
+import Layout from '../../../../layouts/Layout2024.astro';
 
 export async function getStaticPaths() {
-const teamIds = Array.from(new Set([1,2,3,4,5,6,7,8,9,10,11,12,13,14,17,19,21,22,23,24,25,26,27,28,29,30,31,32,33,34]));
-return teamIds.map(id => ({
-    params: { id: id.toString() }
-}));
+  const teamIds = Array.from(
+    new Set([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+      31, 32, 33, 34,
+    ])
+  );
+  return teamIds.map((id) => ({
+    params: { id: id.toString() },
+  }));
 }
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 
 let { id } = Astro.params;
 
 let { data: team, error: teamError } = await supabase
-  .from("team")
-  .select("*")
-  .eq("id", id)
+  .from('team')
+  .select('*')
+  .eq('id', id)
   .single();
 
 let { data: players, error: playerError } = await supabase
-  .from("player")
-  .select("*")
-  .eq("teamId", id);
+  .from('player')
+  .select('*')
+  .eq('teamId', id);
 
 let { data: allTeams, error: allTeamsError } = await supabase
-  .from("team")
-  .select("*")
-  .eq("groupId", team?.groupId);
+  .from('team')
+  .select('*')
+  .eq('groupId', team?.groupId);
 
 const groupStandings = allTeams ? [...allTeams].sort((a, b) => b.points - a.points) : [];
 
 let { data: matches, error: matchesError } = await supabase
-  .from("match")
-  .select("*")
+  .from('match')
+  .select('*')
   .or(`id_team1.eq.${id},id_team2.eq.${id}`);
 
-  function findTeam(teamId: string | number) {
+function findTeam(teamId: string | number) {
   if (!allTeams) return null;
   const teamAux = allTeams.find((t) => t.id === teamId);
-  return teamAux || { name: "Equipo desconocido" };
+  return teamAux || { name: 'Equipo desconocido' };
 }
 
-
-function formatDateTime(dateString: string) 
-  {
+function formatDateTime(dateString: string) {
   const date = new Date(dateString);
   const day = date.getDate();
   const monthIndex = date.getMonth();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
 
   const monthNames = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre",
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
   ];
 
   const monthName = monthNames[monthIndex];
@@ -79,9 +82,7 @@ function formatDateTime(dateString: string)
 
 <Layout description="Team Details" title="Cangas Cup Team Details">
   <section><ButtonBack /></section>
-  <div
-    class="container mx-auto mt-20 pt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-4 md:p-10 px-8"
-  >
+  <div class="container mx-auto mt-20 pt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-4 md:p-10 px-8">
     <div class="md:col-span-1 bg-white bg-opacity-20 p-6 rounded-lg shadow-md">
       {
         team && (
@@ -107,7 +108,7 @@ function formatDateTime(dateString: string)
                       <div class="w-full max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105">
                         <div class="flex flex-col items-center">
                           <div>
-                            <span class="font-bold">{team1.name}</span> vs.{" "}
+                            <span class="font-bold">{team1.name}</span> vs.{' '}
                             <span class="font-bold">{team2.name}</span>
                           </div>
                           <div>
@@ -144,9 +145,7 @@ function formatDateTime(dateString: string)
           groupStandings &&
             groupStandings.map((team, index) => (
               <li class="flex justify-between items-center py-2 text-gray-300">
-                <span class="text-3xl font-bold text-white mr-4">
-                  {index + 1}º
-                </span>
+                <span class="text-3xl font-bold text-white mr-4">{index + 1}º</span>
                 <a
                   href={`/user/${selectedYear}/teams/${team.id}`}
                   class="flex-1 max-w-xs bg-gray-700 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-50 text-white dark:text-white rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105"

@@ -1,9 +1,9 @@
 ---
-import Layout from "../../../../layouts/Layout2024.astro";
-import { supabase } from "../../../../lib/supabase";
-import Goal from "./icons/Goal.astro";
-import YellowCard from "./icons/YellowCard.astro";
-import RedCard from "./icons/RedCard.astro";
+import Layout from '../../../../layouts/Layout2024.astro';
+import { supabase } from '../../../../lib/supabase';
+import Goal from './icons/Goal.astro';
+import YellowCard from './icons/YellowCard.astro';
+import RedCard from './icons/RedCard.astro';
 
 interface Player {
   id: string;
@@ -14,10 +14,9 @@ interface Player {
   redCard: number;
 }
 
-
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0]; 
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 
 let players: Player[] = [];
 let error: string | null = null;
@@ -53,114 +52,129 @@ const cardColors: Record<keyof typeof playerStats, string> = {
 
 <Layout description="Ranking Maratón" title="Ranking Maratón">
   <div class="flex flex-wrap gap-4 m-20 mt-32">
-    {Object.entries(playerStats).map(([category, players], index) => {
+    {
+      Object.entries(playerStats).map(([category, players], index) => {
+        const cat = category as keyof typeof playerStats;
+
+        return (
+          <section class="border p-4 rounded-md flex-1 min-w-[200px] text-center">
+            <h1 class="text-2xl border-b-2">{`MAX ${category.toUpperCase()}`}</h1>
+            {players.length === 0 ? (
+              <div class={`shadow-md w-full max-w-xs rounded-xl ${cardColors[cat]} p-4 text-white`}>
+                <p class="text-xl">Todavía no ha comenzado el torneo.</p>
+              </div>
+            ) : (
+              players.slice(0, 5).map((p, playerIndex) => (
+                <a href={`/user/${selectedYear}/rankings/${p.id}`} class="block my-4">
+                  <div class={`shadow-md w-full max-w-xs rounded-xl ${cardColors[cat]}`}>
+                    <div class="p-4 flex flex-col items-center text-white">
+                      <div class="flex flex-col items-center">
+                        <p class="text-xl font-bold">
+                          {playerIndex + 1}. {p.name ?? 'N/A'} {p.secondName ?? 'N/A'}
+                        </p>
+                      </div>
+                      <div class="flex items-center gap-2 mt-2">
+                        {category === 'goles' && (
+                          <>
+                            <Goal style="font-size: 30px;" />
+                            <p class="text-xl">{p.goal}</p>
+                          </>
+                        )}
+                        {category === 'amarillas' && (
+                          <>
+                            <YellowCard style="font-size: 30px;" />
+                            <p class="text-xl">{p.yellowCard}</p>
+                          </>
+                        )}
+                        {category === 'rojas' && (
+                          <>
+                            <RedCard style="font-size: 30px;" />
+                            <p class="text-xl">{p.redCard}</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))
+            )}
+            <button
+              class={`mt-4 ${cardColors[cat]} text-white px-4 py-2 rounded`}
+              data-dialog-target={`${category}Modal`}
+            >
+              Ver Todo
+            </button>
+          </section>
+        );
+      })
+    }
+  </div>
+  {
+    Object.entries(playerStats).map(([category, players], index) => {
       const cat = category as keyof typeof playerStats;
 
       return (
-        <section class="border p-4 rounded-md flex-1 min-w-[200px] text-center">
-          <h1 class="text-2xl border-b-2">{`MAX ${category.toUpperCase()}`}</h1>
+        <dialog
+          id={`${category}Modal`}
+          class="p-6 border rounded-md text-center w-full h-full fixed inset-0 overflow-auto bg-gray-900 bg-opacity-90 z-50"
+        >
+          <h1 class="text-2xl mb-4 drop-shadow-lg ">{`Jugadores con más ${category}`}</h1>
+          <form method="dialog">
+            <button
+              class="close-dialog-button bg-red-500 text-white px-2 py-1 text-sm rounded fixed top-6 left-6 sm:px-4 sm:py-2 sm:text-base sm:top-8 sm:left-8 md:px-6 md:py-3 md:text-lg md:top-12 md:left-12 lg:px-6 lg:py-4 lg:text-lg lg:top-16 lg:left-16"
+              data-close-dialog
+            >
+              Cerrar
+            </button>
+          </form>
           {players.length === 0 ? (
-            <div class={`shadow-md w-full max-w-xs rounded-xl ${cardColors[cat]} p-4 text-white`}>
-              <p class="text-xl">Todavía no ha comenzado el torneo.</p>
-            </div>
+            <div class="text-white text-xl">Todavía no ha comenzado el torneo.</div>
           ) : (
-            players.slice(0, 5).map((p, playerIndex) => (
-              <a href={`/user/${selectedYear}/rankings/${p.id}`} class="block my-4">
-                <div class={`shadow-md w-full max-w-xs rounded-xl ${cardColors[cat]}`}>
-                  <div class="p-4 flex flex-col items-center text-white">
-                    <div class="flex flex-col items-center">
-                      <p class="text-xl font-bold">{playerIndex + 1}. {p.name ?? 'N/A'} {p.secondName ?? 'N/A'}</p>
-                    </div>
-                    <div class="flex items-center gap-2 mt-2">
-                      {category === 'goles' && (
-                        <>
-                          <Goal style="font-size: 30px;" />
-                          <p class="text-xl">{p.goal}</p>
-                        </>
-                      )}
-                      {category === 'amarillas' && (
-                        <>
-                          <YellowCard style="font-size: 30px;" />
-                          <p class="text-xl">{p.yellowCard}</p>
-                        </>
-                      )}
-                      {category === 'rojas' && (
-                        <>
-                          <RedCard style="font-size: 30px;" />
-                          <p class="text-xl">{p.redCard}</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </a>
+            players.map((p, playerIndex) => (
+              <div class="flex flex-col items-center justify-center mb-2">
+                <h1 class="text-white text-2xl font-bold">
+                  {playerIndex + 1}. {p.name ?? 'N/A'} {p.secondName ?? 'N/A'}
+                </h1>
+                {category === 'goles' && <p class="text-white text-xl">Goles: {p.goal}</p>}
+                {category === 'amarillas' && (
+                  <p class="text-white text-xl">Tarjetas Amarillas: {p.yellowCard}</p>
+                )}
+                {category === 'rojas' && (
+                  <p class="text-white text-xl">Tarjetas Rojas: {p.redCard}</p>
+                )}
+              </div>
             ))
           )}
-          <button class={`mt-4 ${cardColors[cat]} text-white px-4 py-2 rounded`} data-dialog-target={`${category}Modal`}>
-            Ver Todo
-          </button>
-        </section>
+        </dialog>
       );
-    })}
-  </div>
-  {Object.entries(playerStats).map(([category, players], index) => {
-    const cat = category as keyof typeof playerStats;
-
-    return (
-      <dialog id={`${category}Modal`} class="p-6 border rounded-md text-center w-full h-full fixed inset-0 overflow-auto bg-gray-900 bg-opacity-90 z-50">
-        <h1 class="text-2xl mb-4 drop-shadow-lg ">{`Jugadores con más ${category}`}</h1>
-        <form method="dialog">
-          <button class="close-dialog-button bg-red-500 text-white px-2 py-1 text-sm rounded fixed top-6 left-6 sm:px-4 sm:py-2 sm:text-base sm:top-8 sm:left-8 md:px-6 md:py-3 md:text-lg md:top-12 md:left-12 lg:px-6 lg:py-4 lg:text-lg lg:top-16 lg:left-16" data-close-dialog>
-            Cerrar
-          </button>
-        </form>
-        {players.length === 0 ? (
-          <div class="text-white text-xl">Todavía no ha comenzado el torneo.</div>
-        ) : (
-          players.map((p, playerIndex) => (
-            <div class="flex flex-col items-center justify-center mb-2">
-              <h1 class="text-white text-2xl font-bold">{playerIndex + 1}. {p.name ?? 'N/A'} {p.secondName ?? 'N/A'}</h1>
-              {category === 'goles' && (
-                <p class="text-white text-xl">Goles: {p.goal}</p>
-              )}
-              {category === 'amarillas' && (
-                <p class="text-white text-xl">Tarjetas Amarillas: {p.yellowCard}</p>
-              )}
-              {category === 'rojas' && (
-                <p class="text-white text-xl">Tarjetas Rojas: {p.redCard}</p>
-              )}
-            </div>
-          ))
-        )}
-      </dialog>
-    );
-  })}
+    })
+  }
 </Layout>
 
 <script>
-  document.addEventListener("astro:page-load", () => {
-    document.querySelectorAll("button[data-dialog-target]").forEach((button) => {
-      button.addEventListener("click", () => {
-const getDialogId = (button: HTMLButtonElement): string | null => {
-  return button.getAttribute("data-dialog-target");
-};
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('button[data-dialog-target]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const getDialogId = (button: HTMLButtonElement): string | null => {
+          return button.getAttribute('data-dialog-target');
+        };
 
-const dialogId: string | null = getDialogId(button as HTMLButtonElement); 
-if (dialogId !== null) {
-  const dialog = document.getElementById(dialogId);
-  if (dialog instanceof HTMLDialogElement) {
-    dialog.showModal();
-  }
-} else {
-  console.error("dialogId is null");
-}
+        const dialogId: string | null = getDialogId(button as HTMLButtonElement);
+        if (dialogId !== null) {
+          const dialog = document.getElementById(dialogId);
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.showModal();
+          }
+        } else {
+          console.error('dialogId is null');
+        }
       });
     });
   });
 
-  document.querySelectorAll("[data-close-dialog]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const dialog = button.closest("dialog");
+  document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const dialog = button.closest('dialog');
       if (dialog instanceof HTMLDialogElement) {
         dialog.close();
       }

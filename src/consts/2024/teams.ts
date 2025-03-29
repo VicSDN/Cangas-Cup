@@ -1,14 +1,10 @@
-import { supabase } from "../../lib/supabase";
+import { supabase } from '../../lib/supabase';
 
 export async function getTeamById(id: string) {
-  const { data: team, error } = await supabase
-    .from("team")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: team, error } = await supabase.from('team').select('*').eq('id', id).single();
 
   if (error) {
-    console.error("Error fetching team:", error);
+    console.error('Error fetching team:', error);
     throw error;
   }
 

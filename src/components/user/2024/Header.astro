@@ -1,55 +1,57 @@
 ---
-import FooterContent from "../2024/FooterContent.astro";
-import HamburgerButton from "../../../sections/HamburgerButton.astro";
-import SocialButtons from "../../../sections/SocialButtons.astro";
-import { MOBILE_MENU_CONTENT_ID } from "../../../consts/mobile-menu";
-import YearSelector from "../../../sections/YearSelector.astro";
+import FooterContent from '../2024/FooterContent.astro';
+import HamburgerButton from '../../../sections/HamburgerButton.astro';
+import SocialButtons from '../../../sections/SocialButtons.astro';
+import { MOBILE_MENU_CONTENT_ID } from '../../../consts/mobile-menu';
+import YearSelector from '../../../sections/YearSelector.astro';
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 
 const pages = [
-  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults` },
-  { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: `/user/${selectedYear}/regulations` },
-  { name: "Rankings", href: `/user/${selectedYear}/rankings` },
+  { name: 'Equipos y Resultados', href: `/user/${selectedYear}/teamsandresults` },
+  { name: 'Año', href: '#', disabled: false, dropdown: true },
+  { name: 'Reglamento', href: `/user/${selectedYear}/regulations` },
+  { name: 'Rankings', href: `/user/${selectedYear}/rankings` },
 ];
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
   <nav class="group flex h-full w-full items-center justify-between px-10">
-    <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
+    <HamburgerButton class:list={'block lg:hidden'} id="menuButton" />
 
     <div class="hidden lg:flex flex-1 items-center justify-center">
-      {pages.map(({ disabled, name, href, dropdown }, key) => (
-        <Fragment key={key}>
-          {dropdown ? (
-            <div
-              class:list={[
-                " block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-              <YearSelector years={years} />
-            </div>
-          ) : (
-            <a
-              href={href}
-              class:list={[
-                "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                { "pointer-events-none": disabled },
-                { "text-white": !disabled },
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-            </a>
-          )}
-          {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
-        </Fragment>
-      ))}
+      {
+        pages.map(({ disabled, name, href, dropdown }, key) => (
+          <Fragment key={key}>
+            {dropdown ? (
+              <div
+                class:list={[
+                  'block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                <YearSelector years={years} selectedYear={selectedYear} />
+              </div>
+            ) : (
+              <a
+                href={href}
+                class:list={[
+                  'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                  { 'pointer-events-none': disabled },
+                  { 'text-white': !disabled },
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+              </a>
+            )}
+            {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
+          </Fragment>
+        ))
+      }
     </div>
 
     <div
@@ -67,7 +69,7 @@ const pages = [
         />
       </div>
       <nav class="flex w-full flex-col items-center gap-5">
-        <a href={`/user/${selectedYear}`} >
+        <a href={`/user/${selectedYear}`}>
           <img
             src="/cangasCupLogo.webp"
             alt="logo"
@@ -75,42 +77,39 @@ const pages = [
             loading="lazy"
           />
         </a>
-        {pages.map(({ disabled, name, href, dropdown }, key) => (
-          <Fragment key={key}>
-            {dropdown ? (
-              <div
-                class:list={[
-                  "block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <YearSelector years={years} />
-              </div>
-               <hr
-        class="h-[2px] w-full border-t-0"
-        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-      />
-            ) : (
-              <a
-                href={href}
-                class:list={[
-                  "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-                  { "pointer-events-none": disabled },
-                  { "text-white": !disabled },
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <hr
-        class="h-[2px] w-full border-t-0"
-        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
-      />
-              </a>
-            )}
-            
-          </Fragment>
-        ))}
+        {
+          pages.map(({ disabled, name, href, dropdown }, key) => (
+            <Fragment key={key}>
+              {dropdown ? (
+                <div
+                  class:list={[
+                    'block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                  ]}
+                  id={`nav-link-${key}`}
+                >
+                  <span class="z-10">{name}</span>
+                  <YearSelector years={years} selectedYear={selectedYear} />
+                </div>
+              ) : (
+                <a
+                  href={href}
+                  class:list={[
+                    'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                    { 'pointer-events-none': disabled },
+                    { 'text-white': !disabled },
+                  ]}
+                  id={`nav-link-${key}`}
+                >
+                  <span class="z-10">{name}</span>
+                </a>
+              )}
+              <hr
+                class="h-[2px] w-full border-t-0"
+                style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+              />
+            </Fragment>
+          ))
+        }
       </nav>
       <nav class="my-4 flex flex-col gap-10">
         <FooterContent />
@@ -119,26 +118,20 @@ const pages = [
     </div>
   </nav>
   <div class="relative flex h-2 w-full flex-col items-center">
-    <div
-      class="gridBottomBarContainer absolute grid w-full items-center justify-between"
-    >
+    <div class="gridBottomBarContainer absolute grid w-full items-center justify-between">
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      ></div>
+      />
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/user/${selectedYear}`} class="focus-visible:!ring-0">
-          <img
-            src="/cangasCupLogo.webp"
-            alt="Logo"
-            class="h-auto w-[100%] z-2 mb-4"
-          />
+          <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
         </a>
       </div>
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
-        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%);"
-      ></div>
+        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
+      />
     </div>
   </div>
 </header>
@@ -150,11 +143,7 @@ const pages = [
     width: 100%;
     height: 100%;
     opacity: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(221, 221, 221, 20%) 0%,
-      transparent 100%
-    );
+    background: linear-gradient(to bottom, rgba(221, 221, 221, 20%) 0%, transparent 100%);
     transition: opacity 0.3s;
   }
 
@@ -188,7 +177,7 @@ const pages = [
     view-transition-name: nav-item;
     background: var(--color-accent);
     width: 100%;
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -198,7 +187,7 @@ const pages = [
   .current-page-mob:before {
     background: var(--color-accent);
     width: 10px;
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: -20px;
@@ -217,6 +206,7 @@ const pages = [
       grid-template-columns: 1fr 9rem 1fr;
     }
   }
+
   @media (prefers-reduced-motion) {
     .nav-item .background {
       transition: opacity 0s;
@@ -238,60 +228,61 @@ const pages = [
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      white 50%,
-      transparent 100%
-    );
+    background: linear-gradient(to right, transparent 0%, white 50%, transparent 100%);
     z-index: 10;
   }
 </style>
+
 <script>
-  import { $ } from "../../../lib/dom-selector";
+  import { $ } from '../../../lib/dom-selector';
 
   function toggleMenu(
     nav: HTMLElement | null,
     menuMobileContent: HTMLElement | null,
     navContent: HTMLElement | null
   ) {
-    menuMobileContent?.classList.toggle("open");
-    nav?.classList.toggle("open");
-    navContent?.classList.toggle("animate-bounce-fade-in");
-    document.body.classList.toggle("overflow-hidden");
-    document.body.classList.toggle("lg:overflow-auto");
+    menuMobileContent?.classList.toggle('open');
+    nav?.classList.toggle('open');
+    navContent?.classList.toggle('animate-bounce-fade-in');
+    document.body.classList.toggle('overflow-hidden');
+    document.body.classList.toggle('lg:overflow-auto');
   }
 
   function onYearChange(e: Event) {
     const target = e.target as HTMLSelectElement;
     const selectedYear = target.value;
     if (selectedYear) {
-
       window.location.href = `/user/${selectedYear}`;
     }
   }
 
-  document.addEventListener("astro:page-load", () => {
-    const nav = $("nav");
-    const menuButton = $("#menuButton");
-    const innerMenuButton = $("#innerMenuButton");
-    const menuMobileContent = $("#menuMobileContent");
-    const navContent = $(".navContent");
+  document.addEventListener('astro:page-load', () => {
+    const nav = $('nav');
+    const menuButton = $('#menuButton');
+    const innerMenuButton = $('#innerMenuButton');
+    const menuMobileContent = $('#menuMobileContent');
+    const navContent = $('.navContent');
 
-    menuButton?.addEventListener("hamburgerButtonClicked", () =>
+    menuMobileContent?.classList.toggle('open');
+    nav?.classList.toggle('open');
+    navContent?.classList.toggle('animate-bounce-fade-in');
+    document.body.classList.toggle('overflow-hidden');
+    document.body.classList.toggle('lg:overflow-auto');
+
+    menuButton?.addEventListener('hamburgerButtonClicked', () =>
       toggleMenu(nav, menuMobileContent, navContent)
     );
-    innerMenuButton?.addEventListener("hamburgerButtonClicked", () =>
+    innerMenuButton?.addEventListener('hamburgerButtonClicked', () =>
       toggleMenu(nav, menuMobileContent, navContent)
     );
 
-    if (menuMobileContent?.classList.contains("open")) {
+    if (menuMobileContent?.classList.contains('open')) {
       toggleMenu(nav, menuMobileContent, navContent);
     }
 
-    const yearSelectors = document.querySelectorAll("#year-selector");
+    const yearSelectors = document.querySelectorAll('#year-selector');
     yearSelectors.forEach((yearSelector) => {
-      yearSelector.addEventListener("change", onYearChange);
+      yearSelector.addEventListener('change', onYearChange);
     });
   });
 </script>

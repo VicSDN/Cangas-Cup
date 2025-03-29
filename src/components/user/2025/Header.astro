@@ -1,179 +1,175 @@
 ---
-import FooterContent from "./FooterContent.astro";
-import HamburgerButton from "../../../sections/HamburgerButton.astro";
-import SocialButtons from "../../../sections/SocialButtons.astro";
-import { MOBILE_MENU_CONTENT_ID } from "../../../consts/mobile-menu";
-import YearSelector from "../../../sections/YearSelector.astro";
+import FooterContent from './FooterContent.astro';
+import HamburgerButton from '../../../sections/HamburgerButton.astro';
+import SocialButtons from '../../../sections/SocialButtons.astro';
+import { MOBILE_MENU_CONTENT_ID } from '../../../consts/mobile-menu';
+import YearSelector from '../../../sections/YearSelector.astro';
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") && years.includes(urlParts[urlParts.indexOf("user") + 1]) ? urlParts[urlParts.indexOf("user") + 1] : years[0];
-/*
-const pages = [
-  { name: "Equipos y Resultados", href: `/user/${selectedYear}/teamsandresults`, disabled: true, soonDate: "Próximamente" },
-  { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: `/user/${selectedYear}/regulations`, disabled: true, soonDate: "Próximamente" },
-  { name: "Rankings", href: `/user/${selectedYear}/rankings`, disabled: true, soonDate: "Próximamente"},
-];
-*/
-
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear =
+  urlParts.includes('user') && years.includes(urlParts[urlParts.indexOf('user') + 1])
+    ? urlParts[urlParts.indexOf('user') + 1]
+    : years[0];
 
 const pages = [
-  { name: "Equipos y Resultados", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente" },
-  { name: "Año", href: "#", disabled: false, dropdown: true },
-  { name: "Reglamento", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente" },
-  { name: "Rankings", href: `/user/${selectedYear}`, disabled: true, soonDate: "Próximamente"},
+  {
+    name: 'Equipos y Resultados',
+    href: `/user/${selectedYear}`,
+    disabled: true,
+    soonDate: 'Próximamente',
+  },
+  { name: 'Año', href: '#', disabled: false, dropdown: true },
+  { name: 'Reglamento', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
+  { name: 'Rankings', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
 ];
-
 ---
 
 <header class="mb-20 h-16 max-w-[100vw] lg:h-24">
   <nav class="group flex h-full w-full items-center justify-between px-10">
-    <HamburgerButton class:list={"block lg:hidden"} id="menuButton" />
+    <HamburgerButton class:list={'block lg:hidden'} id="menuButton" />
 
     <div class="hidden lg:flex flex-1 items-center justify-center">
-      {pages.map(({ disabled, name, href, dropdown,soonDate}, key) => (
-        <Fragment key={key}>
-          {dropdown ? (
-            <div
-              class:list={[
-                " block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-              ]}
-              id={`nav-link-${key}`}
-            >
-              <span class="z-10">{name}</span>
-              <YearSelector years={years} />
-            </div>
-          ) : (
-            <a
-              href={href}
-              class:list={[
-							"nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-              { "current-page": true, "text-accent": true },
-              { "text-white": true },
-						]}
-						id={`nav-link-${key}`}
-					>
-               {disabled ? (
-              <span class="absolute mt-10 -skew-x-6 text-xs text-accent">
-                {soonDate}
-              </span>
+      {
+        pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
+          <Fragment key={key}>
+            {dropdown ? (
+              <div
+                class:list={[
+                  'block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                <YearSelector years={years} selectedYear={selectedYear} />
+              </div>
             ) : (
-              <div class="background absolute -z-10 h-full w-full" />
+              <a
+                href={href}
+                class:list={[
+                  'nav-item relative hidden h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                  { 'current-page': true, 'text-accent': true },
+                  { 'text-white': true },
+                ]}
+                id={`nav-link-${key}`}
+              >
+                {disabled ? (
+                  <span class="absolute mt-10 -skew-x-6 text-xs text-accent">{soonDate}</span>
+                ) : (
+                  <div class="background absolute -z-10 h-full w-full" />
+                )}
+                <span class="z-10">{name}</span>
+              </a>
             )}
-              <span class="z-10">{name}</span>
-            </a>
-          )}
-          {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
-        </Fragment>
-      ))}
+            {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
+          </Fragment>
+        ))
+      }
     </div>
+  </nav>
 
-    <div
-      class="fixed inset-0 z-[888] flex w-screen flex-col items-center overflow-x-auto bg-[var(--background-color)] px-10 lg:hidden"
-      id={MOBILE_MENU_CONTENT_ID}
-    >
-      <aside class="flex min-h-16 w-full items-center justify-between">
-        <span class="text-xl font-semibold uppercase text-primary">Menú</span>
-        <HamburgerButton id="innerMenuButton" />
-      </aside>
-      <div class="flex min-h-2 w-full items-center">
-        <hr
-          class="h-[2px] w-full border-t-0"
-          style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+  <div
+    class="fixed inset-0 z-[888] flex w-screen flex-col items-center overflow-x-auto bg-[var(--background-color)] px-10 lg:hidden"
+    id={MOBILE_MENU_CONTENT_ID}
+  >
+    <aside class="flex min-h-16 w-full items-center justify-between">
+      <span class="text-xl font-semibold uppercase text-primary">Menú</span>
+      <HamburgerButton id="innerMenuButton" />
+    </aside>
+    <div class="flex min-h-2 w-full items-center">
+      <hr
+        class="h-[2px] w-full border-t-0"
+        style="background:linear-gradient(to right, transparent 0%, white 50%, transparent 100%)"
+      />
+    </div>
+    <nav class="flex w-full flex-col items-center gap-4">
+      <a href={`/user/${selectedYear}`}>
+        <img
+          src="/cangasCupLogo.webp"
+          alt="logo"
+          class="accent-drop-shadow my-4 max-w-60 drop-shadow-lg"
+          loading="lazy"
         />
-      </div>
-      <nav class="flex w-full flex-col items-center gap-4">
-        <a href={`/user/${selectedYear}`} >
-          <img
-            src="/cangasCupLogo.webp"
-            alt="logo"
-            class="accent-drop-shadow my-4 max-w-60 drop-shadow-lg"
-            loading="lazy"
-          />
-        </a>
-        {pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
-  <Fragment key={key}>
-    {dropdown ? (
-      <div
-        class:list={[
-          "block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-        ]}
-        id={`nav-link-${key}`}
-      >
-        <span class="z-10">{name}</span>
-        <YearSelector years={years} />
-      </div>
-    ) : (
-      <a
-        href={href}
-        class:list={[
-          "nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10",
-          { "pointer-events-none": disabled },
-          { "text-white": !disabled },
-        ]}
-        id={`nav-link-${key}`}
-      >
-        {disabled ? (
-        <div class="flex flex-col">
-            <span class="z-10 mr-2">{name}</span>
-            <span class="mt-2 text-xs text-accent">{soonDate}</span>
-      </div>
-        ) : (
-          <div class="background absolute -z-10 h-full w-full" />
-        )}
       </a>
-    )}
-    {key === 1 && <div class:list={"hidden w-64 lg:block"} />}
-  </Fragment>
-))}
+      {
+        pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
+          <Fragment key={key}>
+            {dropdown ? (
+              <div
+                class:list={[
+                  'block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                <YearSelector years={years} selectedYear={selectedYear} />
+              </div>
+            ) : (
+              <a
+                href={href}
+                class:list={[
+                  'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
+                  { 'pointer-events-none': disabled },
+                  { 'text-white': !disabled },
+                ]}
+                id={`nav-link-${key}`}
+              >
+                {disabled ? (
+                  <div class="flex flex-col">
+                    <span class="z-10 mr-2">{name}</span>
+                    <span class="mt-2 text-xs text-accent">{soonDate}</span>
+                  </div>
+                ) : (
+                  <div class="background absolute -z-10 h-full w-full" />
+                )}
+              </a>
+            )}
+            {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
+          </Fragment>
+        ))
+      }
 
       <nav class="my-4 flex flex-col gap-10">
         <FooterContent />
         <SocialButtons class="flex items-center justify-center" />
       </nav>
-    </div>
-  </nav>
+    </nav>
+  </div>
+
   <div class="relative flex h-2 w-full flex-col items-center">
-    <div
-      class="gridBottomBarContainer absolute grid w-full items-center justify-between"
-    >
+    <div class="gridBottomBarContainer absolute grid w-full items-center justify-between">
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      ></div>
+      />
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/user/${selectedYear}`} class="focus-visible:!ring-0">
-          <img
-            src="/cangasCupLogo.webp"
-            alt="Logo"
-            class="h-auto w-[100%] z-2 mb-4"
-          />
+          <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
         </a>
       </div>
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
-        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%);"
-      ></div>
+        style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
+      />
     </div>
   </div>
 </header>
 
 <style>
   .nav-item .background {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		opacity: 0;
-		background: linear-gradient(to bottom, rgba(221, 221, 221, 20%) 0%, transparent 100%);
-		transition: opacity 0.3s;
-	}
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    background: linear-gradient(to bottom, rgba(221, 221, 221, 20%) 0%, transparent 100%);
+    transition: opacity 0.3s;
+  }
 
-	.nav-item:hover .background,
-	.nav-item:focus .background {
-		opacity: 1;
-	}
+  .nav-item:hover .background,
+  .nav-item:focus .background {
+    opacity: 1;
+  }
 
   .focus-within-ring {
     @apply focus-within:ring-1 focus-within:ring-white focus-within:ring-offset-1;
@@ -184,7 +180,7 @@ const pages = [
     pointer-events: none;
     transition: opacity 0.3s;
     scrollbar-gutter: stable;
-    background-color:#7F8C8D;
+    background-color: #7f8c8d;
   }
 
   #menuMobileContent.open {
@@ -200,7 +196,7 @@ const pages = [
     view-transition-name: nav-item;
     background: var(--color-accent);
     width: 100%;
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
@@ -210,7 +206,7 @@ const pages = [
   .current-page-mob:before {
     background: var(--color-accent);
     width: 10px;
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: -20px;
@@ -229,6 +225,7 @@ const pages = [
       grid-template-columns: 1fr 9rem 1fr;
     }
   }
+
   @media (prefers-reduced-motion) {
     .nav-item .background {
       transition: opacity 0s;
@@ -243,37 +240,10 @@ const pages = [
       transition: opacity 0s;
     }
   }
-
-
-  .fixed-bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      white 50%,
-      transparent 100%
-    );
-    z-index: 10;
-  }
 </style>
-<script>
-  import { $ } from "../../../lib/dom-selector";
 
-  function toggleMenu(
-    nav: HTMLElement | null,
-    menuMobileContent: HTMLElement | null,
-    navContent: HTMLElement | null
-  ) {
-    menuMobileContent?.classList.toggle("open");
-    nav?.classList.toggle("open");
-    navContent?.classList.toggle("animate-bounce-fade-in");
-    document.body.classList.toggle("overflow-hidden");
-    document.body.classList.toggle("lg:overflow-auto");
-  }
+<script>
+  import { $ } from '../../../lib/dom-selector';
 
   function onYearChange(e: Event) {
     const target = e.target as HTMLSelectElement;
@@ -283,34 +253,10 @@ const pages = [
     }
   }
 
-  document.addEventListener("astro:page-load", () => {
-    const nav = $("nav");
-    const menuButton = $("#menuButton");
-    const innerMenuButton = $("#innerMenuButton");
-    const menuMobileContent = $("#menuMobileContent");
-    const navContent = $(".navContent");
-
-    menuMobileContent?.classList.toggle("open")
-		nav?.classList.toggle("open")
-		navContent?.classList.toggle("animate-bounce-fade-in")
-		document.body.classList.toggle("overflow-hidden")
-		document.body.classList.toggle("lg:overflow-auto")
-	
-
-    menuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContent, navContent)
-    );
-    innerMenuButton?.addEventListener("hamburgerButtonClicked", () =>
-      toggleMenu(nav, menuMobileContent, navContent)
-    );
-
-    if (menuMobileContent?.classList.contains("open")) {
-      toggleMenu(nav, menuMobileContent, navContent);
-    }
-
-    const yearSelectors = document.querySelectorAll("#year-selector");
+  document.addEventListener('astro:page-load', () => {
+    const yearSelectors = document.querySelectorAll('#year-selector');
     yearSelectors.forEach((yearSelector) => {
-      yearSelector.addEventListener("change", onYearChange);
+      yearSelector.addEventListener('change', onYearChange);
     });
   });
 </script>

@@ -1,17 +1,12 @@
 ---
-import { supabase } from "../../../lib/supabase";
+import { supabase } from '../../../lib/supabase';
 
+const years = ['2024', '2025'];
+const urlParts = Astro.url.pathname.split('/');
+const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 
-const years = ["2024", "2025"];
-const urlParts = Astro.url.pathname.split("/");
-const selectedYear = urlParts.includes("user") ? urlParts[urlParts.indexOf("user") + 1] : years[0];
-
-const { data: matches } = await supabase
-  .from("match")
-  .select("*");
-const { data: teams } = await supabase
-  .from("team")
-  .select("*");
+const { data: matches } = await supabase.from('match').select('*');
+const { data: teams } = await supabase.from('team').select('*');
 
 const findTeam = (teamId: number) => {
   return teams ? teams.find((team) => team.id === teamId) : null;
@@ -21,22 +16,22 @@ const formatDateTime = (dateString: string) => {
   const date = new Date(dateString);
   const day = date.getDate();
   const monthIndex = date.getMonth();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
 
   const monthNames = [
-    "enero",
-    "febrero",
-    "marzo",
-    "abril",
-    "mayo",
-    "junio",
-    "julio",
-    "agosto",
-    "septiembre",
-    "octubre",
-    "noviembre",
-    "diciembre",
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre',
   ];
 
   const monthName = monthNames[monthIndex];
@@ -55,11 +50,10 @@ matches?.sort((a, b) => {
 });
 
 const totalPages = matches ? Math.ceil(matches.length / matchesPerPage) : 0;
-const currentPage = parseInt(Astro.url.searchParams.get("page") || "1", 8);
-const currentMatches = matches ? matches.slice(
-  (currentPage - 1) * matchesPerPage,
-  currentPage * matchesPerPage
-) : [];
+const currentPage = parseInt(Astro.url.searchParams.get('page') || '1', 8);
+const currentMatches = matches
+  ? matches.slice((currentPage - 1) * matchesPerPage, currentPage * matchesPerPage)
+  : [];
 ---
 
 <section
@@ -137,18 +131,17 @@ const currentMatches = matches ? matches.slice(
       class="flex items-center gap-2 px-6 py-3 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-lg select-none bg-gray-300 hover:bg-gray-400 active:bg-gray-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
     >
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
+        xmlns="http:
+        fill="
+        none"
         viewBox="0 0 24 24"
         stroke-width="2"
         stroke="currentColor"
         aria-hidden="true"
         class="w-4 h-4"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+        ></path>
       </svg>
       Previous
     </a>
@@ -159,8 +152,8 @@ const currentMatches = matches ? matches.slice(
             href={`?page=${page}`}
             class={`relative h-10 max-h-[40px] w-10 max-w-[40px] select-none rounded-lg ${
               currentPage === page
-                ? "bg-gray-500 text-white shadow-md"
-                : "bg-gray-200 text-gray-900"
+                ? 'bg-gray-500 text-white shadow-md'
+                : 'bg-gray-200 text-gray-900'
             } text-center align-middle font-sans text-xs font-medium uppercase transition-all hover:bg-gray-400 active:bg-gray-500`}
           >
             <span class="absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
@@ -176,8 +169,9 @@ const currentMatches = matches ? matches.slice(
     >
       Next
       <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
+        xmlns="http:
+        fill="
+        none"
         viewBox="0 0 24 24"
         stroke-width="2"
         stroke="currentColor"

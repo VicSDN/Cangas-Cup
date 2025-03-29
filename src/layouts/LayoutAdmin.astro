@@ -4,31 +4,34 @@ interface Props {
   description: string;
 }
 const { title, description } = Astro.props;
-import Header from "../components/admin/Header.astro";
-import "@fontsource-variable/onest";
-import ButtonUp from "../sections/ButtonUp.astro";
-import { supabase } from "../lib/supabase";
+import Header from '../components/admin/Header.astro';
+import '@fontsource-variable/onest';
+import ButtonUp from '../sections/ButtonUp.astro';
+import { supabase } from '../lib/supabase';
 
-// Obtener cookies de autenticación
-const accessTokenCookie = Astro.cookies.get("sb-access-token");
-const refreshTokenCookie = Astro.cookies.get("sb-refresh-token");
+const accessTokenCookie = Astro.cookies.get('sb-access-token');
+const refreshTokenCookie = Astro.cookies.get('sb-refresh-token');
 
 if (!accessTokenCookie || !refreshTokenCookie) {
-  return Astro.redirect("/admin/signin");
+  return Astro.redirect('/admin/signin');
 }
 
-const { data: { session }, error } = await supabase.auth.setSession({
+const {
+  data: { session },
+  error,
+} = await supabase.auth.setSession({
   refresh_token: refreshTokenCookie.value,
   access_token: accessTokenCookie.value,
 });
 
 if (error || !session) {
-  console.error("Error al renovar sesión:", error?.message || "Sesión no encontrada");
-  Astro.cookies.delete("sb-access-token", { path: "/" });
-  Astro.cookies.delete("sb-refresh-token", { path: "/" });
-  return Astro.redirect("/admin/signin");
+  console.error('Error al renovar sesión:', error?.message || 'Sesión no encontrada');
+  Astro.cookies.delete('sb-access-token', { path: '/' });
+  Astro.cookies.delete('sb-refresh-token', { path: '/' });
+  return Astro.redirect('/admin/signin');
 }
 ---
+
 <!doctype html>
 <html lang="es">
   <head>
@@ -42,7 +45,7 @@ if (error || !session) {
   <body>
     <Header class="mb-4" />
     <script>
-      window.__ACCESS_TOKEN__ = "${session.access_token}";
+      window.__ACCESS_TOKEN__ = '${session.access_token}';
     </script>
     <slot />
     <ButtonUp />
@@ -51,7 +54,7 @@ if (error || !session) {
         color-scheme: dark;
       }
       html {
-        font-family: "Onest Variable", system-ui, sans-serif;
+        font-family: 'Onest Variable', system-ui, sans-serif;
         background: #9333ea;
       }
       p {

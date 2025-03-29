@@ -1,15 +1,15 @@
 ---
-import type { HTMLAttributes } from "astro/types";
+import type { HTMLAttributes } from 'astro/types';
 
-import type { SponsorId } from "../consts/2024/sponsors-log-catalog";
-import { SponsorsLogoCatalog } from "../consts/2024/sponsors-log-catalog";
+import type { SponsorId } from '../consts/2024/sponsors-log-catalog';
+import { SponsorsLogoCatalog } from '../consts/2024/sponsors-log-catalog';
 
-interface Props extends HTMLAttributes<"svg"> {
+interface Props extends HTMLAttributes<'svg'> {
   class?: string;
   logo: SponsorId;
 }
 
-const { logo = "manin", class: className, ...rest } = Astro.props;
+const { logo = 'manin', class: className, ...rest } = Astro.props;
 
 const logoDetails = SponsorsLogoCatalog[logo];
 
@@ -27,22 +27,4 @@ const optionsToObject = (
 };
 ---
 
-<svg
-  class:list={className}
-  data-testid="sponsorsLogo"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox={logoDetails.viewBox}
-  {...rest}
->
-  {
-    logoDetails.paths.map((pathDetail) => (
-      <path d={pathDetail.path} {...optionsToObject(pathDetail.options)} />
-    ))
-  }
-</svg>
-
-<style>
-  svg {
-    fill: currentColor;
-  }
-</style>
+<svg class:list={className} data-testid="sponsorsLogo" xmlns="http:"></svg>

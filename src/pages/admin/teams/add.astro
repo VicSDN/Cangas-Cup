@@ -1,4 +1,11 @@
+---
+const data = await Astro.props.data;
+---
+
+<script>
+  const data = document.querySelector('script')?.dataset?.data;
   if (data) {
     localStorage.setItem('successMessage', 'Equipo creado con éxito');
     window.location.href = '/admin/dashboard';
-  } 
+  }
+</script>

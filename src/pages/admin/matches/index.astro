@@ -1,11 +1,11 @@
 ---
-import LayoutAdmin from "../../../layouts/LayoutAdmin.astro";
-import ButtonBack from "../../../sections/ButtonBack.astro";
+import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro';
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get("year") || "2025";
+const currentYear = url.searchParams.get('year') || '2025';
 
-const years = ["2025", "2026"];
+const years = ['2025', '2026'];
 ---
 
 <LayoutAdmin title="Partidos" description="Gestiona los partidos de la Cangas Cup">
@@ -15,11 +15,13 @@ const years = ["2025", "2026"];
       <h1 class="text-2xl font-bold">Partidos</h1>
       <div class="flex gap-4">
         <select id="year-select" class="px-4 py-2 border rounded-lg">
-          {years.map((year) => (
-            <option value={year} selected={year === currentYear}>
-              {year}
-            </option>
-          ))}
+          {
+            years.map((year) => (
+              <option value={year} selected={year === currentYear}>
+                {year}
+              </option>
+            ))
+          }
         </select>
         <a
           href={`/admin/matches/addMatch?year=${currentYear}`}
@@ -34,22 +36,34 @@ const years = ["2025", "2026"];
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Fecha
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Grupo
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Local
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Visitante
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Resultado
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
               Acciones
             </th>
           </tr>
@@ -62,12 +76,15 @@ const years = ["2025", "2026"];
   </main>
 
   <!-- Modal para actualizar resultado -->
-  <div id="update-score-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+  <div
+    id="update-score-modal"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+  >
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
       <div class="mt-3">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Actualizar Resultado</h3>
         <form id="update-score-form" class="space-y-4">
-          <input type="hidden" id="match-id" name="matchId">
+          <input type="hidden" id="match-id" name="matchId" />
           <div>
             <label for="home-score" class="block text-sm font-medium text-gray-700">
               Resultado Local
@@ -79,7 +96,7 @@ const years = ["2025", "2026"];
               required
               min="0"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
+            />
           </div>
           <div>
             <label for="away-score" class="block text-sm font-medium text-gray-700">
@@ -92,7 +109,7 @@ const years = ["2025", "2026"];
               required
               min="0"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            >
+            />
           </div>
           <div class="flex justify-end space-x-3 mt-4">
             <button
@@ -116,43 +133,78 @@ const years = ["2025", "2026"];
 </LayoutAdmin>
 
 <script>
+  import { supabase } from '../../../lib/supabase';
+
   const token = localStorage.getItem('sb-access-token');
-  
+
   if (!token) {
-    alert("No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.");
-    window.location.href = "/admin/signin";
-    throw new Error("Token no disponible");
+    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
+    window.location.href = '/admin/signin';
+    throw new Error('Token no disponible');
   }
 
-  const currentYear = new URL(window.location.href).searchParams.get("year") || "2025";
+  const currentYear = new URL(window.location.href).searchParams.get('year') || '2025';
 
   async function loadMatches() {
     try {
-      console.log("Iniciando carga de partidos para el año:", currentYear);
-      const response = await fetch(`/api/matches?year=${currentYear}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
+      console.log('Iniciando carga de partidos para el año:', currentYear);
+      const { data: matches, error } = await supabase
+        .from('tournament_match')
+        .select(
+          `
+          id,
+          home_team,
+          away_team,
+          group_id,
+          match_date,
+          match_time,
+          year,
+          home_score,
+          away_score
+        `
+        )
+        .eq('year', currentYear)
+        .order('match_date', { ascending: false });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || `Error al cargar partidos: ${response.status}`);
+      if (error) {
+        console.error('Error detallado de Supabase:', error);
+        throw error;
       }
 
-      const matches = await response.json();
-      console.log("Partidos recibidos:", matches);
-      
-      const tbody = document.getElementById("matches-table-body");
+      console.log('Partidos obtenidos:', matches || []);
+
+      const { data: teams } = await supabase.from('tournament_team').select('id, name');
+
+      const { data: groups } = await supabase.from('tournament_group').select('id, name');
+
+      const teamsMap = new Map(teams?.map((team) => [team.id, team.name]) || []);
+      const groupsMap = new Map(groups?.map((group) => [group.id, group.name]) || []);
+
+      const transformedMatches =
+        matches?.map((match) => {
+          console.log('Procesando partido:', match);
+          return {
+            id: match.id,
+            match_date: match.match_date,
+            match_time: match.match_time,
+            year: match.year,
+            home_team_name: teamsMap.get(match.home_team) || 'Equipo no encontrado',
+            away_team_name: teamsMap.get(match.away_team) || 'Equipo no encontrado',
+            group_name: groupsMap.get(match.group_id) || 'Sin grupo',
+            home_score: match.home_score,
+            away_score: match.away_score,
+          };
+        }) || [];
+      const tbody = document.getElementById('matches-table-body');
       if (!tbody) {
-        console.error("No se encontró el elemento tbody");
+        console.error('No se encontró el elemento tbody');
         return;
       }
 
-      tbody.innerHTML = "";
-      
-      if (!Array.isArray(matches)) {
-        console.error("Los partidos no son un array:", matches);
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(transformedMatches)) {
+        console.error('Los partidos no son un array:', transformedMatches);
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
@@ -163,7 +215,7 @@ const years = ["2025", "2026"];
         return;
       }
 
-      if (matches.length === 0) {
+      if (transformedMatches.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
@@ -174,72 +226,25 @@ const years = ["2025", "2026"];
         return;
       }
 
-      matches.forEach((match) => {
+      transformedMatches.forEach((match) => {
         try {
-          console.log("Procesando partido:", match);
-          const row = document.createElement("tr");
-          
-          // Manejar el caso cuando match_date es null
-          let dateDisplay = "Fecha no establecida";
-          if (match.match_date) {
-            const matchDate = new Date(match.match_date);
-            const formattedDate = matchDate.toLocaleDateString();
-            let formattedTime = "";
-            
-            if (match.match_time) {
-              const [hours, minutes] = match.match_time.split(':');
-              formattedTime = `${hours}:${minutes}`;
-            }
-            
-            dateDisplay = `${formattedDate} ${formattedTime}`;
-          }
-          
-          // Verificar que los datos existan antes de mostrarlos
-          const homeTeamName = match.home_team_name || "Equipo no encontrado";
-          const awayTeamName = match.away_team_name || "Equipo no encontrado";
-          const groupName = match.group_name || "Sin grupo";
-          const result = match.home_score !== null && match.away_score !== null 
-            ? `${match.home_score} - ${match.away_score}` 
-            : "Pendiente";
-          
-          row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              ${dateDisplay}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              ${groupName}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              ${homeTeamName}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              ${awayTeamName}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              ${result}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <button
-                onclick="updateScore('${match.id}')"
-                class="text-blue-600 hover:text-blue-900"
-              >
-                Actualizar Resultado
-              </button>
-            </td>
-          `;
+          console.log('Procesando partido:', match);
+          const row = createMatchRow(match);
           tbody.appendChild(row);
         } catch (error) {
-          console.error("Error al procesar partido:", match, error);
+          console.error('Error al procesar partido:', match, error);
         }
       });
+
+      setupUpdateScoreButtons();
     } catch (error) {
-      console.error("Error al cargar partidos:", error);
-      const tbody = document.getElementById("matches-table-body");
+      console.error('Error al cargar partidos:', error);
+      const tbody = document.getElementById('matches-table-body');
       if (tbody) {
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-6 py-4 text-center text-sm text-red-500">
-              Error al cargar los partidos: ${error instanceof Error ? error.message : "Error desconocido"}
+              Error al cargar los partidos: ${error instanceof Error ? error.message : 'Error desconocido'}
             </td>
           </tr>
         `;
@@ -247,7 +252,6 @@ const years = ["2025", "2026"];
     }
   }
 
-  // Funciones para el modal
   function showUpdateScoreModal(matchId: string) {
     const modal = document.getElementById('update-score-modal');
     const matchIdInput = document.getElementById('match-id') as HTMLInputElement;
@@ -264,9 +268,8 @@ const years = ["2025", "2026"];
     }
   }
 
-  // Event listeners para el modal
   document.getElementById('cancel-update')?.addEventListener('click', hideUpdateScoreModal);
-  
+
   document.getElementById('update-score-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
@@ -276,54 +279,73 @@ const years = ["2025", "2026"];
     const awayScore = parseInt(formData.get('awayScore') as string);
 
     try {
-      console.log("Enviando actualización de resultado:", {
+      console.log('Enviando actualización de resultado:', {
         matchId,
         homeScore,
-        awayScore
+        awayScore,
       });
 
       const response = await fetch(`/api/matches/${matchId}/score`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           home_score: homeScore,
-          away_score: awayScore
+          away_score: awayScore,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.details || "Error al actualizar el resultado");
+        throw new Error(errorData.details || 'Error al actualizar el resultado');
       }
 
       const result = await response.json();
-      console.log("Resultado actualizado:", result);
-      alert("Resultado actualizado correctamente");
+      console.log('Resultado actualizado:', result);
+
+      const row = document.querySelector(`[data-match-id="${matchId}"]`)?.closest('tr');
+      if (row) {
+        const resultCell = row.querySelector('td:nth-child(5)');
+        if (resultCell) {
+          resultCell.textContent = `${homeScore} - ${awayScore}`;
+        }
+      }
+
+      alert('Resultado actualizado correctamente');
       hideUpdateScoreModal();
-      loadMatches(); // Recargar la lista de partidos
+      loadMatches();
     } catch (error) {
-      console.error("Error al actualizar resultado:", error);
-      alert(error instanceof Error ? error.message : "Error al actualizar el resultado");
+      console.error('Error al actualizar resultado:', error);
+      alert(error instanceof Error ? error.message : 'Error al actualizar el resultado');
     }
   });
 
-  // Modificar la función updateScore para usar el modal
   function updateScore(matchId: string) {
+    console.log('Actualizando resultado para partido:', matchId);
     showUpdateScoreModal(matchId);
   }
 
-  // Cargar partidos al iniciar
-  document.addEventListener("DOMContentLoaded", () => {
+  function setupUpdateScoreButtons() {
+    const buttons = document.querySelectorAll('.update-score-btn');
+    buttons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        const matchId = (e.currentTarget as HTMLElement).dataset.matchId;
+        if (matchId) {
+          updateScore(matchId);
+        }
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
     loadMatches();
   });
 
-  // Manejar cambio de año
-  const yearSelect = document.getElementById("year-select") as HTMLSelectElement;
+  const yearSelect = document.getElementById('year-select') as HTMLSelectElement;
   if (yearSelect) {
-    yearSelect.addEventListener("change", (e) => {
+    yearSelect.addEventListener('change', (e) => {
       const year = (e.target as HTMLSelectElement).value;
       window.location.href = `/admin/matches?year=${year}`;
     });
@@ -332,13 +354,13 @@ const years = ["2025", "2026"];
   async function logout() {
     try {
       localStorage.removeItem('sb-access-token');
-     
+
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -356,4 +378,57 @@ const years = ["2025", "2026"];
   if (logoutButton) {
     logoutButton.addEventListener('click', logout);
   }
-</script> 
+
+  function createMatchRow(match: any) {
+    const row = document.createElement('tr');
+
+    let dateDisplay = 'Fecha no establecida';
+    if (match.match_date) {
+      const matchDate = new Date(match.match_date);
+      const formattedDate = matchDate.toLocaleDateString();
+      let formattedTime = '';
+
+      if (match.match_time) {
+        const [hours, minutes] = match.match_time.split(':');
+        formattedTime = `${hours}:${minutes}`;
+      }
+
+      dateDisplay = `${formattedDate} ${formattedTime}`;
+    }
+
+    const homeTeamName = match.home_team_name || 'Equipo no encontrado';
+    const awayTeamName = match.away_team_name || 'Equipo no encontrado';
+    const groupName = match.group_name || 'Sin grupo';
+    const result =
+      match.home_score !== null && match.away_score !== null
+        ? `${match.home_score} - ${match.away_score}`
+        : 'Pendiente';
+
+    row.innerHTML = `
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${dateDisplay}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${groupName}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${homeTeamName}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${awayTeamName}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${result}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <button
+          class="update-score-btn text-blue-600 hover:text-blue-900"
+          data-match-id="${match.id}"
+        >
+          Actualizar Resultado
+        </button>
+      </td>
+    `;
+    return row;
+  }
+</script>
