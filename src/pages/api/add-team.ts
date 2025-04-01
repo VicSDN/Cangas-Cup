@@ -1,58 +1,68 @@
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { supabase, getSession } from '../../lib/supabase';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY as string;
-
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
-    const { name, group_id, year } = await request.json();
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return new Response(JSON.stringify({ message: 'El nombre del equipo es requerido' }), {
-        status: 400,
-      });
-    }
-
-    if (!group_id || typeof group_id !== 'number' || group_id <= 0) {
+    console.log('Iniciando proceso de añadir equipo');
+    const session = await getSession();
+    if (!session) {
+      console.error('No hay sesión activa');
       return new Response(
-        JSON.stringify({ message: 'El ID del grupo debe ser un número positivo' }),
-        { status: 400 }
+        JSON.stringify({
+          error: 'No autenticado',
+          details: 'Por favor, inicie sesión nuevamente'
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
-    if (!year || typeof year !== 'number' || year < 2000 || year > 2100) {
+    const data = await request.json();
+    console.log('Datos recibidos:', data);
+    
+    const { name, group_id, year } = data;
+
+    if (!name || typeof name !== 'string' || name.trim() === '') {
       return new Response(
-        JSON.stringify({ message: 'El año debe ser un número válido entre 2000 y 2100' }),
-        { status: 400 }
+        JSON.stringify({
+          error: 'Datos inválidos',
+          details: 'El nombre del equipo es requerido'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader) {
+    if (!group_id || isNaN(Number(group_id))) {
       return new Response(
-        JSON.stringify({ message: 'No se ha proporcionado el token de autenticación' }),
-        { status: 401 }
+        JSON.stringify({
+          error: 'Datos inválidos',
+          details: 'El ID del grupo es requerido y debe ser un número'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
-    const token = authHeader.replace('Bearer ', '');
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('Error de autenticación:', authError);
-      return new Response(JSON.stringify({ message: 'No se pudo verificar al usuario' }), {
-        status: 401,
-      });
+    if (!year || isNaN(Number(year)) || year < 2000 || year > 2100) {
+      return new Response(
+        JSON.stringify({
+          error: 'Datos inválidos',
+          details: 'El año debe ser un número válido entre 2000 y 2100'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const { data: groupExists, error: groupError } = await supabase
@@ -62,70 +72,85 @@ export const POST: APIRoute = async ({ request }) => {
       .single();
 
     if (groupError || !groupExists) {
-      return new Response(JSON.stringify({ message: 'El grupo especificado no existe' }), {
-        status: 400,
-      });
+      console.error('Error o grupo no encontrado:', groupError);
+      return new Response(
+        JSON.stringify({
+          error: 'Grupo no encontrado',
+          details: 'El grupo especificado no existe'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const { data: existingTeam, error: checkError } = await supabase
       .from('tournament_team')
       .select('id')
-      .eq('name', name.trim())
+      .eq('name', name)
       .eq('year', year)
-      .single();
+      .maybeSingle();
 
-    if (checkError && checkError.code !== 'PGRST116') {
+    if (checkError) {
       console.error('Error al verificar equipo existente:', checkError);
-      return new Response(JSON.stringify({ message: 'Error al verificar si el equipo existe' }), {
-        status: 500,
-      });
+      throw checkError;
     }
 
     if (existingTeam) {
       return new Response(
-        JSON.stringify({ message: 'Ya existe un equipo con ese nombre en este año' }),
-        { status: 400 }
+        JSON.stringify({
+          error: 'Equipo duplicado',
+          details: 'Ya existe un equipo con ese nombre en este año'
+        }),
+        {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
-    const { data, error } = await supabase
+    const { data: team, error: insertError } = await supabase
       .from('tournament_team')
       .insert([
         {
           name: name.trim(),
           group_id,
-          year,
-        },
+          year
+        }
       ])
       .select()
       .single();
 
-    if (error) {
-      console.error('Error al insertar equipo:', error);
-      return new Response(
-        JSON.stringify({
-          message: 'Error al insertar el equipo',
-          details: error.message,
-        }),
-        { status: 500 }
-      );
+    if (insertError) {
+      console.error('Error al insertar equipo:', insertError);
+      throw insertError;
     }
 
+    console.log('Equipo añadido exitosamente:', team);
     return new Response(
       JSON.stringify({
-        message: 'Equipo creado exitosamente',
-        data,
+        success: true,
+        message: 'Equipo añadido correctamente',
+        team
       }),
-      { status: 201 }
+      {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
+
   } catch (error) {
-    console.error('Error en el endpoint add-team:', error);
+    console.error('Error completo al añadir equipo:', error);
     return new Response(
       JSON.stringify({
-        message: 'Error interno del servidor',
-        details: error instanceof Error ? error.message : 'Error desconocido',
+        error: 'Error al añadir el equipo',
+        details: error instanceof Error ? error.message : 'Error desconocido'
       }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 };

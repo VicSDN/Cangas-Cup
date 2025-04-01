@@ -1,16 +1,10 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../../lib/supabase';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Faltan credenciales de Supabase');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
