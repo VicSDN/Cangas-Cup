@@ -1,12 +1,5 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
-import { getSession } from '../../../lib/supabase';
-
-// Check authentication
-const session = await getSession();
-if (!session) {
-  return Astro.redirect('/admin/signin');
-}
 ---
 
 <LayoutAdmin description="La plataforma del Administrador" title="Añadir Nuevo Equipo">

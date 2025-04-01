@@ -135,14 +135,6 @@ const years = ['2025', '2026'];
 <script>
   import { supabase } from '../../../lib/supabase';
 
-  const token = localStorage.getItem('sb-access-token');
-
-  if (!token) {
-    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
-    window.location.href = '/admin/signin';
-    throw new Error('Token no disponible');
-  }
-
   const currentYear = new URL(window.location.href).searchParams.get('year') || '2025';
 
   async function loadMatches() {
@@ -289,12 +281,12 @@ const years = ['2025', '2026'];
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           home_score: homeScore,
           away_score: awayScore,
         }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -353,14 +345,12 @@ const years = ['2025', '2026'];
 
   async function logout() {
     try {
-      localStorage.removeItem('sb-access-token');
-
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include'
       });
 
       if (response.ok) {

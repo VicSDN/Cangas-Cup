@@ -1,61 +1,82 @@
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../../lib/supabase';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   try {
     const url = new URL(request.url);
     const year = parseInt(url.searchParams.get('year') || '2025', 10);
 
-    console.log('URL de Supabase:', supabaseUrl);
     console.log('Año:', year);
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Credenciales de Supabase no encontradas');
-      throw new Error('Faltan las credenciales de Supabase');
+    // Get auth tokens from cookies
+    const accessToken = cookies.get('sb-access-token')?.value;
+    const refreshToken = cookies.get('sb-refresh-token')?.value;
+
+    if (!accessToken || !refreshToken) {
+      return new Response(
+        JSON.stringify({
+          error: 'No autenticado',
+          details: 'No se encontró la sesión'
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: matches, error } = await supabase
+    // Set the session
+    const { data: { session }, error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if (sessionError || !session) {
+      cookies.delete('sb-access-token', { path: '/' });
+      cookies.delete('sb-refresh-token', { path: '/' });
+      return new Response(
+        JSON.stringify({
+          error: 'Sesión inválida',
+          details: 'Por favor, inicie sesión nuevamente'
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    const { data: matches, error: matchesError } = await supabase
       .from('tournament_match')
-      .select(
-        `
+      .select(`
         id,
-        home_team,
-        away_team,
-        group_id,
         match_date,
         match_time,
         year,
-        home_team:tournament_team!tournament_match_home_team_fkey(name),
-        away_team:tournament_team!tournament_match_away_team_fkey(name),
-        group:tournament_group!tournament_match_group_id_fkey(name)
-      `
-      )
+        home_score,
+        away_score,
+        home_team(name),
+        away_team(name),
+        tournament_group(name)
+      `)
       .eq('year', year)
       .order('match_date', { ascending: false });
-
-    if (error) {
-      console.error('Error detallado de Supabase:', error);
-      throw error;
+    if (matchesError) {
+      console.error('Error detallado de Supabase:', matchesError);
+      throw matchesError;
     }
 
     console.log('Partidos obtenidos:', matches || []);
-    const transformedMatches =
-      matches?.map((match) => ({
-        id: match.id,
-        match_date: match.match_date,
-        match_time: match.match_time,
-        year: match.year,
-        home_team_name: match.home_team[0]?.name,
-        away_team_name: match.away_team[0]?.name,
-        group_name: match.group[0]?.name,
-        home_score: null,
-        away_score: null,
-      })) || [];
-
+    const transformedMatches = matches?.map(match => ({
+      id: match.id,
+      match_date: match.match_date,
+      match_time: match.match_time,
+      year: match.year,
+      home_team_name: match.home_team?.name || 'Equipo no encontrado',
+      away_team_name: match.away_team?.name || 'Equipo no encontrado',
+      group_name: match.tournament_group?.name || 'Sin grupo',
+      home_score: match.home_score,
+      away_score: match.away_score
+    })) || [];
     return new Response(JSON.stringify(transformedMatches), {
       status: 200,
       headers: {
@@ -79,14 +100,51 @@ export const GET: APIRoute = async ({ request }) => {
     );
   }
 };
-
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     console.log('Iniciando POST /api/matches');
     const body = await request.json();
     console.log('Datos recibidos:', body);
 
     const { home_team, away_team, group_id, match_date, year } = body;
+
+    // Get auth tokens from cookies
+    const accessToken = cookies.get('sb-access-token')?.value;
+    const refreshToken = cookies.get('sb-refresh-token')?.value;
+
+    if (!accessToken || !refreshToken) {
+      return new Response(
+        JSON.stringify({
+          error: 'No autenticado',
+          details: 'No se encontró la sesión'
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Set the session
+    const { data: { session }, error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if (sessionError || !session) {
+      cookies.delete('sb-access-token', { path: '/' });
+      cookies.delete('sb-refresh-token', { path: '/' });
+      return new Response(
+        JSON.stringify({
+          error: 'Sesión inválida',
+          details: 'Por favor, inicie sesión nuevamente'
+        }),
+        {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
     if (!home_team || !away_team || !group_id || !match_date || !year) {
       console.log('Faltan campos requeridos:', {
@@ -111,20 +169,6 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const numericGroupId = parseInt(group_id, 10);
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Credenciales de Supabase no encontradas');
-      throw new Error('Faltan las credenciales de Supabase');
-    }
-
-    console.log('Creando cliente de Supabase');
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${request.headers.get('Authorization')?.replace('Bearer ', '')}`,
-        },
-      },
-    });
 
     console.log('Verificando que los equipos pertenecen al grupo:', numericGroupId);
     console.log('IDs de equipos recibidos:', { home_team, away_team });
@@ -283,42 +327,49 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     console.log('Intentando insertar partido');
-    const { data, error } = await supabase.from('tournament_match').insert([
-      {
-        home_team,
-        away_team,
-        group_id,
-        match_date: match_date || null,
-        year,
-        home_score: 0,
-        away_score: 0,
-      },
-    ]).select(`
+    const { data: newMatch, error: createError } = await supabase
+      .from('tournament_match')
+      .insert([
+        {
+          home_team,
+          away_team,
+          group_id: numericGroupId,
+          match_date: match_date || null,
+          year,
+          home_score: 0,
+          away_score: 0
+        }
+      ])
+      .select(`
         id,
-        home_team,
-        away_team,
-        group_id,
         match_date,
+        match_time,
         year,
         home_score,
         away_score,
-        home_team:tournament_team!tournament_match_home_team_fkey(name),
-        away_team:tournament_team!tournament_match_away_team_fkey(name),
-        group:tournament_group!tournament_match_group_id_fkey(name)
-      `);
-
-    if (error) {
-      console.error('Error de Supabase al insertar:', error);
-      throw error;
+        home_team(name),
+        away_team(name),
+        tournament_group(name)
+      `)
+      .single();
+    if (createError) {
+      console.error('Error de Supabase al insertar:', createError);
+      throw createError;
     }
 
-    console.log('Partido creado exitosamente:', data);
-    return new Response(JSON.stringify(data[0]), {
-      status: 201,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    console.log('Partido creado exitosamente:', newMatch);
+    return new Response(
+      JSON.stringify({
+        ...newMatch,
+        home_team_name: newMatch.home_team?.name || 'Equipo no encontrado',
+        away_team_name: newMatch.away_team?.name || 'Equipo no encontrado',
+        group_name: newMatch.tournament_group?.name || 'Sin grupo'
+      }),
+      {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('Error completo en POST /api/matches:', error);
     return new Response(

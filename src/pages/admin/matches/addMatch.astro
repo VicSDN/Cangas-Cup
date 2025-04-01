@@ -98,19 +98,13 @@ const years = ['2025', '2026'];
 </LayoutAdmin>
 
 <script>
-  const token = localStorage.getItem('sb-access-token');
-
-  if (!token) {
-    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
-    window.location.href = '/admin/signin';
-    throw new Error('Token no disponible');
-  }
-
   const currentYear = new URL(window.location.href).searchParams.get('year') || '2025';
 
   async function loadTeams() {
     try {
-      const response = await fetch(`/api/teams?year=${currentYear}`);
+      const response = await fetch(`/api/teams?year=${currentYear}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error(`Error al cargar equipos: ${response.status}`);
       }
@@ -139,7 +133,9 @@ const years = ['2025', '2026'];
 
   async function loadGroups() {
     try {
-      const response = await fetch(`/api/groups?year=${currentYear}`);
+      const response = await fetch(`/api/groups?year=${currentYear}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
         throw new Error(`Error al cargar grupos: ${response.status}`);
       }
@@ -185,15 +181,13 @@ const years = ['2025', '2026'];
         year: currentYear,
       };
 
-      console.log('Datos a enviar:', data);
-
       try {
         const response = await fetch('/api/matches', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
+          credentials: 'include',
           body: JSON.stringify(data),
         });
 
@@ -214,14 +208,12 @@ const years = ['2025', '2026'];
 
   async function logout() {
     try {
-      localStorage.removeItem('sb-access-token');
-
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include'
       });
 
       if (response.ok) {
