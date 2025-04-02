@@ -1,8 +1,10 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro';
 ---
 
 <LayoutAdmin description="La plataforma del Administrador" title="Añadir Nuevo Equipo">
+  <ButtonBack />
   <section
     class="max-w-4xl mt-14 lg:mt-28 p-6 mx-auto bg-white rounded-md shadow-md dark:bg-gray-800"
   >
@@ -167,21 +169,17 @@ import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
           throw new Error(result.error || 'Error al añadir el equipo');
         }
         
-        // Show success message
         showToast('¡Éxito!', 'success', 'Equipo añadido correctamente');
         
-        // Reset form
+        
         form.reset();
         
-        // Pre-fill year again after reset
+       
         const yearInput = document.getElementById('year') as HTMLInputElement;
         if (yearInput) {
           yearInput.value = '2025';
         }
    
-        setTimeout(() => {
-          window.location.href = '/admin/dashboard';
-        }, 2000);
       } catch (error) {
         console.error('Error al insertar equipo:', error);
 

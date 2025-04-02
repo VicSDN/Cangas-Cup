@@ -11,6 +11,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,astro,css,md}\""
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.4",
     "@astrojs/react": "^4.2.2",
     "@astrojs/tailwind": "^6.0.2",
     "@astrojs/vercel": "^8.1.3",
@@ -23,7 +24,8 @@
     "path-to-regexp": "8.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwindcss-animated": "^2.0.0"
+    "tailwindcss-animated": "^2.0.0",
+    "typescript": "^5.8.2"
   },
   "devDependencies": {
     "@astrojs/ts-plugin": "^1.10.4",

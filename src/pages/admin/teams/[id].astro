@@ -2,6 +2,7 @@
 import ButtonBack from '../../../sections/ButtonBack.astro';
 import { supabase } from '../../../lib/supabase';
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import EditButton  from '../../../components/admin/EditButton';  
 
 export async function getStaticPaths() {
   const teamIds = Array.from(
@@ -98,6 +99,7 @@ function formatDateTime(dateString: string) {
                 <strong class="text-gray-900">Puntos:</strong> {team.points}
               </p>
             </div>
+            {team && <EditButton type="team" data={team} />}
             <div class="mt-8">
               <h2 class="text-2xl font-bold mb-4 text-gray-800">Partidos:</h2>
               <div class="flex flex-col items-center space-y-4">
