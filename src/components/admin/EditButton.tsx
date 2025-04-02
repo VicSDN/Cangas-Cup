@@ -1,40 +1,62 @@
-// src/components/admin/EditButton.tsx
-import { useState } from 'react';
-import EditModal from './EditModal';
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase'; 
+import ButtonModal from './ButtonModal';
 
 interface EditButtonProps {
-  type: string;  // Puede ser "team", "player", etc.
-  data: any;     // Los datos que se editarán, como el equipo o jugador
+  type: string;
+  data: any; 
 }
 
 const EditButton: React.FC<EditButtonProps> = ({ type, data }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState(data);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const { data: updatedTeam, error } = await supabase
+      .from('tournament_team')
+      .update(formData)
+      .eq('id', formData.id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error al actualizar el equipo:', error.message);
+      return;
+    }
+
+    console.log('Equipo actualizado:', updatedTeam);
+    setIsEditing(false); // Cerrar el modal
   };
 
   return (
-    <>
-      <button
-        onClick={handleOpenModal}
-        className="w-full bg-blue-500 text-white p-2 rounded-lg shadow-md hover:bg-blue-600"
-      >
-        Editar {type}
-      </button>
-
-      {isModalOpen && (
-        <EditModal
-          type={type}
-          data={data}
-          onClose={handleCloseModal}
+    <div>
+      {isEditing ? (
+        <ButtonModal
+          title={`Editar ${type}`}
+          formData={formData}
+          handleChange={handleChange}
+          handleSave={handleSave}
+          setIsEditing={setIsEditing} // Pasar función para cerrar el modal
         />
+      ) : (
+        <button
+          onClick={() => setIsEditing(true)}
+          className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
+        >
+          Editar {type}
+        </button>
       )}
-    </>
+    </div>
   );
 };
 
