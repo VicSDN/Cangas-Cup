@@ -1,63 +1,128 @@
-import React, { useState } from 'react';
-import { supabase } from '../../lib/supabase'; 
-import ButtonModal from './ButtonModal';
+import { useState } from "react";
 
-interface EditButtonProps {
-  type: string;
-  data: any; 
+interface Team {
+  id: string;
+  name: string;
+  group_id: string;
+  location: string;
+  points: number;
 }
 
-const EditButton: React.FC<EditButtonProps> = ({ type, data }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(data);
+interface EditButtonProps {
+  data: Team;
+  onSuccess: () => void;
+}
+
+export default function EditButton({ data, onSuccess }: EditButtonProps) {
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState<Team>(data);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]:
+        name === "points" ? parseInt(value) : value,
     }));
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    const response = await fetch(`/api/team/${formData.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-    const { data: updatedTeam, error } = await supabase
-      .from('tournament_team')
-      .update(formData)
-      .eq('id', formData.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error al actualizar el equipo:', error.message);
-      return;
+    if (!response.ok) {
+      console.error("Error al actualizar:", await response.text());
+    } else {
+      onSuccess();
+      setOpen(false);
     }
-
-    console.log('Equipo actualizado:', updatedTeam);
-    setIsEditing(false); // Cerrar el modal
   };
 
   return (
-    <div>
-      {isEditing ? (
-        <ButtonModal
-          title={`Editar ${type}`}
-          formData={formData}
-          handleChange={handleChange}
-          handleSave={handleSave}
-          setIsEditing={setIsEditing} // Pasar función para cerrar el modal
-        />
-      ) : (
-        <button
-          onClick={() => setIsEditing(true)}
-          className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
-        >
-          Editar {type}
-        </button>
-      )}
-    </div>
-  );
-};
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+      >
+        Editar equipo
+      </button>
 
-export default EditButton;
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-xl font-bold text-gray-800">Editar equipo</h2>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Nombre
+              </label>
+              <input
+                name="name"
+                value={formData.name ?? ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Grupo
+              </label>
+              <input
+                name="group_id"
+                value={formData.group_id ?? ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Localización
+              </label>
+              <input
+                name="location"
+                value={formData.location ?? ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Puntos
+              </label>
+              <input
+                type="number"
+                name="points"
+                value={formData.points ?? 0}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <button
+                onClick={() => setOpen(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Guardar cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

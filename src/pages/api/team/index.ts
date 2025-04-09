@@ -19,17 +19,6 @@ export const GET: APIRoute = async ({ request }) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: testData, error: testError } = await supabase
-      .from('tournament_team')
-      .select('count')
-      .limit(1);
-
-    if (testError) {
-      console.error('Error de conexión con Supabase:', testError);
-      throw testError;
-    }
-
-    console.log('Conexión exitosa con Supabase');
 
     const { data: teams, error } = await supabase
       .from('tournament_team')
