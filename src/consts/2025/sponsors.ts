@@ -5,6 +5,8 @@ import Baccara from '../../components/user/2025/SponsorsLogos/Baccara.astro'
 import Asturtoner from '../../components/user/2025/SponsorsLogos/Asturtoner.astro'
 import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astro'
 import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro'
+import Refierta from '../../components/user/2025/SponsorsLogos/Refierta.astro'
+
 export const SPONSORS: Sponsors[] = [
   {
     id: 'Ayuntamiento',
@@ -65,10 +67,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'refierta',
     name: 'Refierta',
-    url: 'https://www.infojobs.net/',
-    label: 'Ir a la página web de Infojobs',
+    url: 'https://www.facebook.com/LaRefierta/?locale=es_ES',
+    label: 'El mejor café',
     image: {
-      logo: PuntoYComa,
+      logo: Refierta,
       width: 200,
       height: 200,
     },
