@@ -1,14 +1,16 @@
 import type { Sponsors } from '../../types/Sponsors2025'
 
-import Ayuntamiento from '../../assets/sponsors/Ayuntamiento.astro'
-
-
+import Ayuntamiento from '../../components/user/2025/SponsorsLogos/Ayuntamiento.astro'
+import Baccara from '../../components/user/2025/SponsorsLogos/Baccara.astro'
+import Asturtoner from '../../components/user/2025/SponsorsLogos/Asturtoner.astro'
+import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astro'
+import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro'
 export const SPONSORS: Sponsors[] = [
   {
     id: 'Ayuntamiento',
     name: 'Ayuntamiento Cangas del Narcea',
-    url: 'https://www.alsa.es/',
-    label: 'Ir a la página web de Alsa',
+    url: 'https://www.ayto-cnarcea.es/',
+    label: 'Visita su página',
     image: {
       logo: Ayuntamiento,
       width: 200,
@@ -18,10 +20,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'baccara',
     name: 'Baccara',
-    url: 'https://www.spotify.com/',
-    label: 'Ir a la página web de Spotify',
+    url: 'https://www.facebook.com/p/Baccara-Cangas-Del-Narcea-100049128587711/?locale=es_ES',
+    label: 'Siguenos en Facebook',
     image: {
-      logo: Ayuntamiento,
+      logo: Baccara,
       width: 200,
       height: 200,
     },
@@ -29,22 +31,22 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'asturtoner',
     name: 'Asturtoner',
-    url: 'https://www.revolut.com/',
-    label: 'Ir a la página web de Revolut',
+    url: 'https://asturtoner.com//',
+    label: 'Asturtoner al poder',
     image: {
-      logo: Ayuntamiento,
+      logo: Asturtoner,
       width: 200,
       height: 200,
     },
   },
-  /*
+ 
   {
     id: 'puntoycoma',
     name: 'Punto y Coma',
-    url: 'https://www.vicio.com/',
-    label: 'Ir a la página web de Vicio',
+    url: 'https://www.instagram.com/puntoycomaeventos/?hl=es',
+    label: 'Tu bar de copas...',
     image: {
-      logo: Vicio,
+      logo: PuntoYComa,
       width: 200,
       height: 200,
     },
@@ -52,10 +54,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'laabadia',
     name: 'La Abadía',
-    url: 'https://www.cocacola.es/',
-    label: 'Ir a la página web de Coca-Cola',
+    url: 'https://www.instagram.com/laabadiadecangas/?hl=es',
+    label: 'El bar de moda',
     image: {
-      logo: CocaCola,
+      logo: LaAbadia,
       width: 200,
       height: 200,
     },
@@ -66,11 +68,12 @@ export const SPONSORS: Sponsors[] = [
     url: 'https://www.infojobs.net/',
     label: 'Ir a la página web de Infojobs',
     image: {
-      logo: Infojobs,
+      logo: PuntoYComa,
       width: 200,
       height: 200,
     },
   },
+   /*
   {
     id: 'cajarural',
     name: 'Caja Rural',
