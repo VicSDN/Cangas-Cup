@@ -3,9 +3,8 @@ import { useState } from "react";
 interface Team {
   id: string;
   name: string;
-  group_id: string;
+  group_id: string | number;
   location: string;
-  points: number;
 }
 
 interface EditButtonProps {
@@ -15,31 +14,72 @@ interface EditButtonProps {
 
 export default function EditButton({ data, onSuccess }: EditButtonProps) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState<Team>(data);
+  const [formData, setFormData] = useState<Team>({
+    ...data,
+    group_id: String(data.group_id),
+  });
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]:
-        name === "points" ? parseInt(value) : value,
+      [name]: name === "points" ? parseInt(value) || 0 : value,
     }));
   };
 
-  const handleSubmit = async () => {
-    const response = await fetch(`/api/team/${formData.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+  const validateForm = () => {
+    if (!formData.name.trim()) return "El nombre es obligatorio";
+    if (!String(formData.group_id).trim()) return "El grupo es obligatorio";
+    if (!formData.location.trim()) return "La localización es obligatoria";
+    return null;
+  };
 
-    if (!response.ok) {
-      console.error("Error al actualizar:", await response.text());
-    } else {
+  const handleSubmit = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/team/${formData.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
+          group_id: String(formData.group_id),
+        }),
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "Error al actualizar el equipo";
+        
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } else {
+          // Handle non-JSON responses (like Astro's 404 HTML)
+          const text = await response.text();
+          if (response.status === 404) {
+            errorMessage = "API endpoint no encontrado";
+          } else {
+            errorMessage = `Error ${response.status}: ${text.slice(0, 100)}...`;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
       onSuccess();
       setOpen(false);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
     }
   };
 
@@ -56,6 +96,8 @@ export default function EditButton({ data, onSuccess }: EditButtonProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-xl font-bold text-gray-800">Editar equipo</h2>
+
+            {error && <div className="text-red-500 text-sm">{error}</div>}
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
@@ -88,19 +130,6 @@ export default function EditButton({ data, onSuccess }: EditButtonProps) {
               <input
                 name="location"
                 value={formData.location ?? ""}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Puntos
-              </label>
-              <input
-                type="number"
-                name="points"
-                value={formData.points ?? 0}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
               />
