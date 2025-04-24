@@ -10,6 +10,7 @@ interface Team {
   id: number;
   name: string;
   group_id: number;
+  location:string;
   year: string;
 }
 
@@ -48,54 +49,54 @@ if (error) {
     <div class="relative flex items-center mt-4 md:mt-0">
       <span class="absolute">
         <svg
-          xmlns="http:
-          fill="
-          none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
-        </svg>
-      </span>
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Buscar equipo por nombre, ID o grupo"
-        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-      />
-    </div>
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+        />
+      </svg>
+    </span>
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Buscar equipo por nombre, ID o grupo"
+      class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+    />
   </div>
+</div>
 
-  {
-    error ? (
-      <div class="text-red-500">Error al cargar los equipos</div>
-    ) : teams && teams.length > 0 ? (
-      <>
-        <div
-          id="teamsGrid"
-          class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
-        >
-          {(teams as Team[]).map((team) => (
-            <a href={`/admin/teams/${team.id}`} class="block h-full">
-              <div
-                class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full"
-                data-key={team.id}
-                data-name={team.name}
-                data-group_id={team.group_id}
-                data-year={team.year}
-              >
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
-              </div>
-            </a>
-          ))}
-        </div>
+{
+  error ? (
+    <div class="text-red-500">Error al cargar los equipos</div>
+  ) : teams && teams.length > 0 ? (
+    <>
+      <div
+        id="teamsGrid"
+        class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+      >
+        {(teams ?? []).map((team) => (
+          <a href={`/admin/teams/${team.id}`} class="block h-full">
+            <div
+              class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full"
+              data-key={team.id}
+              data-name={team.name}
+              data-group_id={team.group_id}
+              data-year={team.year}
+            >
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
+            </div>
+          </a>
+        ))}
+      </div>
         <div id="noResults" class="hidden mt-6 text-center">
           <p class="text-gray-500 dark:text-gray-400 text-lg">
             No se encontraron equipos que coincidan con tu búsqueda

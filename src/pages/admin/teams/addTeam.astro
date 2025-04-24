@@ -45,6 +45,19 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
         />
       </div>
       <div>
+        <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >Localización</label
+        >
+        <input
+          type="text"
+          name="location"
+          id="location"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          placeholder="Local, Regional o Nacional"
+          required
+        />
+      </div>
+      <div>
         <label for="year" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
           >Año:</label
         >
@@ -117,11 +130,11 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
       const name = formData.get('name')?.toString().trim();
       const group_id = parseInt(formData.get('group_id')?.toString() || '0', 10);
       const year = parseInt(formData.get('year')?.toString() || '0', 10);
+      const location = formData.get('location')?.toString().trim();
 
-      if (!name || isNaN(group_id) || isNaN(year)) {
+      if (!name || isNaN(group_id) || isNaN(year) || !(location)) {
         showToast('Validación fallida', 'error', 'Por favor, rellene todos los campos correctamente.');
-        
-        // Show validation errors in the form
+    
         const errorPanel = document.getElementById('error-panel');
         const errorMessage = document.getElementById('error-message');
         if (errorPanel && errorMessage) {
@@ -148,7 +161,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, group_id, year }),
+          body: JSON.stringify({ name, group_id, year, location }),
           credentials: 'include' 
         });
 

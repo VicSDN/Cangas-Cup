@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const data = await request.json();
     console.log('Datos recibidos:', data);
     
-    const { name, group_id, year } = data;
+    const { name, group_id, location, year } = data;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
       return new Response(
@@ -52,6 +52,19 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       );
     }
 
+    if (!location || typeof location !== 'string' || location.trim() === '') {
+      return new Response(
+        JSON.stringify({
+          error: 'Datos inválidos',
+          details: 'La localización es requerida'
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     if (!year || isNaN(Number(year)) || year < 2000 || year > 2100) {
       return new Response(
         JSON.stringify({
@@ -116,6 +129,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
         {
           name: name.trim(),
           group_id,
+          location,
           year
         }
       ])
