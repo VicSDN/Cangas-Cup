@@ -1,11 +1,39 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import ButtonBack from '../../../sections/ButtonBack.astro';
+import { supabase } from '../../../lib/supabase';
 
 const url = new URL(Astro.request.url);
 const currentYear = url.searchParams.get('year') || '2025';
 
 const years = ['2025', '2026'];
+
+let { data: tournament_match, error } = await supabase
+  .from('tournament_match')
+  .select('id, home_team, away_team, group_id, match_date, match_time, year, home_score, away_score')
+  .eq('year', currentYear)
+  .order('match_date', { ascending: false });
+
+let { data: teams } = await supabase.from('tournament_team').select('id, name');
+let { data: groups } = await supabase.from('tournament_group').select('id, name');
+
+const teamsMap = new Map(teams?.map((team) => [team.id, team.name]) || []);
+const groupsMap = new Map(groups?.map((group) => [group.id, group.name]) || []);
+
+const transformedMatches = tournament_match?.map((match) => {
+  return {
+    id: match.id,
+    match_date: match.match_date,
+    match_time: match.match_time,
+    year: match.year,
+    home_team_name: teamsMap.get(match.home_team) || 'Equipo no encontrado',
+    away_team_name: teamsMap.get(match.away_team) || 'Equipo no encontrado',
+    group_name: groupsMap.get(match.group_id) || 'Sin grupo',
+    home_score: match.home_score,
+    away_score: match.away_score,
+  };
+}) || [];
+
 ---
 
 <LayoutAdmin title="Partidos" description="Gestiona los partidos de la Cangas Cup">
@@ -36,40 +64,58 @@ const years = ['2025', '2026'];
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Fecha
             </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Grupo
             </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Local
             </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Visitante
             </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Resultado
             </th>
-            <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Acciones
             </th>
           </tr>
         </thead>
         <tbody id="matches-table-body" class="bg-white divide-y divide-gray-200">
-          <!-- Los partidos se cargarán dinámicamente aquí -->
+          {
+            transformedMatches.length === 0
+              ? (
+                <tr>
+                  <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                    No hay partidos programados para este año
+                  </td>
+                </tr>
+              )
+              : transformedMatches.map((match) => (
+                <tr>
+                  <td class="px-6 py-4 text-sm text-gray-900">{new Date(match.match_date).toLocaleDateString()} {match.match_time}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{match.group_name}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{match.home_team_name}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{match.away_team_name}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    {match.home_score !== null && match.away_score !== null
+                      ? `${match.home_score} - ${match.away_score}`
+                      : 'Pendiente'}
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-900">
+                    <button
+                      class="update-score-btn text-blue-600 hover:text-blue-900"
+                      data-match-id={match.id}
+                    >
+                      Actualizar Resultado
+                    </button>
+                  </td>
+                </tr>
+              ))
+          }
         </tbody>
       </table>
     </div>
@@ -131,7 +177,6 @@ const years = ['2025', '2026'];
     </div>
   </div>
 </LayoutAdmin>
-
 <script>
   import { supabase } from '../../../lib/supabase';
 

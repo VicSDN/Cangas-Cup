@@ -5,11 +5,16 @@ import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import EditButton from '../../../components/admin/EditButton';
 
 export async function getStaticPaths() {
-  const teamIds = Array.from(
-    new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,35,36,37,38,39,40])
-  );
-  return teamIds.map((id) => ({
-    params: { id: id.toString() },
+  const { data: teams, error: teamsError } = await supabase
+    .from('tournament_team')
+    .select('id');
+  
+  if (teamsError) {
+    throw new Error('Error fetching team ids: ' + teamsError.message);
+  }
+
+  return teams.map((team) => ({
+    params: { id: team.id.toString() }
   }));
 }
 
@@ -35,6 +40,7 @@ let { data: allTeams, error: allTeamsError } = await supabase
 
 const groupStandings = allTeams ? [...allTeams].sort((a, b) => b.points - a.points) : [];
 
+
 let { data: matches, error: matchesError } = await supabase
   .from('tournament_match')
   .select('*')
@@ -55,18 +61,7 @@ function formatDateTime(dateString: string) {
   const minutes = String(date.getMinutes()).padStart(2, '0');
 
   const monthNames = [
-    'enero',
-    'febrero',
-    'marzo',
-    'abril',
-    'mayo',
-    'junio',
-    'julio',
-    'agosto',
-    'septiembre',
-    'octubre',
-    'noviembre',
-    'diciembre',
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
   ];
 
   const monthName = monthNames[monthIndex];
@@ -83,110 +78,107 @@ export const prerender = false;
   <section><ButtonBack /></section>
   <div class="container mx-auto mt-20 pt-8 p-4 grid grid-cols-1 md:grid-cols-3 gap-6 md:p-10 px-8">
     <div class="md:col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
-      {
-        team && (
-          <div class="text-center">
-            <h1 class="text-3xl font-bold mb-6 text-white">{team.name}</h1>
-            <div class="space-y-3 mb-8"> 
-              <p class="text-gray-200 text-lg">
-                <strong class="text-gray-100">Ubicación:</strong> {team.location}
-              </p>
-              <p class="text-gray-200 text-lg">
-                <strong class="text-gray-100">Grupo:</strong> {team.group_id}
-              </p>
-              <p class="text-gray-200 text-lg">
-                <strong class="text-gray-100">Puntos:</strong> {team.points}
-              </p>
-            </div>
-            <EditButton client:load data={team} onSuccess={() => location.reload()} />
-              <div class="mt-8">
-              <h2 class="text-2xl font-bold mb-4 text-gray-100">Partidos:</h2>
-              <div class="flex flex-col items-center space-y-4">
-                {matches &&
-                  matches.map((match) => {
-                    const homeTeam = findTeam(match.home_team);
-                    const awayTeam = findTeam(match.away_team);
-                    return (
-                      <div class="w-full max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200">
-                        <div class="flex flex-col items-center">
-                          <div class="text-lg font-semibold text-gray-100">
-                            <span class="font-bold">{homeTeam.name}</span> vs.{' '}
-                            <span class="font-bold">{awayTeam.name}</span>
-                          </div>
-                          <div class="mt-2 text-gray-100">
-                            {match.finished ? (
-                              <span class="text-xl font-bold text-gray-200">
-                                {match.home_goals} - {match.away_goals}
+      {team ? (
+        <div class="text-center">
+          <h1 class="text-3xl font-bold mb-6 text-white">{team.name}</h1>
+          <div class="space-y-3 mb-8">
+            <p class="text-gray-200 text-lg">
+              <strong class="text-gray-100">Ubicación:</strong> {team.location}
+            </p>
+            <p class="text-gray-200 text-lg">
+              <strong class="text-gray-100">Grupo:</strong> {team.group_id}
+            </p>
+            <p class="text-gray-200 text-lg">
+              <strong class="text-gray-100">Puntos:</strong> {team.points}
+            </p>
+          </div>
+          <EditButton client:load data={team} />
+          <div class="mt-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-100">Partidos:</h2>
+            <div class="flex flex-col items-center space-y-4">
+              {matches ? (
+                matches.map((match) => {
+                  const homeTeam = findTeam(match.home_team);
+                  const awayTeam = findTeam(match.away_team);
+                  return (
+                    <div class="w-full max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200">
+                      <div class="flex flex-col items-center">
+                        <div class="text-lg font-semibold text-gray-100">
+                          <span class="font-bold">{homeTeam.name}</span> vs.{' '}
+                          <span class="font-bold">{awayTeam.name}</span>
+                        </div>
+                        <div class="mt-2 text-gray-100">
+                          {match.finished ? (
+                            <span class="text-xl font-bold text-gray-200">
+                              {match.home_score} - {match.away_score}
+                            </span>
+                          ) : (
+                            <div class="text-center">
+                              <b class="text-lg text-gray-200">
+                                {formatDateTime(match.match_date).formattedTime}
+                              </b>
+                              <br />
+                              <span class="text-gray-200">
+                                {formatDateTime(match.match_date).formattedDate}
                               </span>
-                            ) : (
-                              <div class="text-center">
-                                <b class="text-lg text-gray-200">
-                                  {formatDateTime(match.match_date).formattedTime}
-                                </b>
-                                <br />
-                                <span class="text-gray-200">
-                                  {formatDateTime(match.match_date).formattedDate}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-              </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p class="text-gray-200">No hay partidos disponibles.</p>
+              )}
             </div>
           </div>
-        )
-      }
+        </div>
+      ) : (
+        <p class="text-gray-200">Error al cargar el equipo.</p>
+      )}
     </div>
 
-    <!-- Grupo -->
     <div class="md:col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold mb-6 text-center text-gray-100">
         Grupo {team && team.group_id}
       </h2>
       <ul class="divide-y divide-white space-y-4">
-        {
-          groupStandings &&
-            groupStandings.map((team, index) => (
-              <li class="flex justify-between items-center py-2">
-                <span class="text-4xl font-bold text-gray-100 mr-4">{index + 1}º</span>
-                <a
-                  href={`/admin/teams/${team.id}`}
-                  class="flex-1 max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200"
-                >
-                  <div class="flex flex-col items-center">
-                    <h3 class="text-lg font-bold text-white">{team.name}</h3>
-                    <p class="text-sm text-white">{team.points} pts</p>
-                  </div>
-                </a>
-              </li>
-            ))
-        }
+        {groupStandings &&
+          groupStandings.map((team, index) => (
+            <li class="flex justify-between items-center py-2" >
+              <span class="text-4xl font-bold text-gray-100 mr-4">{index + 1}º</span>
+              <a
+                href={`/admin/teams/${team.id}`}
+                class="flex-1 max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200"
+              >
+                <div class="flex flex-col items-center">
+                  <h3 class="text-lg font-bold text-white">{team.name}</h3>
+                  <p class="text-sm text-white">{team.points} pts</p>
+                </div>
+              </a>
+            </li>
+          ))}
       </ul>
     </div>
 
-    <!-- Jugadores -->
     <div class="md:col-span-1 bg-gray-900 p-6 rounded-lg shadow-lg">
       <h2 class="text-2xl font-bold mb-6 text-center text-white">
         Jugadores {team && team.name}
       </h2>
       <div class="flex flex-col items-center space-y-4 ">
-        {
-          players &&
-            players.map((player) => (
-              <a
-                href={`/admin/players/${player.id}`}
-                class="w-full max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200"
-              >
-                <div class="flex flex-col items-center">
-                  <h3 class="text-lg font-bold text-gray-100">{player.name}</h3>
-                  <p class="text-sm text-gray-100">{player.second_name}</p>
-                </div>
-              </a>
-            ))
-        }
+        {players &&
+          players.map((player) => (
+            <a
+              href={`/admin/players/${player.id}`}
+              class="w-full max-w-xs bg-gray-900 rounded-lg shadow-md p-4 my-2 transition transform hover:scale-105 border border-gray-200"
+            >
+              <div class="flex flex-col items-center">
+                <h3 class="text-lg font-bold text-gray-100">{player.name}</h3>
+                <p class="text-sm text-gray-100">{player.second_name}</p>
+              </div>
+            </a>
+          ))}
       </div>
     </div>
   </div>

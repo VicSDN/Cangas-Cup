@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect , useState } from "react";
 
 interface Team {
   id: string;
@@ -9,11 +9,11 @@ interface Team {
 
 interface EditButtonProps {
   data: Team;
-  onSuccess: () => void;
 }
 
-export default function EditButton({ data, onSuccess }: EditButtonProps) {
+export default function EditButton({ data }: EditButtonProps) {
   const [open, setOpen] = useState(false);
+  const [shouldReload, setShouldReload] = useState(false);
   const [formData, setFormData] = useState<Team>({
     ...data,
     group_id: String(data.group_id),
@@ -58,12 +58,11 @@ export default function EditButton({ data, onSuccess }: EditButtonProps) {
       if (!response.ok) {
         const contentType = response.headers.get("content-type");
         let errorMessage = "Error al actualizar el equipo";
-        
+
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } else {
-          // Handle non-JSON responses (like Astro's 404 HTML)
           const text = await response.text();
           if (response.status === 404) {
             errorMessage = "API endpoint no encontrado";
@@ -74,14 +73,21 @@ export default function EditButton({ data, onSuccess }: EditButtonProps) {
         throw new Error(errorMessage);
       }
 
-      onSuccess();
       setOpen(false);
+      setShouldReload(true);
       setError(null);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     }
   };
+
+  useEffect(() => {
+    if (!open && shouldReload) {
+      location.reload();
+    }
+  }, [open, shouldReload]);
+
 
   return (
     <>
