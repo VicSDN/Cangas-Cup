@@ -14,6 +14,12 @@ import Goblet from '../../components/user/2025/SponsorsLogos/Goblet.astro'
 import Obrador from '../../components/user/2025/SponsorsLogos/Obrador.astro'
 import Casilla from '../../components/user/2025/SponsorsLogos/Casilla.astro'
 import Energy from '../../components/user/2025/SponsorsLogos/Energy.astro'
+import Planb from '../../components/user/2025/SponsorsLogos/Planb.astro'
+import CarpasElNeno from '../../components/user/2025/SponsorsLogos/CarpasElNeno.astro'
+import DeportesAcebo from '../../components/user/2025/SponsorsLogos/DeportesAcebo.astro'
+import CafeMadrid from '../../components/user/2025/SponsorsLogos/CafeMadrid.astro'
+import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro'
+import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro'
 
 
 export const SPONSORS: Sponsors[] = [
@@ -165,7 +171,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-    {
+  {
     id: 'energy',
     name: 'Energy',
     url: 'https://www.instagram.com/energydisco/?hl=es',
@@ -175,7 +181,6 @@ export const SPONSORS: Sponsors[] = [
       width: 200,
       height: 200,
     },
-    /*
   },
   {
     id: 'planb',
@@ -205,7 +210,7 @@ export const SPONSORS: Sponsors[] = [
     url: 'https://g.co/kgs/ucZQwtT',
     label: 'Ir a la página web de Deportes Acebo',
     image: {
-      logo: DeportesAcebp,
+      logo: DeportesAcebo,
       width: 200,
       height: 200,
     },
@@ -221,6 +226,18 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
+   {
+    id: 'barazul',
+    name: 'Bar Azul',
+    url: 'https://g.co/kgs/WkT1x7H',
+    label: 'Ir al Bar Azul',
+    image: {
+      logo: Azul,
+      width: 200,
+      height: 200,
+    },
+  },
+
   {
     id: 'streetfood',
     name: 'Street Food',
@@ -232,6 +249,11 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
+] as const;
+    /*
+  },
+
+ 
   {
     id: 'fornomanolo',
     name: 'Forno Manolo',
@@ -342,17 +364,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
-    id: 'barazul',
-    name: 'Bar Azul',
-    url: 'https://g.co/kgs/WkT1x7H',
-    label: 'Ir al Bar Azul',
-    image: {
-      logo: Azul,
-      width: 200,
-      height: 200,
-    },
-  },
+ 
   {
     id: 'barmagadan',
     name: 'Bar Magadan',
@@ -376,4 +388,3 @@ export const SPONSORS: Sponsors[] = [
     },
   },
   */
-] as const
