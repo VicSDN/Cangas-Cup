@@ -6,6 +6,15 @@ import Asturtoner from '../../components/user/2025/SponsorsLogos/Asturtoner.astr
 import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astro'
 import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro'
 import Refierta from '../../components/user/2025/SponsorsLogos/Refierta.astro'
+import Lozano from '../../components/user/2025/SponsorsLogos/Lozano.astro'
+import CajaRural from '../../components/user/2025/SponsorsLogos/CajaRural.astro'
+import Javita from '../../components/user/2025/SponsorsLogos/Javita.astro'
+import Manin from '../../components/user/2025/SponsorsLogos/Manin.astro'
+import Goblet from '../../components/user/2025/SponsorsLogos/Goblet.astro'
+import Obrador from '../../components/user/2025/SponsorsLogos/Obrador.astro'
+import Casilla from '../../components/user/2025/SponsorsLogos/Casilla.astro'
+import Energy from '../../components/user/2025/SponsorsLogos/Energy.astro'
+
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -75,36 +84,37 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   /*
-  {
-    id: 'cajarural',
-    name: 'Caja Rural',
-    url: 'https://www.grefusa.com/',
-    label: 'Ir a la página web de Grefusa',
-    image: {
-      logo: Grefusa,
-      width: 200,
-      height: 200,
-    },
-  },
+   
   {
     id: 'lozano',
     name: 'Transportes Lozano',
-    url: 'https://www.nothing.tech/',
-    label: 'Ir a la página web de Nothing',
+    url: 'https://www.instagram.com/adrianlozano11/',
+    label: 'Necesitas tu paquete',
     image: {
-      logo: Nothing,
+      logo: Lozano,
       width: 200,
       height: 200,
     },
   },
+ 
+  {
+    id: 'cajarural',
+    name: 'Caja Rural',
+    url: 'https://www.cajaruraldeasturias.com/es',
+    label: 'Ir a la página de la Caja Rural',
+    image: {
+      logo: CajaRural,
+      width: 200,
+      height: 200,
+    },
+  } ,
   {
     id: 'javita',
     name: 'Javita',
-    url: 'https://www.cerave.es/',
-    label: 'Ir a la página web de Cerave',
+    url: 'https://www.transportesjavita.com/',
+    label: 'Ir a la página web de Transportes Javita',
     image: {
-      logo: Cerave,
+      logo: Javita,
       width: 200,
       height: 200,
     },
@@ -112,10 +122,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'manin',
     name: 'Manin',
-    url: 'https://www.mahou.es/',
-    label: 'Ir a la página web de Mahou',
+    url: 'https://www.instagram.com/manintienemiga/?hl=es',
+    label: 'Ir a la página web de Manin',
     image: {
-      logo: Mahou,
+      logo: Manin,
       width: 200,
       height: 200,
     },
@@ -123,21 +133,23 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'goblet',
     name: 'Goblet',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/goblet_official/?hl=es',
+    label: 'Ir al instagram de Goblet Copas',
     image: {
-      logo: Maxibon,
+      logo: Goblet,
       width: 200,
       height: 200,
     },
   },
+  
+
   {
     id: 'obradorflory',
     name: 'Obrador de Flory',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.facebook.com/p/Obrador-Artesanal-FLORY-100056201185828/',
+    label: 'Contacta con nosotros',
     image: {
-      logo: Maxibon,
+      logo: Obrador,
       width: 200,
       height: 200,
     },
@@ -145,32 +157,33 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'lacasilla',
     name: 'La Casilla',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://hotellacasilla.com/',
+    label: 'Ir a la página web de La Casilla',
     image: {
-      logo: Maxibon,
+      logo: Casilla,
       width: 200,
       height: 200,
     },
   },
-  {
+    {
     id: 'energy',
     name: 'Energy',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/energydisco/?hl=es',
+    label: 'Copa y felicidad, con la mejor música',
     image: {
-      logo: Maxibon,
+      logo: Energy,
       width: 200,
       height: 200,
     },
+    /*
   },
   {
     id: 'planb',
     name: 'Plan B',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/planbcangas/?hl=es',
+    label: 'La copa que necesitas',
     image: {
-      logo: Maxibon,
+      logo: Planb,
       width: 200,
       height: 200,
     },
@@ -178,10 +191,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'carpaselneno',
     name: 'Carpas El Neno',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.puertademuniellos.com/patrocinadores/carpas-el-neno/',
+    label: 'Tu carpa por lo que pueda pasar',
     image: {
-      logo: Maxibon,
+      logo: CarpasElNeno,
       width: 200,
       height: 200,
     },
@@ -189,10 +202,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'deportesacebo',
     name: 'Deportes Acebo',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://g.co/kgs/ucZQwtT',
+    label: 'Ir a la página web de Deportes Acebo',
     image: {
-      logo: Maxibon,
+      logo: DeportesAcebp,
       width: 200,
       height: 200,
     },
@@ -200,10 +213,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'cafemadrid',
     name: 'Cafe Madrid',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/nuevocafemadrid/',
+    label: 'El cafe Madrid',
     image: {
-      logo: Maxibon,
+      logo: CafeMadrid,
       width: 200,
       height: 200,
     },
@@ -211,10 +224,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'streetfood',
     name: 'Street Food',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/streetfoodcangas/',
+    label: 'Tu comida rápida gourmet',
     image: {
-      logo: Maxibon,
+      logo: StreetFood,
       width: 200,
       height: 200,
     },
@@ -222,10 +235,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'fornomanolo',
     name: 'Forno Manolo',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.facebook.com/forno.demanolo',
+    label: 'Tu comida muy rápida',
     image: {
-      logo: Maxibon,
+      logo: Forno,
       width: 200,
       height: 200,
     },
@@ -233,10 +246,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'barlacasera',
     name: 'Bar La Casera',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://restaurantelacasera.es/',
+    label: 'Tu restaurante de confianza',
     image: {
-      logo: Maxibon,
+      logo: LaCasera,
       width: 200,
       height: 200,
     },
@@ -244,10 +257,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'cachican',
     name: 'Cachican',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://cachican.es/',
+    label: 'Reserva tu estancia',
     image: {
-      logo: Maxibon,
+      logo: Cachican,
       width: 200,
       height: 200,
     },
@@ -255,10 +268,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'lablugo',
     name: 'La Blugo',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://pidelablugo.com/',
+    label: 'Haz tu pedido en La Blugo',
     image: {
-      logo: Maxibon,
+      logo: Lablugo,
       width: 200,
       height: 200,
     },
@@ -266,10 +279,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'bosque',
     name: 'Bosque',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
+    url: 'https://www.facebook.com/elbosqueoviedo/?locale=es_ES',
     label: 'Ir a la página web de Maxibon',
     image: {
-      logo: Maxibon,
+      logo: Bosque,
       width: 200,
       height: 200,
     },
@@ -280,18 +293,18 @@ export const SPONSORS: Sponsors[] = [
     url: 'https://froneri.es/nuestras-marcas/maxibon',
     label: 'Ir a la página web de Maxibon',
     image: {
-      logo: Maxibon,
+      logo: Bosque,
       width: 200,
       height: 200,
     },
   },
   {
-    id: 'varesport',
+    id: 'sidrerianarcea',
     name: 'Sidreria Narcea',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.instagram.com/sidrerianarcea/?hl=es',
+    label: 'Ir al instagram de Sidreria Narcea',
     image: {
-      logo: Maxibon,
+      logo: SidreriaNarcea,
       width: 200,
       height: 200,
     },
@@ -299,10 +312,21 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'varesport',
     name: 'Varesport',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.facebook.com/varesport/?locale=es_ES',
+    label: 'Ir al Facebook de Varesport',
     image: {
-      logo: Maxibon,
+      logo: Varesport,
+      width: 200,
+      height: 200,
+    },
+  },
+    {
+     id: "asesoriaCGL",
+    name: "AsesoriaCGL",
+    url: "https://www.instagram.com/cgl_consultores/?hl=es",,
+    label: 'Ir a la página web de AsesoriaCGL',
+    image: {
+      logo: AsesoriaCGL,
       width: 200,
       height: 200,
     },
@@ -310,8 +334,8 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'deportescarro',
     name: 'Deportescarro',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.deportescarro.com/ps/es/',
+    label: 'Ir a la página web de Deportes Carro',
     image: {
       logo: Maxibon,
       width: 200,
@@ -321,10 +345,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'barazul',
     name: 'Bar Azul',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://g.co/kgs/WkT1x7H',
+    label: 'Ir al Bar Azul',
     image: {
-      logo: Maxibon,
+      logo: Azul,
       width: 200,
       height: 200,
     },
@@ -332,10 +356,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'barmagadan',
     name: 'Bar Magadan',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.facebook.com/people/Bar-Restaurante-Magadan/100063656434186/?paipv=0&eav=AfbI-vq3PSWc0VF5W7uneNRZ87OwCCGiWeZ2CHh1SuhL7Ut9TMQdyQTChh8XngJpY8Y&_rdr',
+    label: 'Ir al Facebook de Bar Magadan',
     image: {
-      logo: Maxibon,
+      logo: Magadan,
       width: 200,
       height: 200,
     },
@@ -343,10 +367,10 @@ export const SPONSORS: Sponsors[] = [
   {
     id: 'tiendaadela',
     name: 'Tienda Adela',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://www.facebook.com/huertinadeadela/',
+    label: 'Ir al Facebook de la Huertina de Adela',
     image: {
-      logo: Maxibon,
+      logo: HuertinaAdela,
       width: 200,
       height: 200,
     },
