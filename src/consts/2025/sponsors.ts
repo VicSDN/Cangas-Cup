@@ -20,7 +20,8 @@ import DeportesAcebo from '../../components/user/2025/SponsorsLogos/DeportesAceb
 import CafeMadrid from '../../components/user/2025/SponsorsLogos/CafeMadrid.astro'
 import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro'
 import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro'
-
+import Forno from '../../components/user/2025/SponsorsLogos/Forno.astro'
+import LaCasera from '../../components/user/2025/SponsorsLogos/LaCasera.astro'
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -249,12 +250,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-] as const;
-    /*
-  },
-
- 
-  {
+   {
     id: 'fornomanolo',
     name: 'Forno Manolo',
     url: 'https://www.facebook.com/forno.demanolo',
@@ -265,7 +261,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
+    {
     id: 'barlacasera',
     name: 'Bar La Casera',
     url: 'https://restaurantelacasera.es/',
@@ -276,6 +272,13 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
+] as const;
+ 
+  
+
+    /*
+ 
+
   {
     id: 'cachican',
     name: 'Cachican',

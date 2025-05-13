@@ -102,19 +102,16 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
       toast.appendChild(detailsEl);
     }
     
-    // Add close button
     const closeBtn = document.createElement('button');
     closeBtn.className = 'absolute top-1 right-1 text-white';
     closeBtn.innerHTML = '&times;';
     closeBtn.onclick = () => toast.remove();
     toast.appendChild(closeBtn);
-    
-    // Make toast relatively positioned for close button
+
     toast.style.position = 'relative';
     
     toastContainer.appendChild(toast);
-    
-    // Auto-dismiss after 5 seconds
+
     setTimeout(() => {
       toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
       setTimeout(() => toast.remove(), 500);
