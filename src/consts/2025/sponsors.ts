@@ -22,6 +22,15 @@ import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro'
 import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro'
 import Forno from '../../components/user/2025/SponsorsLogos/Forno.astro'
 import LaCasera from '../../components/user/2025/SponsorsLogos/LaCasera.astro'
+import Cachican from '../../components/user/2025/SponsorsLogos/Cachican.astro'
+import Bosque from '../../components/user/2025/SponsorsLogos/Bosque.astro'
+import LaBlugo from '../../components/user/2025/SponsorsLogos/LaBlugo.astro'
+import Sidreria from '../../components/user/2025/SponsorsLogos/Sidreria.astro'
+import DeportesCarro from '../../components/user/2025/SponsorsLogos/DeportesCarro.astro'
+import Varesport from '../../components/user/2025/SponsorsLogos/Varesport.astro'
+import Magadan from '../../components/user/2025/SponsorsLogos/Magadan.astro'
+import HuertinaAdela from '../../components/user/2025/SponsorsLogos/HuertinaAdela.astro'
+import Excalex from '../../components/user/2025/SponsorsLogos/Excalex.astro'
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -272,14 +281,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-] as const;
- 
-  
-
-    /*
- 
-
-  {
+   {
     id: 'cachican',
     name: 'Cachican',
     url: 'https://cachican.es/',
@@ -290,18 +292,18 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
+   {
     id: 'lablugo',
     name: 'La Blugo',
     url: 'https://pidelablugo.com/',
     label: 'Haz tu pedido en La Blugo',
     image: {
-      logo: Lablugo,
+      logo: LaBlugo,
       width: 200,
       height: 200,
     },
   },
-  {
+{
     id: 'bosque',
     name: 'Bosque',
     url: 'https://www.facebook.com/elbosqueoviedo/?locale=es_ES',
@@ -312,24 +314,13 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
+   {
     id: 'sidrerianarcea',
     name: 'Sidreria Narcea',
-    url: 'https://froneri.es/nuestras-marcas/maxibon',
-    label: 'Ir a la página web de Maxibon',
+    url: 'https://sidrerianarcea.es/',
+    label: 'Ir a la página web de tu sidrería preferida',
     image: {
-      logo: Bosque,
-      width: 200,
-      height: 200,
-    },
-  },
-  {
-    id: 'sidrerianarcea',
-    name: 'Sidreria Narcea',
-    url: 'https://www.instagram.com/sidrerianarcea/?hl=es',
-    label: 'Ir al instagram de Sidreria Narcea',
-    image: {
-      logo: SidreriaNarcea,
+      logo: Sidreria,
       width: 200,
       height: 200,
     },
@@ -345,30 +336,18 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-    {
-     id: "asesoriaCGL",
-    name: "AsesoriaCGL",
-    url: "https://www.instagram.com/cgl_consultores/?hl=es",,
-    label: 'Ir a la página web de AsesoriaCGL',
-    image: {
-      logo: AsesoriaCGL,
-      width: 200,
-      height: 200,
-    },
-  },
-  {
+   {
     id: 'deportescarro',
     name: 'Deportescarro',
     url: 'https://www.deportescarro.com/ps/es/',
     label: 'Ir a la página web de Deportes Carro',
     image: {
-      logo: Maxibon,
+      logo: DeportesCarro,
       width: 200,
       height: 200,
     },
   },
- 
-  {
+   {
     id: 'barmagadan',
     name: 'Bar Magadan',
     url: 'https://www.facebook.com/people/Bar-Restaurante-Magadan/100063656434186/?paipv=0&eav=AfbI-vq3PSWc0VF5W7uneNRZ87OwCCGiWeZ2CHh1SuhL7Ut9TMQdyQTChh8XngJpY8Y&_rdr',
@@ -379,7 +358,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
+   {
     id: 'tiendaadela',
     name: 'Tienda Adela',
     url: 'https://www.facebook.com/huertinadeadela/',
@@ -390,4 +369,54 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
+    {
+    id: 'casafarruco',
+    name: 'Casa Farruco',
+    url: 'https://www.facebook.com/people/Casa-Farruco/61559431012064/',
+    label: 'Ir al facebook de SCasa Farruko',
+    image: {
+      logo: Excalex,
+      width: 200,
+      height: 200,
+    },
+  },
+  {
+    id: 'excalex',
+    name: 'Excalex',
+    url: 'https://excalex.com/',
+    label: 'Página Oficial de Casa Farruco',
+    image: {
+      logo: Excalex,
+      width: 200,
+      height: 200,
+    },
+  },
+] as const;
+ 
+  
+
+    /*
+ 
+
+ 
+ 
+  
+ 
+  {
+    id: 'sidrerianarcea',
+    name: 'Sidreria Narcea',
+    url: 'https://www.instagram.com/sidrerianarcea/?hl=es',
+    label: 'Ir al instagram de Sidreria Narcea',
+    image: {
+      logo: SidreriaNarcea,
+      width: 200,
+      height: 200,
+    },
+  },
+
+  
+
+ 
+ 
+ 
   */

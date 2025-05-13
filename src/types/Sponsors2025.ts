@@ -31,7 +31,9 @@ type SponsorId =
   | 'asesoriaCGL'
   | 'barazul'
   | 'barmagadan'
-  | 'tiendaadela';
+  | 'tiendaadela'
+  | 'excalex'
+  | 'casafarruco';
 
 type SponsorName =
   | 'Ayuntamiento Cangas del Narcea'
@@ -66,7 +68,9 @@ type SponsorName =
   | 'Deportescarro'
   | 'Bar Azul'
   | 'Bar Magadan'
-  | 'Tienda Adela';
+  | 'Tienda Adela'
+  | 'Excalex'
+  | 'Casa Farruco';
 
   export interface Sponsors {
     id: SponsorId
