@@ -9,8 +9,6 @@ const tab = Astro.url.searchParams.get('tab') || 'Clasificación';
 <Layout2025 title='Estadísticas Cangas cup' description='Las estadisticas de los jugadores de la Cangas Cup'>
 <HeaderTabs />
 
-{tab === 'Clasificación' && <GroupRanking />}
-{tab === 'Goleadores' && <TopScorers />}
 </Layout2025>
 
 

@@ -1,6 +1,20 @@
 ---
+import { supabase } from '../../../lib/supabase';
+
+const { data: rankings, error } = await supabase
+  .from('view_group_ranking_ordered')
+  .select('*')
+  .order('group_name', { ascending: true })
+  .order('position_in_group', { ascending: true });
+
+if (error) throw error;
+
+// Obtener lista única de grupos
+const groupNames = [...new Set(rankings.map(r => r.group_name))];
+
+// Definir tabs con grupos dinámicos
 const tabs = {
-  Clasificación: [],
+  Clasificación: groupNames,
   Goleadores: ['Todos', 'Por grupo', 'Por equipo'],
   Amarillas: [],
   Rojas: [],
@@ -8,21 +22,20 @@ const tabs = {
 
 type TabKey = keyof typeof tabs;
 
-
 const rawTab = Astro.url.searchParams.get('tab');
 const currentTab: TabKey = (Object.keys(tabs) as TabKey[]).includes(rawTab as TabKey)
   ? (rawTab as TabKey)
   : 'Clasificación';
 
-const currentSubtab = Astro.url.searchParams.get('subtab') || tabs[currentTab][0] || null;
+const rawSubtab = Astro.url.searchParams.get('subtab');
+
+const currentSubtab =
+  rawSubtab && Array.isArray(tabs[currentTab]) && tabs[currentTab].includes(rawSubtab as any)
+    ? rawSubtab
+    : tabs[currentTab][0] || null;
 
 
-// Simulación de datos (aquí usarías tu base de datos real)
-const clasificaciones = [
-  { grupo: 'A', equipos: ['Equipo 1', 'Equipo 2', 'Equipo 3'] },
-  { grupo: 'B', equipos: ['Equipo 4', 'Equipo 5', 'Equipo 6'] },
-];
-
+// Simulación de datos de goleadores
 const goleadores = [
   { jugador: 'Jugador 1', equipo: 'Equipo 1', goles: 5, grupo: 'A' },
   { jugador: 'Jugador 2', equipo: 'Equipo 2', goles: 4, grupo: 'A' },
@@ -31,7 +44,8 @@ const goleadores = [
 ---
 
 <nav class="flex flex-col items-center bg-black text-white p-4">
-  <div class="flex gap-4 mb-2">
+  <!-- Tabs principales -->
+  <div class="flex gap-4 mb-2 flex-wrap justify-center">
     {Object.keys(tabs).map(tab => (
       <a
         href={`?tab=${tab}`} 
@@ -42,8 +56,9 @@ const goleadores = [
     ))}
   </div>
 
+  <!-- Subtabs dinámicos -->
   {tabs[currentTab]?.length > 0 && (
-    <div class="flex gap-2 mb-4">
+    <div class="flex gap-2 mb-4 flex-wrap justify-center">
       {tabs[currentTab].map(subtab => (
         <a
           href={`?tab=${currentTab}&subtab=${subtab}`}
@@ -62,25 +77,24 @@ const goleadores = [
 
 <!-- Contenido dinámico -->
 <div class="p-4 text-black">
-  {currentTab === 'Clasificación' && (
-    <div class="space-y-4">
-      <h2 class="text-xl font-bold">Clasificación por grupos</h2>
-      {clasificaciones.map(grupo => (
-        <div>
-          <h3 class="font-semibold">Grupo {grupo.grupo}</h3>
-          <ul class="list-disc pl-5">
-            {grupo.equipos.map(equipo => (
-              <li>{equipo}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
+  {currentTab === 'Clasificación' && currentSubtab && (
+    <div>
+      <h2 class="text-xl font-bold mb-2">Grupo {currentSubtab}</h2>
+      {rankings
+        .filter(row => row.group_name === currentSubtab)
+        .map(row => (
+          <div class="border-b py-2 flex justify-between">
+            <span>{row.team_name}</span>
+            <span>{row.points} pts</span>
+          </div>
+        ))}
     </div>
   )}
 
   {currentTab === 'Goleadores' && (
     <div>
       <h2 class="text-xl font-bold mb-2">Goleadores - {currentSubtab}</h2>
+
       {currentSubtab === 'Todos' && (
         <ul class="list-disc pl-5">
           {goleadores
@@ -93,7 +107,7 @@ const goleadores = [
 
       {currentSubtab === 'Por grupo' && (
         <>
-          {['A', 'B'].map(grupo => (
+          {groupNames.map(grupo => (
             <div class="mb-2">
               <h3 class="font-semibold">Grupo {grupo}</h3>
               <ul class="list-disc pl-5">
