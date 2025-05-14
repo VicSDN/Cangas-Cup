@@ -1,0 +1,50 @@
+---
+import Layout from '../../../layouts/Layout2025.astro';
+---
+<Layout
+  description="Ver los partidos en directo, aquí puedes hacerlo"
+  title="Partidos en directo 2025"
+>
+<div class="video-container">
+  <iframe 
+    src="https://www.youtube.com/embed/videoseries?list=PL6qEceXaA2yx1neDJjzt8LgfyoasDcp8K"
+    title="YouTube playlist DeporteAstur"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+    allowfullscreen
+  ></iframe>
+</div>
+
+</Layout>
+<style>
+.video-container {
+  position: relative;
+  padding-bottom: 36.00%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: 1000px;
+  margin: auto;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media screen and (min-width: 1024px) {
+  .video-container {
+    max-height: 500px;
+  }
+
+  .video-container iframe {
+    height: 500px;
+    position: relative;  
+  }
+}
+
+</style>

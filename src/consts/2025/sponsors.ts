@@ -31,6 +31,7 @@ import Varesport from '../../components/user/2025/SponsorsLogos/Varesport.astro'
 import Magadan from '../../components/user/2025/SponsorsLogos/Magadan.astro'
 import HuertinaAdela from '../../components/user/2025/SponsorsLogos/HuertinaAdela.astro'
 import Excalex from '../../components/user/2025/SponsorsLogos/Excalex.astro'
+import Farruco from '../../components/user/2025/SponsorsLogos/Farruco.astro'
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -375,7 +376,7 @@ export const SPONSORS: Sponsors[] = [
     url: 'https://www.facebook.com/people/Casa-Farruco/61559431012064/',
     label: 'Ir al facebook de SCasa Farruko',
     image: {
-      logo: Excalex,
+      logo: Farruco,
       width: 200,
       height: 200,
     },

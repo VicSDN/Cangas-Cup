@@ -15,13 +15,13 @@ const selectedYear =
 const pages = [
   {
     name: 'Equipos y Resultados',
-    href: `/user/${selectedYear}`,
+    href: `/user/${selectedYear}/rankings`,
     disabled: true,
     soonDate: 'Próximamente',
   },
   { name: 'Año', href: '#', disabled: false, dropdown: true },
-  { name: 'Reglamento', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
-  { name: 'Rankings', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
+  { name: 'Reglamento', href: `/user/${selectedYear}/regulations`, disabled: false, soonDate: 'Próximamente' },
+  { name: 'Directo', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
 ];
 ---
 
