@@ -1,9 +1,16 @@
 ---
-import CompetitionView from "../../../components/user/2025/CompetitionView";
+import HeaderTabs from '../../../components/user/2025/HeaderTabs.astro';
+import GroupRanking from '../../../components/user/2025/GroupRanking.astro';
+import TopScorers from '../../../components/user/2025/TopScorers.astro';
+import Layout2025 from '../../../layouts/Layout2025.astro';
+
+const tab = Astro.url.searchParams.get('tab') || 'Clasificación';
 ---
-<html>
-  <body>
-    <h1 class="text-2xl font-bold p-4">Clasificación y Rankings</h1>
-    <CompetitionView />
-  </body>
-</html>
+<Layout2025 title='Estadísticas Cangas cup' description='Las estadisticas de los jugadores de la Cangas Cup'>
+<HeaderTabs />
+
+{tab === 'Clasificación' && <GroupRanking />}
+{tab === 'Goleadores' && <TopScorers />}
+</Layout2025>
+
+

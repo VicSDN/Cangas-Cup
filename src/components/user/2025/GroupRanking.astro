@@ -1,0 +1,17 @@
+---
+import { supabase } from '../../../lib/supabase';
+const { data, error } = await supabase
+  .from('view_group_ranking_ordered')
+  .select('*')
+  .order('position_in_group');
+
+if (error) throw error;
+---
+
+<h2 class="text-xl font-bold my-4">Clasificación por grupo</h2>
+{data?.map(row => (
+  <div class="border-b py-2 flex justify-between">
+    <span>{row.group_name} - {row.team_name}</span>
+    <span>{row.points} pts</span>
+  </div>
+))}

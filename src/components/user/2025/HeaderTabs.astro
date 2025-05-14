@@ -1,0 +1,16 @@
+---
+const tabs = ['Clasificación', 'Goleadores', 'Amarillas', 'Rojas'];
+const current = Astro.url.searchParams.get('tab') || 'Clasificación';
+---
+
+<nav class="flex gap-4 p-4 bg-black text-white">
+  {tabs.map(tab => (
+    <a
+      href={`?tab=${tab}`} 
+      class={`px-3 py-1 rounded ${current === tab ? 'bg-white text-black font-bold' : 'hover:bg-gray-700'}`}
+    >
+      {tab}
+    </a>
+  ))}
+</nav>
+
