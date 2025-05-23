@@ -58,7 +58,6 @@ try {
   groupsMap = new Map((groupsData || []).map(group => [group.id, group.name]));
 
 } catch (error: any) {
-  console.error(`[SSR][${new Date().toISOString()}] Error obteniendo datos:`, error);
   ssrErrorMessage = error.message || "Ocurrió un error al cargar los datos del torneo.";
 }
 
@@ -159,7 +158,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
                     : <span class="text-xs italic text-gray-500 dark:text-gray-400">Pendiente</span>
                   }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                   <button
                     type="button"
                     class="update-score-btn text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium hover:underline"
@@ -170,6 +169,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
                   >
                     Actualizar Resultado
                   </button>
+                  <button
+                    type="button"
+                    class="delete-match-btn text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium hover:underline"
+                    data-match-id={match.id}
+                    data-match-info={`${match.home_team_name} vs ${match.away_team_name} (${match.display_date})`}
+                  >
+                    Eliminar
+                  </button>
                 </td>
               </tr>
             ))
@@ -179,11 +186,11 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
     </div>
   </main>
 
-  <div id="update-score-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div id="update-score-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-update" role="dialog" aria-modal="true">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all">
       <div class="flex justify-between items-center mb-4">
-        <h2 id="modal-title" class="text-xl font-semibold text-gray-800 dark:text-white">Actualizar Resultado</h2>
-        <button type="button" id="close-modal-btn" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+        <h2 id="modal-title-update" class="text-xl font-semibold text-gray-800 dark:text-white">Actualizar Resultado</h2>
+        <button type="button" id="close-update-modal-btn" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
           <span class="sr-only">Cerrar modal</span>
           <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
@@ -216,6 +223,39 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
       </form>
     </div>
   </div>
+
+  <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-delete" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all">
+      <div class="sm:flex sm:items-start">
+        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+          <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title-delete">
+            Eliminar Partido
+          </h3>
+          <div class="mt-2">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              ¿Estás seguro de que quieres eliminar este partido? <br/>
+              <strong id="delete-modal-match-info" class="font-semibold"></strong><br/>
+              Esta acción no se puede deshacer.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <button type="button" id="confirm-delete-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+          Eliminar
+        </button>
+        <button type="button" id="cancel-delete-btn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+          Cancelar
+        </button>
+      </div>
+      <p id="delete-modal-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
+    </div>
+  </div>
 </LayoutAdmin>
 
 <script>
@@ -233,15 +273,11 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
     private submitButton = document.getElementById('submit-update-btn') as HTMLButtonElement | null;
 
     constructor() {
-      if (!this.modalElement || !this.formElement) {
-        console.error('[CSR] Modal elements not found.');
-        return; 
-      }
-      document.getElementById('close-modal-btn')?.addEventListener('click', () => this.hide());
+      if (!this.modalElement || !this.formElement) return; 
+      document.getElementById('close-update-modal-btn')?.addEventListener('click', () => this.hide());
       document.getElementById('cancel-update-btn')?.addEventListener('click', () => this.hide());
       this.formElement.addEventListener('submit', (e) => this.handleSubmit(e));
     }
-
     private displayError(message: string) {
       if (this.errorElement) {
         this.errorElement.textContent = message;
@@ -254,21 +290,16 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
         this.errorElement.classList.add('hidden');
       }
     }
-
     public show(matchId: string, homeTeamName: string, awayTeamName: string, year?: string | number) {
       if (!this.modalElement || !this.matchIdInput || !this.matchInfoElement ||
           !this.homeTeamNameElement || !this.awayTeamNameElement || !this.matchYearInput ||
-          !this.homeScoreInput || !this.awayScoreInput) {
-        alert('Error: No se puede abrir el modal. Faltan elementos HTML.');
-        return;
-      }
+          !this.homeScoreInput || !this.awayScoreInput) return;
       this.clearError();
       this.matchIdInput.value = matchId;
       if (year) this.matchYearInput.value = String(year);
       this.homeTeamNameElement.textContent = homeTeamName;
       this.awayTeamNameElement.textContent = awayTeamName;
       this.matchInfoElement.textContent = `Partido: ${homeTeamName} vs ${awayTeamName}`;
-
       const row = document.querySelector(`tr[data-match-row-id="${matchId}"]`);
       this.homeScoreInput.value = '';
       this.awayScoreInput.value = '';
@@ -293,42 +324,32 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
         this.clearError();
       }
     }
-
     private async handleSubmit(event: SubmitEvent) {
       event.preventDefault();
       if (!this.matchIdInput || !this.homeScoreInput || !this.awayScoreInput || !this.submitButton || !this.matchYearInput) return;
       this.clearError();
-
       const matchId = this.matchIdInput.value;
       const homeScore = parseInt(this.homeScoreInput.value, 10);
       const awayScore = parseInt(this.awayScoreInput.value, 10);
       const matchYear = this.matchYearInput.value;
-
       if (isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
         this.displayError('Los resultados deben ser números enteros no negativos.');
         return;
       }
-      
-      this.submitButton.disabled = true;
-      this.submitButton.textContent = 'Guardando...';
-
+      if(this.submitButton) {
+        this.submitButton.disabled = true;
+        this.submitButton.textContent = 'Guardando...';
+      }
       const payload: { match_id: string, home_score: number, away_score: number, year?: string } = { 
-        match_id: matchId, 
-        home_score: homeScore, 
-        away_score: awayScore 
+        match_id: matchId, home_score: homeScore, away_score: awayScore 
       };
       if (matchYear) payload.year = matchYear; 
-
       try {
         const response = await fetch(`/api/auth/updatedMatchedScore`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
         });
         const responseData = await response.json();
-        if (!response.ok) {
-          throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
-        }
+        if (!response.ok) throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
         const rowToUpdate = document.querySelector(`tr[data-match-row-id="${matchId}"]`);
         if (rowToUpdate) {
           const resultCell = rowToUpdate.querySelector('.result-cell');
@@ -336,12 +357,78 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
         }
         this.hide();
       } catch (error: any) {
-        console.error('[CSR] Error al actualizar resultado:', error);
         this.displayError(error.message || 'Ocurrió un error desconocido.');
       } finally {
         if (this.submitButton) {
           this.submitButton.disabled = false;
           this.submitButton.textContent = 'Guardar Cambios';
+        }
+      }
+    }
+  }
+
+  class DeleteConfirmModal {
+    private modalElement = document.getElementById('delete-confirm-modal') as HTMLElement | null;
+    private matchInfoElement = document.getElementById('delete-modal-match-info') as HTMLElement | null;
+    private confirmButton = document.getElementById('confirm-delete-btn') as HTMLButtonElement | null;
+    private errorElement = document.getElementById('delete-modal-error') as HTMLElement | null;
+    private currentMatchId: string | null = null;
+
+    constructor() {
+      if (!this.modalElement || !this.confirmButton) return;
+      document.getElementById('cancel-delete-btn')?.addEventListener('click', () => this.hide());
+      this.confirmButton.addEventListener('click', () => this.handleConfirmDelete());
+    }
+    private displayError(message: string) {
+      if (this.errorElement) {
+        this.errorElement.textContent = message;
+        this.errorElement.classList.remove('hidden');
+      }
+    }
+    private clearError() {
+      if (this.errorElement) {
+        this.errorElement.textContent = '';
+        this.errorElement.classList.add('hidden');
+      }
+    }
+    public show(matchId: string, matchInfo: string) {
+      if (!this.modalElement || !this.matchInfoElement) return;
+      this.currentMatchId = matchId;
+      this.matchInfoElement.textContent = matchInfo;
+      this.clearError();
+      this.modalElement.classList.remove('hidden');
+      this.modalElement.classList.add('flex');
+    }
+    public hide() {
+      if (this.modalElement) {
+        this.modalElement.classList.add('hidden');
+        this.modalElement.classList.remove('flex');
+        this.currentMatchId = null;
+        this.clearError();
+      }
+    }
+    private async handleConfirmDelete() {
+      if (!this.currentMatchId || !this.confirmButton) return;
+      this.clearError();
+      this.confirmButton.disabled = true;
+      this.confirmButton.textContent = 'Eliminando...';
+      try {
+        const response = await fetch(`/api/deleteMatch`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ match_id: this.currentMatchId }),
+        });
+        const responseData = await response.json();
+        if (!response.ok) throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
+        const rowToRemove = document.querySelector(`tr[data-match-row-id="${this.currentMatchId}"]`);
+        rowToRemove?.remove();
+        this.hide();
+      } catch (error: any) {
+        this.displayError(error.message || 'Ocurrió un error desconocido al eliminar.');
+      } finally {
+        if(this.confirmButton) {
+            this.confirmButton.disabled = false;
+            this.confirmButton.textContent = 'Eliminar';
         }
       }
     }
@@ -354,7 +441,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
         window.location.href = `/admin/matches?year=${yearSelect.value}`;
       });
     }
-    const modalInstance = new ScoreUpdateModal();
+    const scoreModal = new ScoreUpdateModal();
+    const deleteModal = new DeleteConfirmModal();
+
     document.querySelectorAll('.update-score-btn').forEach(button => {
       button.addEventListener('click', (event) => {
         const target = event.currentTarget as HTMLButtonElement;
@@ -363,7 +452,18 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match) => {
         const awayTeamName = target.dataset.awayTeam;
         const year = target.dataset.year; 
         if (matchId && homeTeamName && awayTeamName) {
-          modalInstance.show(matchId, homeTeamName, awayTeamName, year);
+          scoreModal.show(matchId, homeTeamName, awayTeamName, year);
+        }
+      });
+    });
+
+    document.querySelectorAll('.delete-match-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const target = event.currentTarget as HTMLButtonElement;
+        const matchId = target.dataset.matchId;
+        const matchInfo = target.dataset.matchInfo;
+        if (matchId && matchInfo) {
+          deleteModal.show(matchId, matchInfo);
         }
       });
     });
