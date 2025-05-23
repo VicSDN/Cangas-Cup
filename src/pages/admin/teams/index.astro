@@ -4,15 +4,42 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
 import TeamsList from '../../../components/admin/TeamsList.astro';
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get('year') || '2025';
+const currentYear = url.searchParams.get('year') || '2025'; 
 
-const years = ['2025', '2026'];
+const availableYears = ['2024', '2025', '2026', '2027']; 
 ---
 
 <LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
-    <TeamsList currentYear={currentYear} />
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Equipos del Año: {currentYear}</h1>
+      <div class="flex items-center gap-2">
+        <label for="year-selector" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+          Ver año:
+        </label>
+        <select
+          id="year-selector"
+          name="year"
+          class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+        >
+          {availableYears.map(year => (
+            <option value={year} selected={year === currentYear}>{year}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    <TeamsList currentYear={currentYear} availableYears={availableYears} />
+
+    <div class="mt-8 text-center">
+      <a 
+        href={`/admin/equipos/add?year=${currentYear}`} 
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        Añadir Nuevo Equipo para {currentYear}
+      </a>
+    </div>
   </main>
 </LayoutAdmin>
 
@@ -20,36 +47,61 @@ const years = ['2025', '2026'];
   const token = localStorage.getItem('sb-access-token');
 
   if (!token) {
-    alert('No se encontró el token de autenticación. Por favor, inicie sesión nuevamente.');
-    window.location.href = '/admin/signin';
-    throw new Error('Token no disponible');
+    console.warn('Token de autenticación no encontrado, redirigiendo a login.');
+    if (window.location.pathname !== '/admin/signin') {
+        window.location.href = '/admin/signin';
+    }
   }
 
   async function logout() {
     try {
-      localStorage.removeItem('sb-access-token');
+      const currentToken = localStorage.getItem('sb-access-token');
+      if (!currentToken) {
+          console.error('No hay token para cerrar sesión.');
+          window.location.href = '/admin/signin'; 
+          return;
+      }
 
-      const response = await fetch('/api/logout', {
+      localStorage.removeItem('sb-access-token');
+      localStorage.removeItem('sb-refresh-token');
+      localStorage.removeItem('sb-user');
+
+
+      const response = await fetch('/api/logout', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (response.ok) {
+      if (response.ok || response.status === 401) { 
+        console.log('Sesión cerrada correctamente o token ya inválido.');
         window.location.href = '/admin/signin';
       } else {
-        throw new Error('Error al cerrar sesión');
+        const errorData = await response.json().catch(() => ({ message: 'Error desconocido al cerrar sesión desde el servidor.' }));
+        throw new Error(errorData.message || 'Error al cerrar sesión en el servidor');
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al cerrar sesión');
+      console.error('Error en la función logout:', error);
+      window.location.href = '/admin/signin';
     }
   }
 
-  const logoutButton = document.getElementById('logout-button');
+  const logoutButton = document.getElementById('logout-button'); 
   if (logoutButton) {
-    logoutButton.addEventListener('click', logout);
+    logoutButton.addEventListener('click', (e) => {
+        e.preventDefault(); 
+        logout();
+    });
+  }
+
+  const yearSelector = document.getElementById('year-selector');
+  if (yearSelector) {
+    yearSelector.addEventListener('change', (event) => {
+      const selectedYear = (event.target as HTMLSelectElement).value;
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('year', selectedYear);
+      window.location.href = currentUrl.toString(); 
+    });
   }
 </script>

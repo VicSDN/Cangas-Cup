@@ -1,31 +1,53 @@
 ---
 import { supabase } from '../../lib/supabase.ts';
-import YearFilter from './YearFilter.astro';
-import AddTeamButton from './AddTeamButton.astro';
+import YearFilter from './YearFilter.astro'; 
+import AddTeamButton from './AddTeamButton.astro'; 
+
 interface Props {
   currentYear: string;
+  availableYears: string[]; 
 }
 
 interface Team {
   id: number;
   name: string;
-  group_id: number;
-  location:string;
-  year: string;
+  location: string; 
+  year: string; 
+  tournament_group: { 
+    id: number;
+    name: string;
+  } | null; 
 }
 
-const { currentYear } = Astro.props;
+const { currentYear, availableYears } = Astro.props; 
 
-const years = ['2025', '2026'];
-
-const { data: teams, error } = await supabase
+const { data: teamsData, error } = await supabase
   .from('tournament_team')
-  .select('*')
+  .select(`
+    id,
+    name,
+    location, 
+    year,
+    tournament_group ( id, name ) 
+  `) 
   .eq('year', currentYear)
   .order('name');
 
+const teams: Team[] | null = teamsData 
+  ? teamsData.map(t => ({
+      id: t.id,
+      name: t.name,
+      location: t.location,
+      year: t.year.toString(),
+      tournament_group: t.tournament_group ? { 
+        id: (t.tournament_group as any).id, 
+        name: (t.tournament_group as any).name 
+      } : null,
+    }))
+  : null;
+
 if (error) {
-  console.error('Error al obtener equipos:', error);
+  console.error('Error al obtener equipos:', error.message);
 }
 ---
 
@@ -39,156 +61,157 @@ if (error) {
         >
           {teams?.length || 0} equipos
         </span>
-        <YearFilter currentYear={currentYear} years={years} />
+        <YearFilter currentYear={currentYear} years={availableYears} />
       </div>
     </div>
-    <AddTeamButton />
+    <AddTeamButton currentYear={currentYear} />
   </div>
 
   <div class="mt-6 md:flex md:items-center md:justify-between">
     <div class="relative flex items-center mt-4 md:mt-0">
       <span class="absolute">
         <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-        />
-      </svg>
-    </span>
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Buscar equipo por nombre, ID o grupo"
-      class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
-    />
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+          />
+        </svg>
+      </span>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Buscar equipo, grupo o ID"
+        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+      />
+    </div>
   </div>
-</div>
 
-{
-  error ? (
-    <div class="text-red-500">Error al cargar los equipos</div>
-  ) : teams && teams.length > 0 ? (
-    <>
-      <div
-        id="teamsGrid"
-        class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
-      >
-        {(teams ?? []).map((team) => (
-          <a href={`/admin/teams/${team.id}`} class="block h-full">
-            <div
-              class="team p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 h-full"
-              data-key={team.id}
-              data-name={team.name}
-              data-group_id={team.group_id}
-              data-year={team.year}
-            >
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{team.name}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Grupo: {team.group_id}</p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Año: {team.year}</p>
-            </div>
-          </a>
-        ))}
+  {
+    error ? (
+      <div class="mt-6 text-center text-red-500">
+        Error al cargar los equipos: {error.message}. Por favor, revisa la consola o inténtalo más tarde.
       </div>
-        <div id="noResults" class="hidden mt-6 text-center">
-          <p class="text-gray-500 dark:text-gray-400 text-lg">
-            No se encontraron equipos que coincidan con tu búsqueda
+    ) : teams && teams.length > 0 ? (
+      <>
+        <div
+          id="teamsGrid"
+          class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-fr"
+        >
+          {teams.map((team) => (
+            <a href={`/admin/teams/${team.id}?year=${currentYear}`}class="block h-full no-underline team-link">
+              <div
+                class="team-card p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out h-full flex flex-col justify-between border border-transparent hover:border-indigo-500 dark:hover:border-indigo-400"
+                data-id={team.id.toString()}
+                data-name={team.name.toLowerCase()}
+                data-group_name={team.tournament_group?.name.toLowerCase() || ''}
+                data-group_id={team.tournament_group?.id.toString() || ''}
+                data-year={team.year.toString()}
+                data-location={team.location?.toLowerCase() || ''}
+              >
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate" title={team.name}>
+                    {team.name}
+                  </h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Grupo: <span class="font-medium">{team.tournament_group?.name || 'N/A'}</span>
+                  </p>
+                  <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Localización: <span class="font-medium">{team.location || 'N/A'}</span>
+                  </p>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-right">
+                   <span class="text-xs text-gray-500 dark:text-gray-400">Año: {team.year}</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div id="noResultsMessage" class="hidden mt-6 text-center py-10">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin resultados</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            No se encontraron equipos que coincidan con tu búsqueda.
           </p>
         </div>
       </>
     ) : (
-      <div class="text-center text-gray-300">
-        No hay equipos registrados para el año {currentYear}
+      <div class="mt-6 text-center py-10 text-gray-500 dark:text-gray-400">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay equipos</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Aún no hay equipos registrados para el año {currentYear}.
+        </p>
+         <div class="mt-6">
+          <AddTeamButton currentYear={currentYear} isPrimary={true} /> 
+        </div>
       </div>
     )
   }
 </section>
 
 <script>
-  const searchInput = document.getElementById('searchInput');
-  const teamsGrid = document.getElementById('teamsGrid');
-  const noResults = document.getElementById('noResults');
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+  const teamsGrid = document.getElementById('teamsGrid') as HTMLElement | null;
+  const noResultsMessage = document.getElementById('noResultsMessage') as HTMLElement | null; // Corregido el ID aquí
 
-  if (searchInput && teamsGrid && noResults) {
+  if (searchInput && teamsGrid && noResultsMessage) {
     searchInput.addEventListener('input', function () {
-      const query = (this as HTMLInputElement).value
+      const query = this.value
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
 
-      let visibleTeams = 0;
-      const teams = document.querySelectorAll('.team');
-      const teamsArray = Array.from(teams);
+      let visibleTeamsCount = 0;
+      const teamLinks = teamsGrid.querySelectorAll('a.team-link'); 
 
-      teamsArray.sort((a, b) => {
-        const aName =
-          (a as HTMLElement).dataset.name
-            ?.toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') || '';
-        const bName =
-          (b as HTMLElement).dataset.name
-            ?.toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') || '';
-        const aId = (a as HTMLElement).dataset.key;
-        const bId = (b as HTMLElement).dataset.key;
-        const aGroup = (a as HTMLElement).dataset.group_id;
-        const bGroup = (b as HTMLElement).dataset.group_id;
+      teamLinks.forEach((linkElement) => {
+        const cardElement = linkElement.querySelector('.team-card') as HTMLElement | null;
+        if (!cardElement) return;
 
-        const aMatches =
-          aName.includes(query) || (aId ?? '').includes(query) || (aGroup ?? '').includes(query);
-        const bMatches =
-          bName.includes(query) || (bId ?? '').includes(query) || (bGroup ?? '').includes(query);
-
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        return 0;
-      });
-
-      teamsArray.forEach((team) => {
-        const parent = team.parentElement;
-        if (parent) {
-          teamsGrid.appendChild(parent);
-        }
-      });
-
-      teams.forEach((team) => {
-        const teamElement = team;
-        const name =
-          (teamElement as HTMLElement).dataset.name
-            ?.toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') || '';
-        const id = (teamElement as HTMLElement).dataset.key;
-        const group_id = (teamElement as HTMLElement).dataset.group_id;
-
-        if (
+        const name = (cardElement.dataset.name || '').toLowerCase();
+        const id = cardElement.dataset.id || '';
+        const groupName = (cardElement.dataset.group_name || '').toLowerCase();
+        const groupId = cardElement.dataset.group_id || '';
+        const location = (cardElement.dataset.location || '').toLowerCase();
+        
+        const matchesQuery =
           name.includes(query) ||
-          (id ?? '').includes(query) ||
-          (group_id ?? '').includes(query)
-        ) {
-          teamElement.classList.remove('hidden');
-          visibleTeams++;
+          id.includes(query) ||
+          groupName.includes(query) ||
+          groupId.includes(query) ||
+          location.includes(query); 
+
+        if (matchesQuery) {
+          linkElement.classList.remove('hidden'); 
+          visibleTeamsCount++;
         } else {
-          teamElement.classList.add('hidden');
+          linkElement.classList.add('hidden'); 
         }
       });
 
-      if (visibleTeams === 0) {
+      if (visibleTeamsCount === 0 && query.length > 0) {
         teamsGrid.classList.add('hidden');
-        noResults.classList.remove('hidden');
+        noResultsMessage.classList.remove('hidden');
       } else {
         teamsGrid.classList.remove('hidden');
-        noResults.classList.add('hidden');
+        noResultsMessage.classList.add('hidden');
       }
     });
+  } else {
+    if (!searchInput) console.error('Search input not found');
+    if (!teamsGrid) console.error('Teams grid not found');
+    if (!noResultsMessage) console.error('No results message element not found');
   }
 </script>

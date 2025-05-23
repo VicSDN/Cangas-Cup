@@ -1,234 +1,245 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import ButtonBack from '../../../sections/ButtonBack.astro';
+import { supabase } from '../../../lib/supabase'; 
+
+export const prerender = false; 
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get('year') || '2025';
+const currentYearParam = url.searchParams.get('year');
+const defaultYear = new Date().getFullYear().toString();
+const currentYear = currentYearParam || defaultYear;
 
-const years = ['2025', '2026'];
+let teams: any[] = [];
+let groups: any[] = [];
+let fetchError: string | null = null;
+
+try {
+  const { data: teamsData, error: teamsError } = await supabase
+    .from('tournament_team')
+    .select('id, name')
+    .eq('year', currentYear)
+    .order('name', { ascending: true });
+
+  if (teamsError) throw teamsError;
+  teams = teamsData || [];
+
+  const { data: groupsData, error: groupsError } = await supabase
+    .from('tournament_group')
+    .select('id, name')
+    .eq('year', currentYear)
+    .order('name', { ascending: true });
+
+  if (groupsError) throw groupsError;
+  groups = groupsData || [];
+
+} catch (error: any) {
+  console.error("Error fetching teams or groups for addMatch page:", error.message);
+  fetchError = `Error al cargar datos: ${error.message}`;
+}
 ---
 
 <LayoutAdmin
   title="Programar Nuevo Partido"
-  description="Programa un nuevo partido para la Cangas Cup"
+  description={`Programa un nuevo partido para el año ${currentYear}`}
 >
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
-    <div class="max-w-2xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6">Programar Nuevo Partido</h1>
+    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-xl">
+      <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Programar Partido ({currentYear})</h1>
+
+      {fetchError && (
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700" role="alert">
+          <p class="font-bold">Error:</p>
+          <p>{fetchError}</p>
+        </div>
+      )}
 
       <form id="match-form" class="space-y-6">
+        <input type="hidden" name="year" value={currentYear} />
         <div>
-          <label for="home_team" class="block text-sm font-medium text-gray-700">
+          <label for="home_team" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Equipo Local
           </label>
           <select
             id="home_team"
             name="home_team"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Selecciona un equipo</option>
+            {teams.map(team => <option value={team.id}>{team.name}</option>)}
           </select>
         </div>
 
         <div>
-          <label for="away_team" class="block text-sm font-medium text-gray-700">
+          <label for="away_team" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Equipo Visitante
           </label>
           <select
             id="away_team"
             name="away_team"
             required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Selecciona un equipo</option>
+            {teams.map(team => <option value={team.id}>{team.name}</option>)}
           </select>
         </div>
 
         <div>
-          <label for="group_id" class="block text-sm font-medium text-gray-700"> Grupo </label>
+          <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Grupo (Opcional para fases finales) </label>
           <select
             id="group_id"
             name="group_id"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
-            <option value="">Selecciona un grupo</option>
+            <option value="">Sin grupo (Fase Final)</option>
+            {groups.map(group => <option value={group.id}>{group.name}</option>)}
           </select>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label for="match_date_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Fecha del Partido
+                </label>
+                <input
+                    type="date"
+                    id="match_date_input"
+                    name="match_date_input"
+                    required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+            </div>
+            <div>
+                <label for="match_time_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Hora del Partido
+                </label>
+                <input
+                    type="time"
+                    id="match_time_input"
+                    name="match_time_input"
+                    required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+            </div>
+        </div>
+        
         <div>
-          <label for="match_date" class="block text-sm font-medium text-gray-700">
-            Fecha del Partido
-          </label>
-          <input
-            type="date"
-            id="match_date"
-            name="match_date"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+            <label for="match_stage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Etapa del Partido</label>
+            <select 
+              id="match_stage" 
+              name="match_stage"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="Fase de Grupos">Fase de Grupos</option>
+              <option value="Octavos">Octavos de Final</option>
+              <option value="Cuartos">Cuartos de Final</option>
+              <option value="Semifinal">Semifinal</option>
+              <option value="Final">Final</option>
+            </select>
         </div>
 
-        <div>
-          <label for="match_time" class="block text-sm font-medium text-gray-700">
-            Hora del Partido
-          </label>
-          <input
-            type="time"
-            id="match_time"
-            name="match_time"
-            required
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
+        <div class="flex items-center">
+            <input 
+              id="is_local_final" 
+              name="is_local_final"
+              type="checkbox" 
+              class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label for="is_local_final" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+              ¿Es Final Local?
+            </label>
         </div>
 
-        <div class="flex justify-end">
+
+        <div class="flex justify-end pt-2">
           <button
             type="submit"
-            class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-150"
           >
             Programar Partido
           </button>
         </div>
+         <p id="form-feedback" class="text-sm mt-2"></p>
       </form>
     </div>
   </main>
 </LayoutAdmin>
 
 <script>
-  const currentYear = new URL(window.location.href).searchParams.get('year') || '2025';
-
-  async function loadTeams() {
-    try {
-      const response = await fetch(`/api/teams?year=${currentYear}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error(`Error al cargar equipos: ${response.status}`);
-      }
-      const teams = await response.json();
-
-      const homeTeamSelect = document.getElementById('home_team') as HTMLSelectElement;
-      const awayTeamSelect = document.getElementById('away_team') as HTMLSelectElement;
-
-      if (homeTeamSelect && awayTeamSelect) {
-        homeTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
-        awayTeamSelect.innerHTML = '<option value="">Selecciona un equipo</option>';
-
-        teams.forEach((team: { id: string; name: string }) => {
-          const option = document.createElement('option');
-          option.value = team.id;
-          option.textContent = team.name;
-          homeTeamSelect.appendChild(option.cloneNode(true));
-          awayTeamSelect.appendChild(option);
-        });
-      }
-    } catch (error) {
-      console.error('Error al cargar equipos:', error);
-      alert('Error al cargar los equipos. Por favor, recarga la página.');
-    }
-  }
-
-  async function loadGroups() {
-    try {
-      const response = await fetch(`/api/groups?year=${currentYear}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        throw new Error(`Error al cargar grupos: ${response.status}`);
-      }
-      const groups = await response.json();
-
-      const groupSelect = document.getElementById('group_id') as HTMLSelectElement;
-      if (groupSelect) {
-        groupSelect.innerHTML = '<option value="">Selecciona un grupo</option>';
-        groups.forEach((group: { id: string; name: string }) => {
-          const option = document.createElement('option');
-          option.value = group.id;
-          option.textContent = group.name;
-          groupSelect.appendChild(option);
-        });
-      }
-    } catch (error) {
-      console.error('Error al cargar grupos:', error);
-      alert('Error al cargar los grupos. Por favor, recarga la página.');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    loadTeams();
-    loadGroups();
-  });
-
   const form = document.getElementById('match-form') as HTMLFormElement;
-  if (form) {
+  const feedbackElement = document.getElementById('form-feedback');
+
+  if (form && feedbackElement) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      feedbackElement.textContent = '';
+      feedbackElement.className = 'text-sm mt-2'; 
+
+      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Programando...';
 
       const formData = new FormData(form);
-      const matchDate = formData.get('match_date') as string;
-      const matchTime = formData.get('match_time') as string;
+      const matchDateInput = formData.get('match_date_input') as string;
+      const matchTimeInput = formData.get('match_time_input') as string;
+      const homeTeamId = formData.get('home_team') as string;
+      const awayTeamId = formData.get('away_team') as string;
 
-      const matchDateTime = new Date(`${matchDate}T${matchTime}`).toISOString();
+      if (homeTeamId === awayTeamId) {
+        feedbackElement.textContent = 'El equipo local y visitante no pueden ser el mismo.';
+        feedbackElement.classList.add('text-red-600');
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        return;
+      }
 
-      const data = {
-        home_team: formData.get('home_team'),
-        away_team: formData.get('away_team'),
-        group_id: formData.get('group_id'),
-        match_date: matchDateTime,
-        year: currentYear,
+      const matchDateTimeISO = new Date(`${matchDateInput}T${matchTimeInput}:00`).toISOString();
+
+      const dataToSubmit = {
+        home_team: parseInt(homeTeamId, 10),
+        away_team: parseInt(awayTeamId, 10),
+        group_id: formData.get('group_id') ? parseInt(formData.get('group_id') as string, 10) : null,
+        match_date: matchDateTimeISO,
+        year: parseInt(formData.get('year') as string, 10),
+        match_stage: formData.get('match_stage') as string,
+        is_local_final: formData.get('is_local_final') === 'on',
       };
 
       try {
-        const response = await fetch('/api/matches', {
+        const response = await fetch('/api/createMatch', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
-          body: JSON.stringify(data),
+          body: JSON.stringify(dataToSubmit),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.details || 'Error desconocido');
-        }
-
         const result = await response.json();
-        alert('Partido programado exitosamente');
-        window.location.href = `/admin/matches?year=${currentYear}`;
+
+        if (!response.ok) {
+          throw new Error(result.error || result.details || 'Error al programar el partido.');
+        }
+        
+        feedbackElement.textContent = '¡Partido programado exitosamente!';
+        feedbackElement.classList.add('text-green-600');
+        form.reset();
+        setTimeout(() => {
+            window.location.href = `/admin/matches?year=${dataToSubmit.year}`;
+        }, 1500);
+
       } catch (error) {
         console.error('Error:', error);
-        alert(error instanceof Error ? error.message : 'Error desconocido');
+        feedbackElement.textContent = error instanceof Error ? error.message : 'Error desconocido.';
+        feedbackElement.classList.add('text-red-600');
+      } finally {
+         submitButton.disabled = false;
+         submitButton.textContent = originalButtonText;
       }
     });
-  }
-
-  async function logout() {
-    try {
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-
-      if (response.ok) {
-        window.location.href = '/admin/signin';
-      } else {
-        throw new Error('Error al cerrar sesión');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al cerrar sesión');
-    }
-  }
-
-  const logoutButton = document.getElementById('logout-button');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', logout);
   }
 </script>

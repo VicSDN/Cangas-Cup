@@ -26,36 +26,42 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           type="text"
           name="name"
           id="name"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           placeholder="Nombre del equipo"
           required
         />
       </div>
       <div>
-        <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >ID del grupo:</label
+        <label for="group_letter" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >Letra del Grupo (A, B, C...):</label
         >
         <input
-          type="number"
-          name="group_id"
-          id="group_id"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          placeholder="ID del grupo"
+          type="text"
+          name="group_letter"
+          id="group_letter"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Ej: A"
+          maxlength="1" 
+          pattern="[A-Za-z]"
+          title="Introduce una única letra para el grupo (A-Z)."
           required
         />
       </div>
       <div>
         <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >Localización</label
+          >Localización:</label
         >
-        <input
-          type="text"
+        <select
           name="location"
           id="location"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          placeholder="Local, Regional o Nacional"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           required
-        />
+        >
+          <option value="">-- Selecciona una opción --</option>
+          <option value="Local">Local</option>
+          <option value="Regional">Regional</option>
+          <option value="Nacional">Nacional</option>
+        </select>
       </div>
       <div>
         <label for="year" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -66,8 +72,10 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           name="year"
           id="year"
           value="2025"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           placeholder="Año"
+          min="2000" 
+          max="2100"
           required
         />
       </div>
@@ -94,7 +102,6 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
     messageEl.textContent = message;
     toast.appendChild(messageEl);
     
-
     if (details) {
       const detailsEl = document.createElement('div');
       detailsEl.className = 'text-sm mt-1';
@@ -103,53 +110,86 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
     }
     
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'absolute top-1 right-1 text-white';
-    closeBtn.innerHTML = '&times;';
+    closeBtn.className = 'absolute top-1 right-1 text-white hover:text-gray-200'; 
+    closeBtn.innerHTML = '×';
+    closeBtn.style.background = 'none';
+    closeBtn.style.border = 'none';
+    closeBtn.style.fontSize = '1.2rem';
+    closeBtn.style.lineHeight = '1';
     closeBtn.onclick = () => toast.remove();
     toast.appendChild(closeBtn);
 
-    toast.style.position = 'relative';
+    toast.style.position = 'relative'; 
     
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
-      toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
-      setTimeout(() => toast.remove(), 500);
+      if (toast.parentElement) { 
+        toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+        setTimeout(() => {
+            if (toast.parentElement) toast.remove();
+        }, 500);
+      }
     }, 5000);
   }
 
   const form = document.getElementById('add-team-form') as HTMLFormElement;
+  const errorPanel = document.getElementById('error-panel');
+  const errorMessageElement = document.getElementById('error-message'); 
+
+  function displayError(message: string) {
+    if (errorPanel && errorMessageElement) {
+      errorPanel.classList.remove('hidden');
+      errorMessageElement.textContent = message;
+    }
+  }
+
+  function hideError() {
+    if (errorPanel) {
+      errorPanel.classList.add('hidden');
+    }
+  }
 
   if (form) {
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      hideError();
+
       const formData = new FormData(form);
       const name = formData.get('name')?.toString().trim();
-      const group_id = parseInt(formData.get('group_id')?.toString() || '0', 10);
-      const year = parseInt(formData.get('year')?.toString() || '0', 10);
+      const groupLetterInput = formData.get('group_letter')?.toString().toUpperCase().trim(); // Get letter
+      const yearString = formData.get('year')?.toString();
       const location = formData.get('location')?.toString().trim();
 
-      if (!name || isNaN(group_id) || isNaN(year) || !(location)) {
-        showToast('Validación fallida', 'error', 'Por favor, rellene todos los campos correctamente.');
-    
-        const errorPanel = document.getElementById('error-panel');
-        const errorMessage = document.getElementById('error-message');
-        if (errorPanel && errorMessage) {
-          errorPanel.classList.remove('hidden');
-          errorMessage.textContent = 'Por favor, rellene todos los campos correctamente.';
-        }
-        
+      let groupIdNumeric = -1;
+      if (!groupLetterInput || groupLetterInput.length !== 1 || !/^[A-Z]$/.test(groupLetterInput)) {
+        const msg = 'La letra del grupo debe ser una única letra (A-Z).';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
+        return;
+      } else {
+        groupIdNumeric = groupLetterInput.charCodeAt(0) - 'A'.charCodeAt(0) + 1; 
+      }
+      const year = parseInt(yearString || '0', 10);
+      if (isNaN(year) || year < 2000 || year > 2100) {
+        const msg = 'El año no es válido. Debe ser un número entre 2000 y 2100.';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
         return;
       }
       
-      const errorPanel = document.getElementById('error-panel');
-      if (errorPanel) {
-        errorPanel.classList.add('hidden');
+      // General validation
+      if (!name || groupIdNumeric <= 0 || !location || location === "") {
+        const msg = 'Por favor, rellene todos los campos correctamente.';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
+        return;
       }
+      
+      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalButtonText = submitButton.textContent;
 
       try {
-        const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-        const originalButtonText = submitButton.textContent;
         submitButton.disabled = true;
         submitButton.textContent = 'Guardando...';
 
@@ -158,50 +198,34 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, group_id, year, location }),
+          body: JSON.stringify({ name, group_id: groupIdNumeric, year, location }),
           credentials: 'include' 
         });
-
-        submitButton.disabled = false;
-        submitButton.textContent = originalButtonText;
 
         const result = await response.json();
         
         if (!response.ok) {
-          const errorPanel = document.getElementById('error-panel');
-          const errorMessage = document.getElementById('error-message');
-          
-          if (errorPanel && errorMessage) {
-            errorPanel.classList.remove('hidden');
-            errorMessage.textContent = result.details || result.error || 'Error al añadir el equipo';
+          const errorMsg = result.details || result.error || 'Error al añadir el equipo';
+          displayError(errorMsg);
+          showToast('Error', 'error', errorMsg); 
+        } else {
+          showToast('¡Éxito!', 'success', 'Equipo añadido correctamente');
+          form.reset();
+          const yearInput = document.getElementById('year') as HTMLInputElement;
+          if (yearInput) {
+            yearInput.value = '2025'; 
           }
-          
-          throw new Error(result.error || 'Error al añadir el equipo');
+          const locationSelect = document.getElementById('location') as HTMLSelectElement;
+          if(locationSelect) locationSelect.value = "";
         }
-        
-        showToast('¡Éxito!', 'success', 'Equipo añadido correctamente');
-        
-        
-        form.reset();
-        
-       
-        const yearInput = document.getElementById('year') as HTMLInputElement;
-        if (yearInput) {
-          yearInput.value = '2025';
-        }
-   
       } catch (error) {
         console.error('Error al insertar equipo:', error);
-
-        showToast('Error', 'error', error instanceof Error ? error.message : 'Error al añadir el equipo');
-
-        const errorPanel = document.getElementById('error-panel');
-        const errorMessage = document.getElementById('error-message');
-        
-        if (errorPanel && errorMessage) {
-          errorPanel.classList.remove('hidden');
-          errorMessage.textContent = error instanceof Error ? error.message : 'Error al añadir el equipo';
-        }
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido al añadir el equipo. Revisa la consola.';
+        showToast('Error crítico', 'error', errorMsg);
+        displayError(errorMsg);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
       }
     });
   } else {
