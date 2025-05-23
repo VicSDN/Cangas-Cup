@@ -10,19 +10,37 @@ const currentYearParam = url.searchParams.get('year');
 const defaultYear = new Date().getFullYear().toString();
 const currentYear = currentYearParam || defaultYear;
 
-let teams: any[] = [];
-let groups: any[] = [];
+interface TeamForClientData {
+  id: number;
+  name: string;
+  group_id: number | null;
+}
+
+interface GroupForClientData {
+  id: number;
+  name: string;
+}
+
+// Usamos los tipos explícitos al declarar las variables
+let teamsForClient: TeamForClientData[] = [];
+let groupsForClient: GroupForClientData[] = [];
 let fetchError: string | null = null;
 
 try {
   const { data: teamsData, error: teamsError } = await supabase
     .from('tournament_team')
-    .select('id, name')
+    .select('id, name, group_id')
     .eq('year', currentYear)
     .order('name', { ascending: true });
 
   if (teamsError) throw teamsError;
-  teams = teamsData || [];
+  // Aseguramos que el mapeo cumpla con la interfaz
+  teamsForClient = (teamsData || []).map(t => ({ 
+    id: t.id, 
+    name: t.name, 
+    group_id: t.group_id 
+  } as TeamForClientData));
+
 
   const { data: groupsData, error: groupsError } = await supabase
     .from('tournament_group')
@@ -31,12 +49,17 @@ try {
     .order('name', { ascending: true });
 
   if (groupsError) throw groupsError;
-  groups = groupsData || [];
+  // Aseguramos que el mapeo cumpla con la interfaz
+  groupsForClient = (groupsData || []).map(g => ({ 
+    id: g.id, 
+    name: g.name 
+  } as GroupForClientData));
 
 } catch (error: any) {
-  console.error("Error fetching teams or groups for addMatch page:", error.message);
   fetchError = `Error al cargar datos: ${error.message}`;
 }
+
+const allTeamsJson = JSON.stringify(teamsForClient);
 ---
 
 <LayoutAdmin
@@ -57,6 +80,35 @@ try {
 
       <form id="match-form" class="space-y-6">
         <input type="hidden" name="year" value={currentYear} />
+        
+        <div>
+          <label for="match_stage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Etapa del Partido</label>
+          <select 
+            id="match_stage" 
+            name="match_stage"
+            required
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          >
+            <option value="Fase de Grupos">Fase de Grupos</option>
+            <option value="Octavos">Octavos de Final</option>
+            <option value="Cuartos">Cuartos de Final</option>
+            <option value="Semifinal">Semifinal</option>
+            <option value="Final">Final</option>
+          </select>
+        </div>
+
+        <div id="group-selection-container">
+          <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Grupo </label>
+          <select
+            id="group_id"
+            name="group_id"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          >
+            <option value="">Selecciona un grupo</option>
+            {groupsForClient.map(group => <option value={group.id}>{group.name}</option>)}
+          </select>
+        </div>
+
         <div>
           <label for="home_team" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Equipo Local
@@ -68,7 +120,6 @@ try {
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Selecciona un equipo</option>
-            {teams.map(team => <option value={team.id}>{team.name}</option>)}
           </select>
         </div>
 
@@ -83,19 +134,6 @@ try {
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Selecciona un equipo</option>
-            {teams.map(team => <option value={team.id}>{team.name}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Grupo (Opcional para fases finales) </label>
-          <select
-            id="group_id"
-            name="group_id"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          >
-            <option value="">Sin grupo (Fase Final)</option>
-            {groups.map(group => <option value={group.id}>{group.name}</option>)}
           </select>
         </div>
 
@@ -126,22 +164,6 @@ try {
             </div>
         </div>
         
-        <div>
-            <label for="match_stage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Etapa del Partido</label>
-            <select 
-              id="match_stage" 
-              name="match_stage"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-              <option value="Fase de Grupos">Fase de Grupos</option>
-              <option value="Octavos">Octavos de Final</option>
-              <option value="Cuartos">Cuartos de Final</option>
-              <option value="Semifinal">Semifinal</option>
-              <option value="Final">Final</option>
-            </select>
-        </div>
-
         <div class="flex items-center">
             <input 
               id="is_local_final" 
@@ -153,7 +175,6 @@ try {
               ¿Es Final Local?
             </label>
         </div>
-
 
         <div class="flex justify-end pt-2">
           <button
@@ -169,9 +190,76 @@ try {
   </main>
 </LayoutAdmin>
 
-<script>
-  const form = document.getElementById('match-form') as HTMLFormElement;
+<script define:vars={{ allTeamsJson }}>
+  const allTeams = JSON.parse(allTeamsJson);
+
+  const matchStageSelect = document.getElementById('match_stage');
+  const groupSelectContainer = document.getElementById('group-selection-container');
+  const groupSelect = document.getElementById('group_id');
+  const homeTeamSelect = document.getElementById('home_team');
+  const awayTeamSelect = document.getElementById('away_team');
+  const form = document.getElementById('match-form');
   const feedbackElement = document.getElementById('form-feedback');
+
+  function populateTeamOptions(selectElement, teamsToPopulate) {
+    if (!selectElement) return;
+    const currentValue = selectElement.value;
+    selectElement.innerHTML = '<option value="">Selecciona un equipo</option>';
+    teamsToPopulate.forEach(team => {
+      const option = document.createElement('option');
+      option.value = team.id.toString();
+      option.textContent = team.name;
+      selectElement.appendChild(option);
+    });
+    
+    const currentOptionExists = teamsToPopulate.some(t => t.id.toString() === currentValue);
+    if (currentValue && currentOptionExists) {
+        selectElement.value = currentValue;
+    } else {
+        selectElement.value = ""; 
+    }
+  }
+
+  function handleStageOrGroupChange() {
+    if (!matchStageSelect || !groupSelectContainer || !groupSelect || !homeTeamSelect || !awayTeamSelect) {
+      return;
+    }
+
+    const selectedStage = matchStageSelect.value;
+    const selectedGroupId = groupSelect.value ? parseInt(groupSelect.value, 10) : null;
+
+    if (selectedStage === 'Fase de Grupos') {
+      groupSelectContainer.style.display = 'block';
+      groupSelect.required = true;
+      if (selectedGroupId) {
+        const teamsInSelectedGroup = allTeams.filter(team => team.group_id === selectedGroupId);
+        populateTeamOptions(homeTeamSelect, teamsInSelectedGroup);
+        populateTeamOptions(awayTeamSelect, teamsInSelectedGroup);
+      } else {
+        populateTeamOptions(homeTeamSelect, []); 
+        populateTeamOptions(awayTeamSelect, []);
+      }
+    } else { 
+      groupSelectContainer.style.display = 'none';
+      groupSelect.required = false;
+      groupSelect.value = ''; 
+      populateTeamOptions(homeTeamSelect, allTeams);
+      populateTeamOptions(awayTeamSelect, allTeams);
+    }
+  }
+  
+  if (matchStageSelect) {
+    matchStageSelect.addEventListener('change', handleStageOrGroupChange);
+  }
+  if (groupSelect) {
+    groupSelect.addEventListener('change', handleStageOrGroupChange);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if(matchStageSelect && groupSelectContainer && groupSelect && homeTeamSelect && awayTeamSelect && form && feedbackElement) {
+        handleStageOrGroupChange(); 
+    }
+  });
 
   if (form && feedbackElement) {
     form.addEventListener('submit', async (e) => {
@@ -179,16 +267,35 @@ try {
       feedbackElement.textContent = '';
       feedbackElement.className = 'text-sm mt-2'; 
 
-      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (!submitButton) return;
       const originalButtonText = submitButton.textContent;
       submitButton.disabled = true;
       submitButton.textContent = 'Programando...';
 
       const formData = new FormData(form);
-      const matchDateInput = formData.get('match_date_input') as string;
-      const matchTimeInput = formData.get('match_time_input') as string;
-      const homeTeamId = formData.get('home_team') as string;
-      const awayTeamId = formData.get('away_team') as string;
+      const matchDateInput = formData.get('match_date_input');
+      const matchTimeInput = formData.get('match_time_input');
+      const homeTeamId = formData.get('home_team');
+      const awayTeamId = formData.get('away_team');
+      const selectedStage = formData.get('match_stage');
+      let groupIdValue = formData.get('group_id');
+
+      if (selectedStage === 'Fase de Grupos' && !groupIdValue) {
+        feedbackElement.textContent = 'Debes seleccionar un grupo para partidos de Fase de Grupos.';
+        feedbackElement.classList.add('text-red-600');
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        return;
+      }
+      
+      if (!homeTeamId || !awayTeamId ) {
+        feedbackElement.textContent = 'Debes seleccionar ambos equipos.';
+        feedbackElement.classList.add('text-red-600');
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        return;
+      }
 
       if (homeTeamId === awayTeamId) {
         feedbackElement.textContent = 'El equipo local y visitante no pueden ser el mismo.';
@@ -203,19 +310,17 @@ try {
       const dataToSubmit = {
         home_team: parseInt(homeTeamId, 10),
         away_team: parseInt(awayTeamId, 10),
-        group_id: formData.get('group_id') ? parseInt(formData.get('group_id') as string, 10) : null,
+        group_id: selectedStage === 'Fase de Grupos' && groupIdValue ? parseInt(groupIdValue, 10) : null,
         match_date: matchDateTimeISO,
-        year: parseInt(formData.get('year') as string, 10),
-        match_stage: formData.get('match_stage') as string,
+        year: parseInt(formData.get('year'), 10),
+        match_stage: selectedStage,
         is_local_final: formData.get('is_local_final') === 'on',
       };
 
       try {
         const response = await fetch('/api/createMatch', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataToSubmit),
         });
 
@@ -228,13 +333,16 @@ try {
         feedbackElement.textContent = '¡Partido programado exitosamente!';
         feedbackElement.classList.add('text-green-600');
         form.reset();
+        if(groupSelect) groupSelect.value = '';
+        handleStageOrGroupChange(); 
         setTimeout(() => {
-            window.location.href = `/admin/matches?year=${dataToSubmit.year}`;
+            if (window.location.href.includes('/admin/matches/addMatch')) {
+                window.location.href = `/admin/matches?year=${dataToSubmit.year}`;
+            }
         }, 1500);
 
       } catch (error) {
-        console.error('Error:', error);
-        feedbackElement.textContent = error instanceof Error ? error.message : 'Error desconocido.';
+        feedbackElement.textContent = error.message || 'Error desconocido.';
         feedbackElement.classList.add('text-red-600');
       } finally {
          submitButton.disabled = false;

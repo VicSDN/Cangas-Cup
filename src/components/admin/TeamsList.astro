@@ -1,53 +1,71 @@
 ---
+// src/components/admin/TeamsList.astro
 import { supabase } from '../../lib/supabase.ts';
-import YearFilter from './YearFilter.astro'; 
-import AddTeamButton from './AddTeamButton.astro'; 
+import YearFilter from './YearFilter.astro';
+import AddTeamButton from './AddTeamButton.astro';
 
 interface Props {
   currentYear: string;
-  availableYears: string[]; 
+  availableYears: string[];
+}
+
+interface TeamGroup {
+  id: number;
+  name: string;
 }
 
 interface Team {
   id: number;
   name: string;
-  location: string; 
+  location: string;
   year: string; 
-  tournament_group: { 
-    id: number;
-    name: string;
-  } | null; 
+  tournament_group: TeamGroup | null;
 }
 
-const { currentYear, availableYears } = Astro.props; 
+const { currentYear, availableYears } = Astro.props;
+
+interface RawTeamData {
+    id: number;
+    name: string;
+    location: string;
+    year: number;
+    tournament_group: TeamGroup | TeamGroup[] | null;
+}
 
 const { data: teamsData, error } = await supabase
   .from('tournament_team')
   .select(`
     id,
     name,
-    location, 
+    location,
     year,
-    tournament_group ( id, name ) 
-  `) 
+    tournament_group!inner ( id, name ) 
+  `)
   .eq('year', currentYear)
   .order('name');
 
 const teams: Team[] | null = teamsData 
-  ? teamsData.map(t => ({
-      id: t.id,
-      name: t.name,
-      location: t.location,
-      year: t.year.toString(),
-      tournament_group: t.tournament_group ? { 
-        id: (t.tournament_group as any).id, 
-        name: (t.tournament_group as any).name 
-      } : null,
-    }))
+  ? (teamsData as RawTeamData[]).map(rawTeam => {
+      let groupData: TeamGroup | null = null;
+      if (rawTeam.tournament_group) {
+        if (Array.isArray(rawTeam.tournament_group) && rawTeam.tournament_group.length > 0) {
+          groupData = rawTeam.tournament_group[0];
+        } else if (!Array.isArray(rawTeam.tournament_group)) {
+          groupData = rawTeam.tournament_group as TeamGroup;
+        }
+      }
+      return {
+        id: rawTeam.id,
+        name: rawTeam.name,
+        location: rawTeam.location,
+        year: String(rawTeam.year),
+        tournament_group: groupData,
+      };
+    })
   : null;
 
 if (error) {
-  console.error('Error al obtener equipos:', error.message);
+  console.error('Error al obtener equipos:', error);
 }
 ---
 
@@ -57,7 +75,7 @@ if (error) {
       <div class="flex items-center gap-x-3">
         <h2 class="text-lg font-medium text-gray-800 dark:text-white">EQUIPOS</h2>
         <span
-          class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400"
+          class="team-count-display px-3 py-1 text-xs text-indigo-600 bg-indigo-100 rounded-full dark:bg-gray-700 dark:text-indigo-400"
         >
           {teams?.length || 0} equipos
         </span>
@@ -89,52 +107,58 @@ if (error) {
         id="searchInput"
         type="text"
         placeholder="Buscar equipo, grupo o ID"
-        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+        class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-200 rounded-lg md:w-80 placeholder-gray-400/70 pl-11 rtl:pr-11 rtl:pl-5 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-indigo-400 dark:focus:border-indigo-300 focus:ring-indigo-300 focus:outline-none focus:ring focus:ring-opacity-40"
       />
     </div>
   </div>
 
   {
     error ? (
-      <div class="mt-6 text-center text-red-500">
-        Error al cargar los equipos: {error.message}. Por favor, revisa la consola o inténtalo más tarde.
-      </div>
+      <div class="mt-6 text-red-500 text-center dark:text-red-400">Error al cargar los equipos. Por favor, inténtalo de nuevo más tarde.</div>
     ) : teams && teams.length > 0 ? (
       <>
         <div
           id="teamsGrid"
-          class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-fr"
+          class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
         >
           {teams.map((team) => (
-            <a href={`/admin/teams/${team.id}?year=${currentYear}`}class="block h-full no-underline team-link">
-              <div
-                class="team-card p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out h-full flex flex-col justify-between border border-transparent hover:border-indigo-500 dark:hover:border-indigo-400"
+            <div class="team-card-container bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out border border-transparent hover:border-indigo-500 dark:hover:border-indigo-400 flex flex-col"
                 data-id={team.id.toString()}
                 data-name={team.name.toLowerCase()}
                 data-group_name={team.tournament_group?.name.toLowerCase() || ''}
                 data-group_id={team.tournament_group?.id.toString() || ''}
                 data-year={team.year.toString()}
                 data-location={team.location?.toLowerCase() || ''}
-              >
+            >
+              <a href={`/admin/teams/${team.id}?year=${currentYear}`} class="block p-4 flex-grow no-underline">
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate" title={team.name}>
-                    {team.name}
-                  </h3>
+                  <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate" title={team.name}>{team.name}</h3>
                   <p class="text-sm text-gray-600 dark:text-gray-300">
                     Grupo: <span class="font-medium">{team.tournament_group?.name || 'N/A'}</span>
                   </p>
-                  <p class="text-sm text-gray-600 dark:text-gray-300">
+                   <p class="text-sm text-gray-600 dark:text-gray-300">
                     Localización: <span class="font-medium">{team.location || 'N/A'}</span>
                   </p>
                 </div>
-                <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-right">
-                   <span class="text-xs text-gray-500 dark:text-gray-400">Año: {team.year}</span>
-                </div>
+              </a>
+              <div class="px-4 pb-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                 <span class="text-xs text-gray-500 dark:text-gray-400">Año: {team.year}</span>
+                 <button 
+                    type="button" 
+                    class="delete-team-btn text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium p-1 rounded hover:bg-red-100 dark:hover:bg-red-700/50"
+                    data-team-id={team.id.toString()}
+                    data-team-name={team.name}
+                    title={`Eliminar equipo ${team.name}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
               </div>
-            </a>
+            </div>
           ))}
         </div>
-        <div id="noResultsMessage" class="hidden mt-6 text-center py-10">
+        <div id="noResults" class="hidden mt-6 text-center py-10">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
           </svg>
@@ -154,17 +178,49 @@ if (error) {
           Aún no hay equipos registrados para el año {currentYear}.
         </p>
          <div class="mt-6">
-          <AddTeamButton currentYear={currentYear} isPrimary={true} /> 
+          <AddTeamButton currentYear={currentYear} isPrimary={true} />
         </div>
       </div>
     )
   }
+
+  <div id="delete-team-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-delete-team" role="dialog" aria-modal="true">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all">
+      <div class="sm:flex sm:items-start">
+        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+          <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title-delete-team">
+            Eliminar Equipo
+          </h3>
+          <div class="mt-2">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              ¿Estás seguro de que quieres eliminar al equipo <strong id="delete-team-modal-name" class="font-semibold"></strong>?<br/>
+              Esta acción eliminará también sus jugadores, ranking y podría afectar los partidos asociados. No se puede deshacer.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <button type="button" id="confirm-delete-team-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+          Eliminar Equipo
+        </button>
+        <button type="button" id="cancel-delete-team-btn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+          Cancelar
+        </button>
+      </div>
+      <p id="delete-team-modal-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
+    </div>
+  </div>
 </section>
 
 <script>
   const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
   const teamsGrid = document.getElementById('teamsGrid') as HTMLElement | null;
-  const noResultsMessage = document.getElementById('noResultsMessage') as HTMLElement | null; // Corregido el ID aquí
+  const noResultsMessage = document.getElementById('noResults') as HTMLElement | null;
 
   if (searchInput && teamsGrid && noResultsMessage) {
     searchInput.addEventListener('input', function () {
@@ -174,10 +230,10 @@ if (error) {
         .replace(/[\u0300-\u036f]/g, '');
 
       let visibleTeamsCount = 0;
-      const teamLinks = teamsGrid.querySelectorAll('a.team-link'); 
+      const teamCardContainers = teamsGrid.querySelectorAll('.team-card-container'); 
 
-      teamLinks.forEach((linkElement) => {
-        const cardElement = linkElement.querySelector('.team-card') as HTMLElement | null;
+      teamCardContainers.forEach((container) => {
+        const cardElement = container as HTMLElement | null;
         if (!cardElement) return;
 
         const name = (cardElement.dataset.name || '').toLowerCase();
@@ -191,13 +247,13 @@ if (error) {
           id.includes(query) ||
           groupName.includes(query) ||
           groupId.includes(query) ||
-          location.includes(query); 
+          location.includes(query);
 
         if (matchesQuery) {
-          linkElement.classList.remove('hidden'); 
+          cardElement.classList.remove('hidden');
           visibleTeamsCount++;
         } else {
-          linkElement.classList.add('hidden'); 
+          cardElement.classList.add('hidden');
         }
       });
 
@@ -209,9 +265,104 @@ if (error) {
         noResultsMessage.classList.add('hidden');
       }
     });
-  } else {
-    if (!searchInput) console.error('Search input not found');
-    if (!teamsGrid) console.error('Teams grid not found');
-    if (!noResultsMessage) console.error('No results message element not found');
   }
+
+  class DeleteTeamConfirmModal {
+    private modalElement = document.getElementById('delete-team-confirm-modal') as HTMLElement | null;
+    private teamNameElement = document.getElementById('delete-team-modal-name') as HTMLElement | null;
+    private confirmButton = document.getElementById('confirm-delete-team-btn') as HTMLButtonElement | null;
+    private errorElement = document.getElementById('delete-team-modal-error') as HTMLElement | null;
+    private currentTeamId: string | null = null;
+
+    constructor() {
+      if (!this.modalElement || !this.confirmButton || !this.teamNameElement || !this.errorElement) {
+          return;
+      }
+      document.getElementById('cancel-delete-team-btn')?.addEventListener('click', () => this.hide());
+      this.confirmButton.addEventListener('click', () => this.handleConfirmDelete());
+    }
+
+    private displayError(message: string) {
+      if (this.errorElement) {
+        this.errorElement.textContent = message;
+        this.errorElement.classList.remove('hidden');
+      }
+    }
+
+    private clearError() {
+      if (this.errorElement) {
+        this.errorElement.textContent = '';
+        this.errorElement.classList.add('hidden');
+      }
+    }
+
+    public show(teamId: string, teamName: string) {
+      if (!this.modalElement || !this.teamNameElement) return;
+      this.currentTeamId = teamId;
+      this.teamNameElement.textContent = teamName;
+      this.clearError();
+      this.modalElement.classList.remove('hidden');
+      this.modalElement.classList.add('flex');
+    }
+
+    public hide() {
+      if (this.modalElement) {
+        this.modalElement.classList.add('hidden');
+        this.modalElement.classList.remove('flex');
+        this.currentTeamId = null;
+        this.clearError();
+      }
+    }
+
+    private async handleConfirmDelete() {
+      if (!this.currentTeamId || !this.confirmButton) return;
+      this.clearError();
+      const originalButtonText = this.confirmButton.textContent;
+      this.confirmButton.disabled = true;
+      this.confirmButton.textContent = 'Eliminando...';
+      try {
+        const response = await fetch(`/api/deleteTeam`, { // CORRECCIÓN DE RUTA
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ team_id: this.currentTeamId }),
+        });
+        const responseData = await response.json();
+        if (!response.ok) {
+            throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
+        }
+        const teamCardContainer = document.querySelector(`.team-card-container[data-id="${this.currentTeamId}"]`);
+        teamCardContainer?.remove();
+        
+        const teamCountElement = document.querySelector('.team-count-display');
+        if (teamCountElement) {
+            const currentCount = parseInt(teamCountElement.textContent?.match(/\d+/)?.[0] || '0', 10);
+            if (currentCount > 0) {
+                teamCountElement.textContent = `${currentCount - 1} equipos`;
+            }
+        }
+        this.hide();
+      } catch (error: any) {
+        this.displayError(error.message || 'Ocurrió un error desconocido al eliminar el equipo.');
+      } finally {
+        if(this.confirmButton){
+            this.confirmButton.disabled = false;
+            this.confirmButton.textContent = originalButtonText;
+        }
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const deleteTeamModal = new DeleteTeamConfirmModal();
+    document.querySelectorAll('.delete-team-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        const target = event.currentTarget as HTMLButtonElement;
+        const teamId = target.dataset.teamId;
+        const teamName = target.dataset.teamName;
+        if (teamId && teamName) {
+          deleteTeamModal.show(teamId, teamName);
+        }
+      });
+    });
+  });
 </script>

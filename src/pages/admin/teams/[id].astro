@@ -10,9 +10,33 @@ const yearParam = Astro.url.searchParams.get('year');
 
 let teamData: any = null;
 let playersData: any[] = [];
-let groupStandingsData: any[] = [];
+let groupStandingsData: RankingEntry[] = [];
 let matchesData: any[] = [];
 let fetchError: string | null = null;
+
+interface RankingEntry {
+  team_id: number;
+  id: number;
+  name: string;
+  year: number;
+  points: number;
+  games_played: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number; // Calculado en la vista o aquí
+  fair_play_points: number;
+  fouls_committed: number;
+  h2h_points?: number | string;
+  h2h_goal_difference?: number | string;
+  h2h_goals_for?: number | string;
+  position_in_group: number;
+  is_local?: boolean;
+  overall_goal_difference?: number; // De la vista
+  overall_goals_for?: number;     // De la vista
+  sort_key?: number;              // De la vista
+  team_name?: string; // La vista devuelve team_name, lo usamos para 'name'
+}
+
 
 if (!teamIdParam) {
   fetchError = "No se proporcionó ID de equipo en la URL.";
@@ -23,14 +47,13 @@ if (!teamIdParam) {
     .from('tournament_team')
     .select(`
       *,
-      tournament_group ( id, name ) 
+      tournament_group ( id, name )
     `)
     .eq('id', teamIdParam)
     .eq('year', yearParam)
     .single();
 
   if (mainTeamError) {
-    console.error('Error fetching main team:', mainTeamError.message);
     fetchError = `Error al cargar el equipo: ${mainTeamError.message}`;
   } else if (!mainTeam) {
     fetchError = `No se encontró el equipo con ID ${teamIdParam} para el año ${yearParam}.`;
@@ -53,30 +76,96 @@ if (!teamIdParam) {
       const groupIdToFilter = teamData.tournament_group.id;
       const yearToFilter = teamData.year;
 
-      const { data: viewRankingEntries, error: viewRankingError } = await supabase
-        .from('view_group_ranking_ordered')
-        .select('*')
+      const { data: allTeamsInGroup, error: teamsInGroupError } = await supabase
+        .from('tournament_team')
+        .select('id, name, year')
         .eq('group_id', groupIdToFilter)
-        .eq('year', yearToFilter)
-        .order('position_in_group', { ascending: true });
+        .eq('year', yearToFilter);
 
+      if (teamsInGroupError) {
+        console.error('Error fetching all teams in group:', teamsInGroupError.message);
+      } else if (allTeamsInGroup && allTeamsInGroup.length > 0) {
+        const { data: viewRankingEntries, error: viewRankingError } = await supabase
+          .from('view_group_ranking_ordered')
+          .select('*')
+          .eq('group_id', groupIdToFilter)
+          .eq('year', yearToFilter);
 
-      if (viewRankingError) {
-        console.error('Error fetching group standings from view_group_ranking_ordered:', viewRankingError.message);
-        groupStandingsData = [];
-      } else if (!viewRankingEntries || viewRankingEntries.length === 0) {
-        groupStandingsData = [];
+        if (viewRankingError) {
+          console.error('Error fetching group standings from view:', viewRankingError.message);
+          groupStandingsData = allTeamsInGroup.map(team => ({
+            team_id: team.id,
+            id: team.id,
+            name: team.name,
+            year: team.year,
+            points: 0, games_played: 0, goals_for: 0, goals_against: 0, goal_difference: 0,
+            fair_play_points: 0, fouls_committed: 0, position_in_group: 99,
+          }));
+        } else {
+          const rankingMap = new Map(viewRankingEntries?.map(entry => [entry.team_id, entry as RankingEntry]));
+
+          groupStandingsData = allTeamsInGroup.map(team => {
+            const rankingEntry = rankingMap.get(team.id);
+            if (rankingEntry) {
+              return {
+                ...rankingEntry,
+                id: rankingEntry.team_id, // Asegurar que 'id' sea el team_id para la key
+                name: rankingEntry.team_name || team.name, // Usar team_name de la vista si existe
+              };
+            } else {
+              return {
+                team_id: team.id,
+                id: team.id,
+                name: team.name,
+                year: team.year,
+                points: 0,
+                games_played: 0,
+                goals_for: 0,
+                goals_against: 0,
+                goal_difference: 0,
+                fair_play_points: 9999,
+                fouls_committed: 9999,
+                h2h_points: '-1',
+                h2h_goal_difference: '-999',
+                h2h_goals_for: '-1',
+                position_in_group: 99,
+              };
+            }
+          });
+
+          groupStandingsData.sort((a, b) => {
+            if (a.points !== b.points) return (b.points || 0) - (a.points || 0);
+            const a_h2h_points = typeof a.h2h_points === 'string' ? parseInt(a.h2h_points, 10) : a.h2h_points || -1;
+            const b_h2h_points = typeof b.h2h_points === 'string' ? parseInt(b.h2h_points, 10) : b.h2h_points || -1;
+            if (a_h2h_points !== b_h2h_points) return b_h2h_points - a_h2h_points;
+            const a_h2h_gd = typeof a.h2h_goal_difference === 'string' ? parseInt(a.h2h_goal_difference, 10) : a.h2h_goal_difference || -999;
+            const b_h2h_gd = typeof b.h2h_goal_difference === 'string' ? parseInt(b.h2h_goal_difference, 10) : b.h2h_goal_difference || -999;
+            if (a_h2h_gd !== b_h2h_gd) return b_h2h_gd - a_h2h_gd;
+            const a_h2h_gf = typeof a.h2h_goals_for === 'string' ? parseInt(a.h2h_goals_for, 10) : a.h2h_goals_for || -1;
+            const b_h2h_gf = typeof b.h2h_goals_for === 'string' ? parseInt(b.h2h_goals_for, 10) : b.h2h_goals_for || -1;
+            if (a_h2h_gf !== b_h2h_gf) return b_h2h_gf - a_h2h_gf;
+            const a_overall_gd = a.overall_goal_difference ?? (a.goals_for - a.goals_against);
+            const b_overall_gd = b.overall_goal_difference ?? (b.goals_for - b.goals_against);
+            if (a_overall_gd !== b_overall_gd) return (b_overall_gd || 0) - (a_overall_gd || 0);
+            const a_overall_gf = a.overall_goals_for ?? a.goals_for;
+            const b_overall_gf = b.overall_goals_for ?? b.goals_for;
+            if (a_overall_gf !== b_overall_gf) return (b_overall_gf || 0) - (a_overall_gf || 0);
+            if ((a.fair_play_points || 0) !== (b.fair_play_points || 0)) return (a.fair_play_points || 0) - (b.fair_play_points || 0);
+            if ((a.fouls_committed || 0) !== (b.fouls_committed || 0)) return (a.fouls_committed || 0) - (b.fouls_committed || 0);
+            return (a.sort_key || Math.random()) - (b.sort_key || Math.random());
+          });
+
+          groupStandingsData.forEach((team, index) => {
+            team.position_in_group = index + 1;
+          });
+        }
       } else {
-        groupStandingsData = viewRankingEntries.map(entry => ({
-          ...entry,
-          id: entry.team_id, 
-          name: entry.team_name,
-        }));
+        groupStandingsData = [];
       }
     } else {
-      groupStandingsData = []; 
+      groupStandingsData = [];
     }
-    
+
     const { data: teamMatches, error: matchesError } = await supabase
       .from('tournament_match')
       .select(`
@@ -86,8 +175,7 @@ if (!teamIdParam) {
       `)
       .or(`home_team.eq.${teamData.id},away_team.eq.${teamData.id}`)
       .eq('year', teamData.year)
-      .order('match_date', { ascending: true }); 
-
+      .order('match_date', { ascending: true });
 
     if (matchesError) {
       console.error('Error fetching matches:', matchesError.message);
@@ -101,20 +189,14 @@ function formatDateTime(dateString: string | null) {
   if (!dateString) return { formattedDate: 'Fecha N/A', formattedTime: 'Hora N/A' };
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return { formattedDate: 'Fecha Inválida', formattedTime: 'Hora Inválida' };
-
   const day = date.getDate();
   const monthIndex = date.getMonth();
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  const monthNames = [
-    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-  ];
-
+  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   const monthName = monthNames[monthIndex];
   const formattedDate = `${day} ${monthName}`;
   const formattedTime = `${hours}:${minutes}`;
-
   return { formattedDate, formattedTime };
 }
 ---
@@ -135,7 +217,6 @@ function formatDateTime(dateString: string | null) {
 
   {!fetchError && teamData && (
     <div class="container mx-auto mt-2 md:mt-6 pt-2 p-4 grid grid-cols-1 md:grid-cols-3 gap-6 md:px-8">
-      
       <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
         <div class="text-center">
           <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">{teamData.name}</h1>
@@ -147,10 +228,9 @@ function formatDateTime(dateString: string | null) {
               <strong class="text-gray-800 dark:text-gray-100">Grupo:</strong> {teamData.tournament_group?.name || 'N/A'}
             </p>
             <p class="text-gray-700 dark:text-gray-300 text-lg">
-              <strong class="text-gray-800 dark:text-gray-100">Puntos (Equipo):</strong> {teamData.points ?? 'N/A'} 
+              <strong class="text-gray-800 dark:text-gray-100">Puntos (Equipo):</strong> {teamData.points ?? 'N/A'}
             </p>
           </div>
-          
           <div class="mt-8">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Partidos del Equipo</h2>
             <div class="flex flex-col items-center space-y-4">
@@ -179,7 +259,7 @@ function formatDateTime(dateString: string | null) {
                           )}
                         </div>
                         <div class="mt-3">
-                           <a 
+                           <a
                             href={`/admin/matches?year=${match.year}&highlightMatchId=${match.id}`}
                             class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                            >
@@ -204,12 +284,12 @@ function formatDateTime(dateString: string | null) {
         </h2>
         {groupStandingsData && groupStandingsData.length > 0 ? (
           <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-            {groupStandingsData.map((rankedTeam) => ( 
-              <li class={`flex justify-between items-center py-3 ${rankedTeam.id === teamData.id ? 'bg-indigo-50 dark:bg-indigo-900/50 rounded px-2 -mx-2' : ''}`}>
+            {groupStandingsData.map((rankedTeam) => (
+              <li class={`flex justify-between items-center py-3 ${rankedTeam.team_id === teamData.id ? 'bg-indigo-50 dark:bg-indigo-900/50 rounded px-2 -mx-2' : ''}`}>
                 <div class="flex items-center">
                   <span class="text-lg font-semibold text-gray-700 dark:text-gray-200 w-8 text-center">{rankedTeam.position_in_group}º</span>
                   <a
-                    href={`/admin/teams/${rankedTeam.id}?year=${rankedTeam.year}`}
+                    href={`/admin/teams/${rankedTeam.team_id}?year=${rankedTeam.year}`}
                     class="ml-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
                   >
                     {rankedTeam.name}
@@ -243,7 +323,6 @@ function formatDateTime(dateString: string | null) {
           <p class="text-gray-500 dark:text-gray-400 text-center">No hay jugadores registrados para este equipo.</p>
         )}
       </div>
-
     </div>
   )}
 
