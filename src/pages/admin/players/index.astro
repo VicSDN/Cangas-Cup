@@ -1,8 +1,7 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import ButtonBack from '../../../sections/ButtonBack.astro';
-import TeamsList from '../../../components/admin/TeamsList.astro';
-import AddTeamButton from '../../../components/admin/AddTeamButton.astro';
+import PlayersList from '../../../components/admin/PlayersList.astro';
 
 const url = new URL(Astro.request.url);
 const currentYear = url.searchParams.get('year') || '2025'; 
@@ -10,11 +9,11 @@ const currentYear = url.searchParams.get('year') || '2025';
 const availableYears = ['2024', '2025', '2026', '2027']; 
 ---
 
-<LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
+<LayoutAdmin title="Jugadores" description="Gestiona los jugadores de la maratón">
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Equipos del Año: {currentYear}</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Jugadores del Año: {currentYear}</h1>
       <div class="flex items-center gap-2">
         <label for="year-selector" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
           Ver año:
@@ -30,9 +29,16 @@ const availableYears = ['2024', '2025', '2026', '2027'];
         </select>
       </div>
     </div>
-    <div class="flex flex-center g-4 flex-col ">
-    <TeamsList currentYear={currentYear} availableYears={availableYears} />
-    <AddTeamButton currentYear={currentYear} isPrimary={true} />
+
+    <PlayersList currentYear={currentYear} availableYears={availableYears} />
+
+    <div class="mt-8 text-center">
+      <a 
+        href={`/admin/players/add?year=${currentYear}`} 
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
+        Añadir Nuevo Jugador para {currentYear}
+      </a>
     </div>
   </main>
 </LayoutAdmin>

@@ -1,0 +1,291 @@
+---
+import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro';
+import { supabase } from '../../../lib/supabase';
+import type { Team } from '../../../types/tournament';
+
+export const prerender = false;
+
+const currentUrl = new URL(Astro.request.url);
+const yearParam = currentUrl.searchParams.get('year');
+const teamIdParam = currentUrl.searchParams.get('teamId'); 
+
+const defaultYear = new Date().getFullYear().toString();
+const currentYear = yearParam || defaultYear;
+
+let teamsForYear: Team[] = [];
+try {
+  const { data, error } = await supabase
+    .from('tournament_team')
+    .select('id, name, year')
+    .eq('year', parseInt(currentYear,10)) 
+    .order('name');
+  if (error) throw error;
+  teamsForYear = data || [];
+} catch (e) {
+  console.error("Error fetching teams for year", currentYear, e);
+}
+---
+
+<LayoutAdmin description="Añadir un nuevo jugador al torneo" title="Añadir Nuevo Jugador">
+  <ButtonBack />
+  <section
+    class="max-w-4xl mt-14 lg:mt-28 p-6 mx-auto bg-white rounded-md shadow-md dark:bg-gray-800"
+  >
+    <h2 class="text-lg font-semibold text-gray-700 capitalize dark:text-white">Datos del Jugador</h2>
+    <h2 class="text-xl">Añadir nuevo jugador</h2>
+
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-80"></div>
+ 
+    <div id="error-panel" class="hidden mb-4 p-4 rounded-md bg-red-100 border border-red-400 text-red-700">
+      <h3 class="font-bold">Error</h3>
+      <p id="error-message" class="mt-1"></p>
+    </div>
+
+    <form id="add-player-form" class="space-y-4 mt-4">
+      <div>
+        <label for="player-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre del jugador:</label>
+        <input
+          type="text"
+          name="playerName"
+          id="player-name"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Nombre"
+          required
+        />
+      </div>
+
+      <div>
+        <label for="player-second-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Apellido(s) / Segundo nombre:</label>
+        <input
+          type="text"
+          name="playerSecondName"
+          id="player-second-name"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Apellido (opcional)"
+        />
+      </div>
+
+      <div>
+        <label for="team-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Equipo:</label>
+        <select
+          name="teamId"
+          id="team-id"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          required
+        >
+          <option value="">-- Selecciona un equipo --</option>
+          {teamsForYear.map(team => (
+            <option value={team.id.toString()} selected={teamIdParam === team.id.toString()}>
+              {team.name} ({team.year})
+            </option>
+          ))}
+          {teamsForYear.length === 0 && <option disabled>No hay equipos para el año {currentYear}</option>}
+        </select>
+      </div>
+      
+      <div>
+        <label for="player-year" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Año de Registro del Jugador:</label>
+        <input
+          type="number"
+          name="playerYear"
+          id="player-year"
+          value={currentYear} 
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          placeholder="Año"
+          min="2000" 
+          max="2100"
+          required
+        />
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Este es el año para el cual el jugador se registra en este equipo.</p>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+      >
+        Añadir Jugador
+      </button>
+    </form>
+  </section>
+</LayoutAdmin>
+
+<script>
+  function showToast(message: string, type: 'error' | 'success' = 'error', details: string = '') {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `p-4 rounded-md shadow-lg max-w-xs ${type === 'success' ? 'bg-green-100 border-green-400 text-green-700 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 border-red-400 text-red-700 dark:bg-red-700 dark:text-red-100'} border`;
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
+    toast.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+    
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'flex items-start';
+
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'flex-shrink-0';
+
+    iconContainer.innerHTML = type === 'success'
+          ? `<svg class="h-5 w-5 text-green-400 dark:text-green-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`
+          : `<svg class="h-5 w-5 text-red-400 dark:text-red-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v4a1 1 0 102 0V5zm-1 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>`;
+    contentWrapper.appendChild(iconContainer);
+
+    const textContainer = document.createElement('div');
+    textContainer.className = 'ml-3 w-0 flex-1 pt-0.5';
+    
+    const messageEl = document.createElement('p');
+    messageEl.className = 'text-sm font-medium';
+    messageEl.textContent = message;
+    textContainer.appendChild(messageEl);
+    
+    if (details) {
+      const detailsEl = document.createElement('p');
+      detailsEl.className = 'mt-1 text-sm opacity-80';
+      detailsEl.textContent = details;
+      textContainer.appendChild(detailsEl);
+    }
+    contentWrapper.appendChild(textContainer);
+    toast.appendChild(contentWrapper);
+    
+    const closeBtnContainer = document.createElement('div');
+    closeBtnContainer.className = 'ml-4 flex flex-shrink-0';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = `inline-flex rounded-md ${type === 'success' ? 'bg-green-100 text-green-500 hover:text-green-400 dark:bg-green-700 dark:text-green-200 dark:hover:text-green-100' : 'bg-red-100 text-red-500 hover:text-red-400 dark:bg-red-700 dark:text-red-200 dark:hover:text-red-100'} focus:outline-none focus:ring-2 focus:ring-offset-2 ${type === 'success' ? 'focus:ring-green-500' : 'focus:ring-red-500'}`;
+    closeBtn.innerHTML = `<span class="sr-only">Close</span><svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg>`;
+    closeBtn.onclick = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px) scale(0.95)';
+        setTimeout(() => { if (toast.parentElement) toast.remove(); }, 300);
+    };
+    closeBtnContainer.appendChild(closeBtn);
+    toast.appendChild(closeBtnContainer);
+    
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+
+    setTimeout(() => {
+      if (toast.parentElement) { 
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px) scale(0.95)';
+        setTimeout(() => { if (toast.parentElement) toast.remove(); }, 300);
+      }
+    }, 5000);
+  }
+
+  const form = document.getElementById('add-player-form') as HTMLFormElement | null;
+  const errorPanel = document.getElementById('error-panel') as HTMLElement | null;
+  const errorMessageElement = document.getElementById('error-message') as HTMLElement | null; 
+
+  function displayError(message: string) {
+    if (errorPanel && errorMessageElement) {
+      errorPanel.classList.remove('hidden');
+      errorMessageElement.textContent = message;
+    }
+  }
+
+  function hideError() {
+    if (errorPanel) {
+      errorPanel.classList.add('hidden');
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      hideError();
+
+      const formData = new FormData(form);
+      const name = formData.get('playerName')?.toString().trim();
+      const secondName = formData.get('playerSecondName')?.toString().trim() || null;
+      const teamIdString = formData.get('teamId')?.toString();
+      const yearString = formData.get('playerYear')?.toString();
+      
+      if (!name || !teamIdString || !yearString) {
+        const msg = 'Nombre, equipo y año son campos requeridos.';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
+        return;
+      }
+
+      const teamId = parseInt(teamIdString, 10);
+      const year = parseInt(yearString, 10);
+
+      if (isNaN(teamId) || teamId <= 0) {
+        const msg = 'Por favor, selecciona un equipo válido.';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
+        return;
+      }
+      if (isNaN(year) || year < 2000 || year > 2100) {
+        const msg = 'El año no es válido. Debe ser un número entre 2000 y 2100.';
+        showToast('Validación fallida', 'error', msg);
+        displayError(msg);
+        return;
+      }
+      
+      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if (!submitButton) return;
+      const originalButtonText = submitButton.textContent;
+
+      try {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Guardando...';
+
+        const response = await fetch('/api/players/addPlayer', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, second_name: secondName, team_id: teamId, year }),
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+          const errorMsg = result.details || result.error || 'Error al añadir el jugador';
+          displayError(errorMsg);
+          showToast('Error', 'error', errorMsg); 
+        } else {
+          showToast('¡Éxito!', 'success', 'Jugador añadido correctamente');
+          form.reset();
+          const yearInput = document.getElementById('player-year') as HTMLInputElement | null;
+          const urlParams = new URLSearchParams(window.location.search);
+          if (yearInput) {
+            yearInput.value = urlParams.get('year') || "{defaultYear.toString()}"; 
+          }
+          const teamSelect = document.getElementById('team-id') as HTMLSelectElement | null;
+          if(teamSelect){
+             const teamIdFromUrl = urlParams.get('teamId');
+             if (teamIdFromUrl) {
+                teamSelect.value = teamIdFromUrl;
+             } else {
+                teamSelect.value = "";
+             }
+          }
+        }
+      } catch (error: any) {
+        console.error('Error al insertar jugador:', error);
+        const errorMsg = error instanceof Error ? error.message : 'Error desconocido al añadir el jugador.';
+        showToast('Error crítico', 'error', errorMsg);
+        displayError(errorMsg);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    });
+  } else {
+    console.error('Formulario "add-player-form" no encontrado');
+  }
+
+  const yearInput = document.getElementById('player-year') as HTMLInputElement | null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const yearFromUrl = urlParams.get('year');
+  if (yearInput && yearFromUrl) {
+    yearInput.value = yearFromUrl;
+  }
+</script>
