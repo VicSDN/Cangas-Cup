@@ -1,4 +1,3 @@
-// src/pages/api/matches/cards/index.ts
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../../lib/supabase';
 import type { Card, CreateCardPayload, ApiErrorResponse } from '../../../../types/tournament';

@@ -1,4 +1,3 @@
-// src/pages/api/matches/fouls.ts
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
 import type { UpdateMatchTeamFoulsPayload, ApiErrorResponse } from '../../../types/tournament';

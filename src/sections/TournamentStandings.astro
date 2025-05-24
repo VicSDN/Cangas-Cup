@@ -1,0 +1,178 @@
+---
+import GroupStandingsTable from './GroupStandingsTable.astro'; 
+import { supabase } from '../lib/supabase'; 
+import type { Group, RankingEntry } from '../types/tournament'; 
+
+export interface Props {
+  initialYear?: number;
+  initialGroupId?: number | string | null; 
+  isAdminView?: boolean; 
+  showYearSelector?: boolean; 
+  showGroupSelector?: boolean; 
+}
+
+const {
+  initialYear,
+  initialGroupId,
+  isAdminView = false,
+  showYearSelector = true,
+  showGroupSelector = true
+} = Astro.props;
+
+const defaultYear = new Date().getFullYear();
+let selectedYear: number = initialYear || defaultYear;
+
+if (Astro.url.searchParams.has('year_standings')) { 
+  const yearParam = Astro.url.searchParams.get('year_standings');
+  if (yearParam && !isNaN(parseInt(yearParam))) {
+    selectedYear = parseInt(yearParam);
+  }
+}
+
+
+const availableYears: number[] = Array.from({length: 5}, (_, i) => defaultYear - 2 + i);
+
+let groupsForYear: Group[] = [];
+let selectedGroup: Group | null = null;
+let standingsForSelectedGroup: RankingEntry[] = [];
+let errorMessage: string | null = null;
+let currentGroupIdNum: number | null = null;
+
+if (initialGroupId) {
+    currentGroupIdNum = typeof initialGroupId === 'string' ? parseInt(initialGroupId, 10) : initialGroupId;
+    if (isNaN(currentGroupIdNum)) currentGroupIdNum = null;
+}
+
+if (Astro.url.searchParams.has('group_standings')) { 
+  const groupParam = Astro.url.searchParams.get('group_standings');
+  if (groupParam && !isNaN(parseInt(groupParam))) {
+    currentGroupIdNum = parseInt(groupParam);
+  }
+}
+
+
+try {
+  const { data: groupsData, error: groupsError } = await supabase
+    .from('tournament_group')
+    .select('id, name, year')
+    .eq('year', selectedYear)
+    .order('name');
+
+  if (groupsError) throw groupsError;
+  groupsForYear = groupsData || [];
+
+  if (groupsForYear.length > 0) {
+    if (currentGroupIdNum) {
+      selectedGroup = groupsForYear.find(g => g.id === currentGroupIdNum) || groupsForYear[0];
+    } else {
+      selectedGroup = groupsForYear[0];
+    }
+  }
+
+  if (selectedGroup) {
+    const { data: standingsData, error: standingsError } = await supabase
+      .from('view_group_ranking_ordered')
+      .select<string, RankingEntry>('*')
+      .eq('group_id', selectedGroup.id)
+      .eq('year', selectedYear)
+      .order('position_in_group', { ascending: true });
+
+    if (standingsError) throw standingsError;
+    standingsForSelectedGroup = standingsData || [];
+  }
+
+} catch (error: any) {
+  console.error("Error loading standings component data:", error);
+  errorMessage = "No se pudieron cargar los datos de clasificación.";
+}
+
+const componentId = `standings-component-${Math.random().toString(36).substring(7)}`;
+---
+
+<div id={componentId} class="tournament-standings-wrapper my-6">
+  <header class="text-center mb-6">
+    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+      Clasificaciones
+    </h2>
+  </header>
+
+  {(showYearSelector || showGroupSelector) && (
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6 p-3 bg-gray-100 dark:bg-gray-800/50 rounded-lg shadow-sm">
+      {showYearSelector && (
+        <div>
+          <label for={`${componentId}-year-select`} class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Año:</label>
+          <select id={`${componentId}-year-select`} class="year-select-standings form-select block w-full sm:w-auto pl-3 pr-8 py-1.5 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            {availableYears.map(yearOpt => (
+              <option value={yearOpt.toString()} selected={yearOpt === selectedYear}>
+                {yearOpt}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {showGroupSelector && groupsForYear.length > 0 && (
+        <div>
+          <label for={`${componentId}-group-select`} class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Grupo:</label>
+          <select id={`${componentId}-group-select`} class="group-select-standings form-select block w-full sm:w-auto pl-3 pr-8 py-1.5 text-sm border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            {groupsForYear.map(group => (
+              <option value={group.id.toString()} selected={selectedGroup?.id === group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+       {showGroupSelector && groupsForYear.length === 0 && !errorMessage && (
+         <p class="text-xs text-gray-500 dark:text-gray-400">No hay grupos para el año {selectedYear}.</p>
+       )}
+    </div>
+  )}
+
+  {errorMessage && (
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700 text-sm" role="alert">
+      <p>{errorMessage}</p>
+    </div>
+  )}
+
+  {!errorMessage && selectedGroup && (
+    <div class="standings-table-container">
+      <GroupStandingsTable
+        groupName={selectedGroup.name}
+        standings={standingsForSelectedGroup}
+        isAdminView={isAdminView}
+      />
+    </div>
+  )}
+
+  {!errorMessage && !selectedGroup && groupsForYear.length > 0 && (
+    <p class="text-center text-gray-500 dark:text-gray-400 mt-6">Selecciona un grupo para ver la clasificación.</p>
+  )}
+</div>
+
+<script define:vars={{ componentId }}>
+  const wrapper = document.getElementById(componentId);
+  if (wrapper) {
+    const yearSelect = wrapper.querySelector('.year-select-standings');
+    const groupSelect = wrapper.querySelector('.group-select-standings');
+
+    function updateStandingsUrl() {
+      const currentUrl = new URL(window.location.href);
+      if (yearSelect) {
+        currentUrl.searchParams.set('year_standings', yearSelect.value);
+      }
+      if (groupSelect) {
+        currentUrl.searchParams.set('group_standings', groupSelect.value);
+      } else {
+
+      }
+      window.location.href = currentUrl.toString();
+    }
+
+    if (yearSelect) {
+      yearSelect.addEventListener('change', updateStandingsUrl);
+    }
+    if (groupSelect) {
+      groupSelect.addEventListener('change', updateStandingsUrl);
+    }
+  }
+</script>

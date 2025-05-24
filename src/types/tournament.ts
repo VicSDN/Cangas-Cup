@@ -1,5 +1,3 @@
-// src/types/tournament.ts
-
 export interface DatabaseBase {
   id: number;
   year: number;
@@ -24,11 +22,10 @@ export interface Match extends DatabaseBase {
   match_stage: string;
   round_name: string | null;
   is_local_final: boolean;
-  home_team_match_fouls?: number | null; // Faltas del equipo local en ESTE partido
-  away_team_match_fouls?: number | null; // Faltas del equipo visitante en ESTE partido
+  home_team_match_fouls?: number | null; 
+  away_team_match_fouls?: number | null; 
 }
 
-// Este es el 'OriginalTransformedMatch' que importas
 export interface TransformedMatchBase { 
   id: number;
   display_date: string;
@@ -86,4 +83,27 @@ export interface ApiErrorResponse {
   error: string;
   message?: string;
   details?: any;
+}
+
+export interface RankingEntry {
+  year: number | null; 
+  group_id: number;
+  team_id: number;
+  points: number | null;
+  games_played: number;
+  goals_for: number | null;     
+  goals_against: number | null;    
+  goal_difference: number | bigint | null; 
+  fair_play_points: number | null;
+  fouls_committed: number | null;
+  group_name: string;
+  team_name: string;
+  is_local?: boolean | null;
+  h2h_points: number | string | bigint | null; 
+  h2h_goal_difference: number | string | bigint | null;
+  h2h_goals_for: number | string | bigint | null;
+  overall_goal_difference: number | bigint | null; 
+  overall_goals_for: number | bigint | null;     
+  sort_key?: number; 
+  position_in_group: number;
 }

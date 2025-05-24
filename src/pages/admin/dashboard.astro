@@ -4,6 +4,7 @@ import TotalDetails from '../../components/admin/TotalDetails.astro';
 export const prerender = false;
 import { supabase } from '../../lib/supabase';
 import AddTeamButton from '../../components/admin/AddTeamButton.astro';
+import TournamentStandings from '../../sections/TournamentStandings.astro';
 
 const accessToken = Astro.cookies.get('sb-access-token');
 const refreshToken = Astro.cookies.get('sb-refresh-token');
@@ -49,8 +50,10 @@ try {
       <p class="text-center font-medium"></p>
     </div>
   </div>
+   <AddTeamButton />
+  <h1 class="text-2xl font-bold mb-4">Vista General del Torneo</h1>
+   <TournamentStandings isAdminView={true} />
   <TotalDetails />
-  <AddTeamButton />
 </LayoutAdmin>
 
 <script>
