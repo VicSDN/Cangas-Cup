@@ -1,14 +1,125 @@
 ---
-import HeaderTabs from '../../../components/user/2025/HeaderTabs.astro';
+import Layout from '../../../layouts/Layout2025.astro';
+import CompetitionView from '../../../components/user/2025/CompetitionView.tsx';
 import GroupRanking from '../../../components/user/2025/GroupRanking.astro';
 import TopScorers from '../../../components/user/2025/TopScorers.astro';
-import Layout2025 from '../../../layouts/Layout2025.astro';
+import PlayerCards from '../../../components/user/2025/PlayerCards.astro';
+import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro';
+import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
+import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro'; // <-- NUEVA IMPORTACIÓN
+import { supabase } from '../../../lib/supabase';
 
-const tab = Astro.url.searchParams.get('tab') || 'Clasificación';
+const YEAR_TO_SHOW = 2025;
+
+const currentTagFromUrl = Astro.url.searchParams.get('tag');
+const currentSubtagFromUrl = Astro.url.searchParams.get('subtag');
+
+let groupNames: string[] = [];
+let errorFetchingGroups: string | null = null;
+
+try {
+  const { data: groups, error } = await supabase
+    .from('tournament_group')
+    .select('name')
+    .eq('year', YEAR_TO_SHOW)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  if (groups) {
+    groupNames = groups.map(g => g.name);
+  }
+} catch (e: any) {
+  errorFetchingGroups = "No se pudieron cargar los nombres de los grupos desde la base de datos.";
+}
+
+
+const defaultTag = "Clasificación"; 
+const currentTag = currentTagFromUrl || defaultTag;
+
+let defaultSubtag: string | null = null;
+const rankingsSubtags = ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas"];
+const schedulesSubtags = ["Horarios de Grupos", "Eliminatoria", "Final Local"];
+
+if (currentTag === 'Clasificación' && groupNames.length > 0) {
+  defaultSubtag = groupNames[0];
+} else if (currentTag === 'Rankings') {
+  defaultSubtag = rankingsSubtags[0];
+} else if (currentTag === 'Horarios y Resultados') { // ACTUALIZADO
+  defaultSubtag = schedulesSubtags[0];
+}
+
+const currentSubtag = currentSubtagFromUrl || defaultSubtag;
+
+const showGroupRanking = currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
+const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
+const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
+const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
+
+// NUEVAS CONDICIONES PARA HORARIOS
+const showGroupSchedule = currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
+const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
+const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
+
+
+const noContentComponentSelected = !(
+    showGroupRanking || showTopScorers || showYellowCards || showRedCards ||
+    showGroupSchedule || showKnockout || showLocalFinal // ACTUALIZADO
+);
+
+let isTagSelectedButNoSubtag = false;
+if (currentTag && !currentSubtag) {
+    if (currentTag === 'Clasificación' && groupNames.length > 0) isTagSelectedButNoSubtag = true;
+    if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
+    if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0) isTagSelectedButNoSubtag = true; // ACTUALIZADO
+}
+const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentSelected && !isTagSelectedButNoSubtag;
+
 ---
-<Layout2025 title='Estadísticas Cangas cup' description='Las estadisticas de los jugadores de la Cangas Cup'>
-<HeaderTabs />
 
-</Layout2025>
+<Layout title={`Competición ${YEAR_TO_SHOW} - Resultados y Estadísticas`} description={`Resultados, clasificación, goleadores y más de la competición del año ${YEAR_TO_SHOW}.`}>
+  <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-slate-100 min-h-screen">
+
+    <CompetitionView
+      client:load
+      availableGroupNames={groupNames}
+      year={YEAR_TO_SHOW}
+      initialTag={currentTag}
+      initialSubtag={currentSubtag}
+    />
+
+    {/* ... (mensaje errorFetchingGroups sin cambios) ... */}
+
+    <div class="mt-6 md:mt-8">
+      {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
+      {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
+      {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
+      {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
+
+      {/* NUEVO RENDERIZADO CONDICIONAL */}
+      {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
+      {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} {/* Este ya existía, pero ahora bajo el nuevo tag */}
+      {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} {/* Este ya existía, pero ahora bajo el nuevo tag */}
 
 
+      {isTagSelectedButNoSubtag && (
+        <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-sky-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-lg font-medium">Por favor, selecciona una subcategoría.</p>
+          <p class="text-sm">Elige una opción de "{currentTag}" para ver el contenido detallado.</p>
+        </div>
+      )}
+
+      {isSubtagInvalidForTag && (
+         <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-lg font-medium">Contenido no disponible.</p>
+          <p class="text-sm">La combinación "{currentTag} - {currentSubtag}" no es válida o no tiene contenido.</p>
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>

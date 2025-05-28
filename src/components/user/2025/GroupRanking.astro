@@ -1,17 +1,87 @@
 ---
 import { supabase } from '../../../lib/supabase';
-const { data, error } = await supabase
-  .from('view_group_ranking_ordered')
-  .select('*')
-  .order('position_in_group');
 
-if (error) throw error;
+export interface Props {
+  groupName: string;
+  year?: number;
+}
+
+const { groupName, year = 2025 } = Astro.props;
+
+let groupRanking: any[] = [];
+let errorMessage: string | null = null;
+
+if (groupName) {
+    try {
+      const { data, error } = await supabase
+        .from('view_group_ranking_ordered')
+        .select('team_name, is_local, points, games_played, overall_goals_for, goals_against, overall_goal_difference, fair_play_points, position_in_group')
+        .eq('year', year)
+        .eq('group_name', groupName)
+        .order('position_in_group');
+
+      if (error) {
+        throw error;
+      }
+      groupRanking = data || [];
+
+    } catch (e: any) {
+        errorMessage = e.message || `No se pudo cargar la clasificación del ${groupName}.`;
+    }
+} else {
+    errorMessage = "Nombre de grupo no proporcionado.";
+}
 ---
 
-<h2 class="text-xl font-bold my-4">Clasificación por grupo</h2>
-{data?.map(row => (
-  <div class="border-b py-2 flex justify-between">
-    <span>{row.group_name} - {row.team_name}</span>
-    <span>{row.points} pts</span>
+<div class="bg-white rounded-xl shadow-xl overflow-hidden">
+  <div class="p-5 md:p-6 bg-gradient-to-r from-slate-700 to-slate-800">
+    <h2 class="text-xl md:text-2xl font-bold text-white">Clasificación - {groupName || 'No especificado'} ({year})</h2>
   </div>
-))}
+
+  {errorMessage && (
+    <div class="m-4 p-4 bg-red-50 border border-red-300 text-red-700 rounded-lg">
+      <p class="font-semibold">Error:</p>
+      <p>{errorMessage}</p>
+    </div>
+  )}
+
+  {!errorMessage && groupRanking.length > 0 && (
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-100">
+          <tr>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">#</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Equipo</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Pts</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">PJ</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider hidden sm:table-cell">GF</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider hidden sm:table-cell">GC</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">DG</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider hidden md:table-cell">FP</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-slate-200">
+          {groupRanking.map(row => (
+            <tr class={`transition-colors duration-150 ${row.is_local ? 'bg-sky-50 hover:bg-sky-100' : 'hover:bg-slate-50'}`}>
+              <td class="px-4 py-3 text-center text-sm text-slate-700">{row.position_in_group}</td>
+              <td class="px-4 py-3 text-sm text-slate-800">
+                {row.team_name}
+                {row.is_local && <span class="ml-1.5 text-xs font-semibold text-sky-600 py-0.5 px-1.5 bg-sky-200 rounded-full">L</span>}
+              </td>
+              <td class="px-4 py-3 text-center text-sm font-bold text-slate-800">{row.points}</td>
+              <td class="px-4 py-3 text-center text-sm text-slate-700">{row.games_played}</td>
+              <td class="px-4 py-3 text-center text-sm text-slate-700 hidden sm:table-cell">{row.overall_goals_for}</td>
+              <td class="px-4 py-3 text-center text-sm text-slate-700 hidden sm:table-cell">{row.goals_against}</td>
+              <td class="px-4 py-3 text-center text-sm text-slate-700">{row.overall_goal_difference}</td>
+              <td class="px-4 py-3 text-center text-sm text-slate-700 hidden md:table-cell">{row.fair_play_points}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  {!errorMessage && groupRanking.length === 0 && (
+    <p class="p-6 text-center text-slate-500">No hay datos de clasificación disponibles para {groupName} en el año {year}.</p>
+  )}
+</div>

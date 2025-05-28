@@ -1,0 +1,113 @@
+---
+import { supabase } from '../../../lib/supabase';
+
+export interface Props {
+  cardType: 'Amarilla' | 'Roja';
+  year?: number;
+}
+const { cardType, year = 2025 } = Astro.props;
+
+type PlayerCardStat = {
+  id: number;
+  name: string;
+  team: string;
+  count: number;
+};
+
+let playersWithCardsData: PlayerCardStat[] = [];
+let errorMessage: string | null = null;
+const cardTypeDisplay = cardType === 'Amarilla' ? 'Amarillas' : 'Rojas';
+const cardQueryType = cardType;
+
+try {
+  const { data: cards, error: cardsError } = await supabase
+    .from('tournament_card')
+    .select('player_id')
+    .eq('year', year)
+    .ilike('type', cardQueryType);
+
+  if (cardsError) throw new Error(`Error al cargar tarjetas ${cardTypeDisplay}: ${cardsError.message}`);
+  
+  if (!cards || cards.length === 0) {
+    playersWithCardsData = [];
+  } else {
+    const cardCounts = cards.reduce<Record<number, { count: number }>>((acc, card) => {
+      acc[card.player_id] = acc[card.player_id] || { count: 0 };
+      acc[card.player_id].count += 1;
+      return acc;
+    }, {});
+
+    const playerIds = Object.keys(cardCounts).map(id => parseInt(id));
+    
+    if (playerIds.length > 0) {
+        const { data: playersWithTeam, error: playerError } = await supabase
+        .from('tournament_player')
+        .select(`
+            id, 
+            name,
+            team:tournament_team ( name )
+        `)
+        .in('id', playerIds)
+        .eq('year', year);
+
+        if (playerError) throw new Error(`Error al cargar jugadores y equipos para tarjetas: ${playerError.message}`);
+        
+        if (playersWithTeam) {
+            playersWithCardsData = playersWithTeam.map(player => {
+                const teamDataArray = player.team as ({ name: string }[] | null); // team es un array
+                const teamName = teamDataArray && teamDataArray.length > 0 ? teamDataArray[0].name : 'Equipo Desconocido';
+                
+                return {
+                    id: player.id,
+                    name: player.name,
+                    team: teamName,
+                    count: cardCounts[player.id]?.count || 0,
+                };
+            })
+            .filter(p => p.count > 0)
+            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+        }
+    }
+  }
+} catch (e: any) {
+  errorMessage = e.message || `No se pudieron cargar los datos de tarjetas ${cardTypeDisplay}.`;
+}
+
+const headerBgClass = cardType === 'Amarilla' ? 'from-yellow-500 to-yellow-600' : 'from-red-600 to-red-700';
+const badgeBgClass = cardType === 'Amarilla' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
+---
+
+<div class="bg-white rounded-xl shadow-xl overflow-hidden">
+  <div class={`p-5 md:p-6 bg-gradient-to-r ${headerBgClass}`}>
+    <h2 class="text-xl md:text-2xl font-bold text-white">Jugadores con Más Tarjetas {cardTypeDisplay} ({year})</h2>
+  </div>
+  
+  {errorMessage && (
+    <div class="m-4 p-4 bg-red-50 border border-red-300 text-red-700 rounded-lg">
+      <p class="font-semibold">Error:</p>
+      <p>{errorMessage}</p>
+    </div>
+  )}
+
+  {!errorMessage && playersWithCardsData.length > 0 && (
+    <ul class="divide-y divide-slate-200">
+      {playersWithCardsData.map((playerData, index) => (
+        <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-50">
+          <div class="flex items-center">
+            <span class="text-sm text-slate-500 font-medium w-6 text-right mr-3">{index + 1}.</span>
+            <div>
+              <span class="text-sm md:text-base font-semibold text-slate-800">{playerData.name}</span>
+              <span class="block md:inline text-xs text-slate-500 md:ml-2">({playerData.team})</span>
+            </div>
+          </div>
+          <span class={`px-3 py-1 ${badgeBgClass} text-xs md:text-sm font-bold rounded-full`}>
+            {playerData.count} {cardType.toLowerCase()}{playerData.count === 1 ? '' : 's'}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )}
+  {!errorMessage && playersWithCardsData.length === 0 && (
+    <p class="p-6 text-center text-slate-500">No hay datos de tarjetas {cardTypeDisplay} disponibles para el año {year}.</p>
+  )}
+</div>

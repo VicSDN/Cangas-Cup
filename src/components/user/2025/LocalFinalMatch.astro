@@ -1,0 +1,108 @@
+---
+import { supabase } from '../../../lib/supabase';
+
+export interface Props {
+  year?: number;
+}
+const { year = 2025 } = Astro.props;
+
+type MatchDisplay = {
+  id: number;
+  home_team_name: string;
+  away_team_name: string;
+  home_score: number | null;
+  away_score: number | null;
+  match_date_formatted: string;
+  match_time_formatted: string;
+  round_name: string | null;
+  match_stage: string;
+};
+
+let localFinalMatches: MatchDisplay[] = [];
+let errorMessage: string | null = null;
+
+try {
+  const { data: rawMatches, error } = await supabase
+    .from('tournament_match')
+    .select(`
+      id,
+      home_team_data:tournament_team!tournament_match_home_team_fkey(id, name),
+      away_team_data:tournament_team!tournament_match_away_team_fkey(id, name),
+      home_score,
+      away_score,
+      match_date,
+      round_name,
+      match_stage
+    `)
+    .eq('year', year)
+    .eq('is_local_final', true)
+    .order('match_date', { ascending: true });
+
+  if (error) throw new Error(`Error al cargar final local: ${error.message}`);
+  
+  if (rawMatches && rawMatches.length > 0) {
+    localFinalMatches = rawMatches.map(match => {
+        const date = new Date(match.match_date);
+
+        const homeTeamDataArray = match.home_team_data as ({ id: number; name: string }[] | null);
+        const home_team_name = homeTeamDataArray && homeTeamDataArray.length > 0 ? homeTeamDataArray[0].name : 'Por definir';
+
+        const awayTeamDataArray = match.away_team_data as ({ id: number; name: string }[] | null);
+        const away_team_name = awayTeamDataArray && awayTeamDataArray.length > 0 ? awayTeamDataArray[0].name : 'Por definir';
+        
+        return {
+            id: match.id, // El ID sigue siendo útil aquí para lógica interna si la necesitaras
+            home_team_name: home_team_name,
+            away_team_name: away_team_name,
+            home_score: match.home_score,
+            away_score: match.away_score,
+            match_date_formatted: date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
+            match_time_formatted: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }),
+            round_name: match.round_name,
+            match_stage: match.match_stage,
+        };
+    });
+  }
+
+} catch (e: any) {
+  errorMessage = e.message || "No se pudo cargar la final local.";
+}
+---
+
+<div class="bg-white rounded-xl shadow-xl overflow-hidden">
+  <div class="p-5 md:p-6 bg-gradient-to-r from-amber-500 to-amber-600">
+    <h2 class="text-xl md:text-2xl font-bold text-white">Final Local ({year})</h2>
+  </div>
+
+  {errorMessage && (
+    <div class="m-4 p-4 bg-red-50 border border-red-300 text-red-700 rounded-lg">
+      <p class="font-semibold">Error:</p>
+      <p>{errorMessage}</p>
+    </div>
+  )}
+
+  {!errorMessage && localFinalMatches.length > 0 && (
+    <div class="p-4 md:p-6 space-y-6">
+      {localFinalMatches.map(match => (
+        <article class="p-6 bg-amber-50 rounded-xl shadow-lg border-2 border-amber-300 text-center transform hover:scale-[1.02] transition-transform duration-300">
+          <h3 class="text-xl font-semibold text-amber-700 mb-1.5">{match.match_stage}{match.round_name ? ` - ${match.round_name}` : ''}</h3>
+          <p class="text-sm text-amber-600 mb-5">{match.match_date_formatted} • {match.match_time_formatted} hs</p>
+          <div class="flex items-center justify-around mb-2">
+            <span class="text-lg md:text-xl font-bold text-slate-800 w-2/5 truncate" title={match.home_team_name}>{match.home_team_name}</span>
+            {match.home_score !== null && match.away_score !== null ? (
+              <span class="text-3xl md:text-4xl font-extrabold text-amber-700 px-4 py-2 bg-amber-100 border-2 border-amber-300 rounded-lg shadow-md">
+                {match.home_score} - {match.away_score}
+              </span>
+            ) : (
+              <span class="text-2xl md:text-3xl font-bold text-slate-500 px-3">vs</span>
+            )}
+            <span class="text-lg md:text-xl font-bold text-slate-800 w-2/5 truncate" title={match.away_team_name}>{match.away_team_name}</span>
+          </div>
+        </article>
+      ))}
+    </div>
+  )}
+  {!errorMessage && localFinalMatches.length === 0 && (
+    <p class="p-6 text-center text-slate-500">No hay información sobre la final local programada para el año {year}.</p>
+  )}
+</div>
