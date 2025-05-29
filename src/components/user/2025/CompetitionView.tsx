@@ -21,8 +21,6 @@ export default function CompetitionView({
     "Horarios y Resultados": ["Horarios de Grupos", "Eliminatoria", "Final Local"],
   };
 
-  // REVISIÓN DE INICIALIZACIÓN DE ESTADO:
-  // Priorizar parámetros de URL del cliente si existen (después de una recarga iniciada por el cliente)
   const [currentTag, setCurrentTag] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -36,7 +34,7 @@ export default function CompetitionView({
 
   const [currentSubtag, setCurrentSubtag] = useState<string | null>(() => {
     let subtagToSet: string | null = null;
-    const effectiveTag = currentTag; // Usa el currentTag ya inicializado arriba
+    const effectiveTag = currentTag; 
 
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -47,7 +45,7 @@ export default function CompetitionView({
       }
     }
     
-    if (subtagToSet === null) { // Si no se pudo obtener de la URL del cliente
+    if (subtagToSet === null) { 
         const validSubtagsForInitialTagProp = subtagsMapConfig[initialTagFromProp || effectiveTag] || [];
         if (initialSubtagFromProp && validSubtagsForInitialTagProp.includes(initialSubtagFromProp)) {
             subtagToSet = initialSubtagFromProp;
@@ -55,7 +53,6 @@ export default function CompetitionView({
             subtagToSet = validSubtagsForInitialTagProp[0];
         }
     }
-     // Asegurar que el subtag sea válido para el tag actual o el prop inicial
     const finalValidSubtags = subtagsMapConfig[effectiveTag] || [];
     if (subtagToSet && finalValidSubtags.includes(subtagToSet)) {
         return subtagToSet;
@@ -64,7 +61,6 @@ export default function CompetitionView({
   });
 
 
-  // Este useEffect es para sincronizar con la URL cuando el usuario hace clic
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -96,10 +92,6 @@ export default function CompetitionView({
     }
   }, [currentTag, currentSubtag]);
 
-
-  // Este useEffect es para reaccionar si los props iniciales cambian (ej. navegación externa a esta página con nueva URL)
-  // Pero ahora la inicialización del useState ya maneja la URL del cliente, por lo que este puede ser menos crítico
-  // o necesitar ajuste si causa conflictos.
   useEffect(() => {
     const tagFromProp = initialTagFromProp || tagsConfig[0];
     if (currentTag !== tagFromProp) {
@@ -118,11 +110,9 @@ export default function CompetitionView({
     if (currentSubtag !== newSubtagFromProp) {
         setCurrentSubtag(newSubtagFromProp);
     }
-  }, [initialTagFromProp, initialSubtagFromProp, availableGroupNames]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, [initialTagFromProp, initialSubtagFromProp, availableGroupNames]); 
 
   const handleTagClick = (tag: string) => {
-    // No es necesario comprobar si es el mismo tag, el useEffect de URL lo manejará si hay cambio
     setCurrentTag(tag);
     const newSubtags = subtagsMapConfig[tag] || [];
     setCurrentSubtag(newSubtags.length > 0 ? newSubtags[0] : null);

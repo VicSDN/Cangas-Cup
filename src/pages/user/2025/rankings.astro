@@ -44,7 +44,7 @@ if (currentTag === 'Clasificación' && groupNames.length > 0) {
   defaultSubtag = groupNames[0];
 } else if (currentTag === 'Rankings') {
   defaultSubtag = rankingsSubtags[0];
-} else if (currentTag === 'Horarios y Resultados') { // ACTUALIZADO
+} else if (currentTag === 'Horarios y Resultados') { 
   defaultSubtag = schedulesSubtags[0];
 }
 
@@ -55,7 +55,6 @@ const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Gol
 const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
 const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
 
-// NUEVAS CONDICIONES PARA HORARIOS
 const showGroupSchedule = currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
 const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
 const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
@@ -77,7 +76,7 @@ const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentS
 ---
 
 <Layout title={`Competición ${YEAR_TO_SHOW} - Resultados y Estadísticas`} description={`Resultados, clasificación, goleadores y más de la competición del año ${YEAR_TO_SHOW}.`}>
-  <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-slate-100 min-h-screen">
+  <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-grey-700 min-h-screen">
 
     <CompetitionView
       client:load
@@ -87,18 +86,15 @@ const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentS
       initialSubtag={currentSubtag}
     />
 
-    {/* ... (mensaje errorFetchingGroups sin cambios) ... */}
-
     <div class="mt-6 md:mt-8">
       {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
       {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
       {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
       {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
 
-      {/* NUEVO RENDERIZADO CONDICIONAL */}
       {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
-      {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} {/* Este ya existía, pero ahora bajo el nuevo tag */}
-      {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} {/* Este ya existía, pero ahora bajo el nuevo tag */}
+      {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} 
+      {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} 
 
 
       {isTagSelectedButNoSubtag && (
