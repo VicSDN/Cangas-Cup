@@ -3,8 +3,78 @@ import LayoutAdmin from '../../layouts/LayoutAdmin.astro';
 import TotalDetails from '../../components/admin/TotalDetails.astro';
 export const prerender = false;
 import { supabase } from '../../lib/supabase';
-import AddTeamButton from '../../components/admin/AddTeamButton.astro';
-import TournamentStandings from '../../sections/TournamentStandings.astro';
+import CompetitionView from '../../components/user/2025/CompetitionView.tsx';
+import GroupRanking from '../../components/user/2025/GroupRanking.astro';
+import TopScorers from '../../components/user/2025/TopScorers.astro';
+import PlayerCards from '../../components/user/2025/PlayerCards.astro';
+import KnockoutMatches from '../../components/user/2025/KnockoutMatches.astro';
+import LocalFinalMatch from '../../components/user/2025/LocalFinalMatch.astro';
+import GroupMatchesSchedule from '../../components/user/2025/GroupMatchesSchedule.astro';
+
+const YEAR_TO_SHOW = 2025;
+
+const currentTagFromUrl = Astro.url.searchParams.get('tag');
+const currentSubtagFromUrl = Astro.url.searchParams.get('subtag');
+
+let groupNames: string[] = [];
+let errorFetchingGroups: string | null = null;
+
+try {
+  const { data: groups, error } = await supabase
+    .from('tournament_group')
+    .select('name')
+    .eq('year', YEAR_TO_SHOW)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  if (groups) {
+    groupNames = groups.map(g => g.name);
+  }
+} catch (e: any) {
+  errorFetchingGroups = "No se pudieron cargar los nombres de los grupos desde la base de datos.";
+}
+
+
+const defaultTag = "Clasificación"; 
+const currentTag = currentTagFromUrl || defaultTag;
+
+let defaultSubtag: string | null = null;
+const rankingsSubtags = ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas"];
+const schedulesSubtags = ["Horarios de Grupos", "Eliminatoria", "Final Local"];
+
+if (currentTag === 'Clasificación' && groupNames.length > 0) {
+  defaultSubtag = groupNames[0];
+} else if (currentTag === 'Rankings') {
+  defaultSubtag = rankingsSubtags[0];
+} else if (currentTag === 'Horarios y Resultados') { 
+  defaultSubtag = schedulesSubtags[0];
+}
+
+const currentSubtag = currentSubtagFromUrl || defaultSubtag;
+
+const showGroupRanking = currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
+const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
+const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
+const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
+
+const showGroupSchedule = currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
+const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
+const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
+
+
+const noContentComponentSelected = !(
+    showGroupRanking || showTopScorers || showYellowCards || showRedCards ||
+    showGroupSchedule || showKnockout || showLocalFinal 
+);
+
+let isTagSelectedButNoSubtag = false;
+if (currentTag && !currentSubtag) {
+    if (currentTag === 'Clasificación' && groupNames.length > 0) isTagSelectedButNoSubtag = true;
+    if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
+    if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0) isTagSelectedButNoSubtag = true; // ACTUALIZADO
+}
+const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentSelected && !isTagSelectedButNoSubtag;
+
 
 const accessToken = Astro.cookies.get('sb-access-token');
 const refreshToken = Astro.cookies.get('sb-refresh-token');
@@ -50,9 +120,50 @@ try {
       <p class="text-center font-medium"></p>
     </div>
   </div>
-   <AddTeamButton />
-  <h1 class="text-2xl font-bold mb-4">Vista General del Torneo</h1>
-   <TournamentStandings isAdminView={true} />
+  <h1 class="text-2xl font-bold mb-4 text-center">Vista General del Torneo</h1>
+    <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-grey-700 min-h-screen">
+
+    <CompetitionView
+      client:load
+      availableGroupNames={groupNames}
+      year={YEAR_TO_SHOW}
+      initialTag={currentTag}
+      initialSubtag={currentSubtag}
+    />
+
+    <div class="mt-6 md:mt-8">
+      {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
+      {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
+      {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
+      {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
+
+      {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
+      {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} 
+      {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} 
+
+
+      {isTagSelectedButNoSubtag && (
+        <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-sky-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-lg font-medium">Por favor, selecciona una subcategoría.</p>
+          <p class="text-sm">Elige una opción de "{currentTag}" para ver el contenido detallado.</p>
+        </div>
+      )}
+
+      {isSubtagInvalidForTag && (
+         <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-lg font-medium">Contenido no disponible.</p>
+          <p class="text-sm">La combinación "{currentTag} - {currentSubtag}" no es válida o no tiene contenido.</p>
+        </div>
+      )}
+    </div>
+  </div>
+
   <TotalDetails />
 </LayoutAdmin>
 

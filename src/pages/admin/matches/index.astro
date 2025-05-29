@@ -87,16 +87,40 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     } catch (e) {}
   }
 
-  const homeTeamInfo = teamsMap.get(match.home_team);
-  const awayTeamInfo = teamsMap.get(match.away_team);
+  const homeTeamInfo = match.home_team != null ? teamsMap.get(match.home_team) : undefined;
+  const awayTeamInfo = match.away_team != null ? teamsMap.get(match.away_team) : undefined;
+
+  let homeTeamDisplayName = homeTeamInfo?.name || (match.home_team != null ? `ID:${match.home_team}` : 'Equipo Local TBD');
+  let awayTeamDisplayName = awayTeamInfo?.name || (match.away_team != null ? `ID:${match.away_team}` : 'Equipo Visitante TBD');
+
+  const knockoutStages = ['Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Tercer Puesto', 'Final'];
+  if (knockoutStages.includes(match.match_stage) && !match.is_local_final) {
+    if (match.home_team == null && match.away_team == null && match.round_name && match.round_name.toLowerCase().includes('vs')) {
+      const parts = match.round_name.split(/\s+vs\s+/i);
+      if (parts.length === 2) {
+        homeTeamDisplayName = parts[0].trim();
+        awayTeamDisplayName = parts[1].trim();
+      } else { 
+        homeTeamDisplayName = `(Por definir: ${match.round_name} - Local)`;
+        awayTeamDisplayName = `(Por definir: ${match.round_name} - Visitante)`;
+      }
+    } else {
+      if (match.home_team == null) {
+        homeTeamDisplayName = match.round_name ? `(Por definir: ${match.round_name} - Local)` : `(Por definir ${match.match_stage} - Local)`;
+      }
+      if (match.away_team == null) {
+        awayTeamDisplayName = match.round_name ? `(Por definir: ${match.round_name} - Visitante)` : `(Por definir ${match.match_stage} - Visitante)`;
+      }
+    }
+  }
 
   return {
     id: match.id,
     display_date: displayDate,
     home_team_id: match.home_team,
     away_team_id: match.away_team,
-    home_team_name: homeTeamInfo?.name || `ID:${match.home_team}`,
-    away_team_name: awayTeamInfo?.name || `ID:${match.away_team}`,
+    home_team_name: homeTeamDisplayName,
+    away_team_name: awayTeamDisplayName,
     group_id: match.group_id,
     group_name: match.group_id ? (groupsMap.get(match.group_id) || `ID:${match.group_id}`) : null,
     home_score: match.home_score,
@@ -115,8 +139,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
   <ButtonBack />
 
   <main class="container mx-auto px-4 py-8">
-    <header class="flex flex-wrap justify-between items-center mb-6 gap-4">
-      <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Partidos del Año: <span class="text-indigo-600 dark:text-indigo-400">{currentYear}</span></h1>
+    <header class="flex flex-wrap justify-between text-center items-center mb-6 gap-4">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-white text-center">Partidos del Año: <span class="text-indigo-600 dark:text-indigo-400">{currentYear}</span></h1>
       <div class="flex gap-4 items-center">
         <label for="year-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Cambiar Año:</label>
         <select id="year-select" class="form-select block w-full sm:w-auto pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
@@ -168,12 +192,18 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                   {match.is_local_final && <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded-full dark:bg-green-700 dark:text-green-100">Final Local</span>}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  <a href={`/admin/teams/${match.home_team_id}?year=${match.home_team_year}`} class="hover:underline text-indigo-600 dark:text-indigo-400">
+                  <a 
+                    href={match.home_team_id != null ? `/admin/teams/${match.home_team_id}?year=${match.home_team_year}` : '#'} 
+                    class={`hover:underline ${match.home_team_id != null ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 cursor-default'}`}
+                  >
                     {match.home_team_name}
                   </a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  <a href={`/admin/teams/${match.away_team_id}?year=${match.away_team_year}`} class="hover:underline text-indigo-600 dark:text-indigo-400">
+                  <a 
+                    href={match.away_team_id != null ? `/admin/teams/${match.away_team_id}?year=${match.away_team_year}` : '#'} 
+                    class={`hover:underline ${match.away_team_id != null ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 cursor-default'}`}
+                  >
                     {match.away_team_name}
                   </a>
                 </td>
@@ -188,8 +218,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                     type="button"
                     class="manage-match-btn text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium hover:underline"
                     data-match-id={match.id.toString()}
-                    data-home-team-id={match.home_team_id.toString()}
-                    data-away-team-id={match.away_team_id.toString()}
+                    data-home-team-id={match.home_team_id != null ? match.home_team_id.toString() : undefined}
+                    data-away-team-id={match.away_team_id != null ? match.away_team_id.toString() : undefined}
                     data-home-team-name={match.home_team_name}
                     data-away-team-name={match.away_team_name}
                     data-year={match.year.toString()}
@@ -214,7 +244,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
   </main>
 
   <div id="manage-match-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-manage" role="dialog" aria-modal="true">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg md:max-w-2xl transform transition-all max-h-[90vh] flex flex-col">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 w-full max-w-lg md:max-w-2xl transform transition-all max-h-[90vh] flex flex-col"> {/* p-6 to p-4 */}
       <div class="flex justify-between items-center mb-4">
         <h2 id="modal-title-manage" class="text-xl font-semibold text-gray-800 dark:text-white">Gestionar Partido</h2>
         <button type="button" id="close-manage-modal-btn" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
@@ -231,20 +261,21 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="manage-match-tabs" role="tablist">
           <li class="mr-2" role="presentation">
-            <button class="modal-tab-button inline-block p-4 border-b-2 rounded-t-lg" data-tab-target="scores-content" type="button" role="tab">Resultado</button>
+            {/* p-4 to px-4 py-3 */}
+            <button class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg" data-tab-target="scores-content" type="button" role="tab">Resultado</button>
           </li>
           <li class="mr-2" role="presentation">
-            <button class="modal-tab-button inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="cards-content" type="button" role="tab">Tarjetas</button>
+            <button class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="cards-content" type="button" role="tab">Tarjetas</button>
           </li>
           <li class="mr-2" role="presentation">
-            <button class="modal-tab-button inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="fouls-content" type="button" role="tab">Faltas</button>
+            <button class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="fouls-content" type="button" role="tab">Faltas</button>
           </li>
         </ul>
       </div>
 
-      <div id="modal-tab-content-container" class="flex-grow overflow-y-auto">
+      <div id="modal-tab-content-container" class="flex-grow overflow-y-auto pr-1"> {/* Added pr-1 for scrollbar */}
         <div class="modal-tab-pane p-1" id="scores-content" role="tabpanel">
-          <form id="update-score-form" class="space-y-4">
+          <form id="update-score-form" class="space-y-3"> {/* space-y-4 to space-y-3 */}
             <div>
               <label for="modal-home-score" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Local: <span id="modal-home-team-name-score" class="font-semibold"></span></label>
               <input type="number" id="modal-home-score" name="homeScore" required min="0" class="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
@@ -262,7 +293,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 
         <div class="modal-tab-pane hidden p-1" id="cards-content" role="tabpanel">
           <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Registrar Tarjetas</h3>
-          <form id="add-card-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 items-end">
+          {/* Updated add-card-form classes for better responsiveness and compactness */}
+          <form id="add-card-form" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-2 mb-3 items-end">
             <div>
               <label for="card-player-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jugador</label>
               <select id="card-player-id" name="playerId" class="mt-1 form-select block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
@@ -280,10 +312,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
               <label for="card-minute" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Minuto</label>
               <input type="number" id="card-minute" name="minute" min="0" max="120" class="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
             </div>
-            <button type="submit" id="submit-add-card-btn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm md:col-start-4 self-center h-fit">Añadir Tarjeta</button>
+            {/* Updated button classes */}
+            <button type="submit" id="submit-add-card-btn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm self-end h-fit w-full sm:w-auto">Añadir Tarjeta</button>
           </form>
           <p id="card-form-error" class="text-xs text-red-600 dark:text-red-400 mb-2 hidden"></p>
-          <h4 class="text-md font-semibold mt-4 mb-2 text-gray-700 dark:text-gray-200">Tarjetas Registradas</h4>
+          {/* mt-4 mb-2 to mt-3 mb-1 */}
+          <h4 class="text-md font-semibold mt-3 mb-1 text-gray-700 dark:text-gray-200">Tarjetas Registradas</h4>
           <div id="cards-list" class="space-y-2 max-h-48 overflow-y-auto border dark:border-gray-600 p-2 rounded-md bg-gray-50 dark:bg-gray-700/30">
             <p class="text-sm text-gray-500 dark:text-gray-400 italic">No hay tarjetas registradas o cargando...</p>
           </div>
@@ -291,7 +325,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 
         <div class="modal-tab-pane hidden p-1" id="fouls-content" role="tabpanel">
            <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Registrar Faltas (por equipo)</h3>
-           <form id="update-fouls-form" class="space-y-4">
+           <form id="update-fouls-form" class="space-y-3"> {/* space-y-4 to space-y-3 */}
               <div>
                 <label for="modal-home-fouls" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Faltas Local (<span id="fouls-home-team-name" class="font-semibold"></span>)</label>
                 <input type="number" id="modal-home-fouls" name="homeFouls" min="0" class="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"/>
@@ -308,7 +342,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         </div>
       </div>
 
-      <div class="mt-auto pt-6 flex justify-end">
+      {/* pt-6 to pt-4 */}
+      <div class="mt-auto pt-4 flex justify-end">
         <button type="button" id="cancel-manage-modal-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 dark:border-gray-500">
             Cerrar
         </button>
@@ -440,15 +475,23 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       if (el) { el.textContent = ''; el.classList.add('hidden'); }
     }
 
-    async show(matchId: string, homeTeamId: string, awayTeamId: string, homeTeamName: string, awayTeamName: string, year: string | number) {
+    async show(matchId: string, homeTeamId: string | undefined, awayTeamId: string | undefined, homeTeamName: string, awayTeamName: string, year: string | number) {
       if (!this.modalElement || !this.matchIdInput || !this.matchInfoElement || !this.matchYearInput || !this.homeTeamIdInput || !this.awayTeamIdInput) return;
       
-      this.currentMatchData = { matchId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, year: String(year) };
+      this.currentMatchData = { 
+        matchId, 
+        homeTeamId: homeTeamId ?? null,
+        awayTeamId: awayTeamId ?? null,
+        homeTeamName, 
+        awayTeamName, 
+        year: String(year) 
+      };
 
       this.matchIdInput.value = matchId;
       this.matchYearInput.value = String(year);
-      this.homeTeamIdInput.value = homeTeamId;
-      this.awayTeamIdInput.value = awayTeamId;
+      this.homeTeamIdInput.value = homeTeamId ?? '';
+      this.awayTeamIdInput.value = awayTeamId ?? '';
+
 
       if (this.matchInfoElement) this.matchInfoElement.textContent = `${homeTeamName} vs ${awayTeamName}`;
       if (this.homeTeamNameScoreEl) this.homeTeamNameScoreEl.textContent = homeTeamName;
@@ -529,7 +572,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         const rowToUpdate = document.querySelector(`tr[data-match-row-id="${this.currentMatchData.matchId}"]`);
         if (rowToUpdate) {
           const resultCell = rowToUpdate.querySelector('.result-cell');
-          if (resultCell) resultCell.textContent = `${homeScore} - ${awayScore}`;
+          if (resultCell) {
+            resultCell.innerHTML = `<span class="font-semibold">${homeScore} - ${awayScore}</span>`; // Ensure it's not italic if it was "Pendiente"
+          }
         }
       } catch (error: any) {
         this.displayError(this.scoreFormErrorEl, error.message || 'Ocurrió un error desconocido.');
@@ -542,7 +587,10 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     }
 
     async loadPlayersForCardForm() {
-      if (!this.cardPlayerSelect || !this.currentMatchData.homeTeamId || !this.currentMatchData.awayTeamId || !this.currentMatchData.year) return;
+      if (!this.cardPlayerSelect || this.currentMatchData.homeTeamId == null || this.currentMatchData.awayTeamId == null || !this.currentMatchData.year) {
+         if(this.cardPlayerSelect) this.cardPlayerSelect.innerHTML = '<option value="">No hay equipos definidos para este partido.</option>';
+        return;
+      }
       this.cardPlayerSelect.innerHTML = '<option value="">Cargando jugadores...</option>';
       const apiUrl = `/api/matches/players?homeTeamId=${this.currentMatchData.homeTeamId}&awayTeamId=${this.currentMatchData.awayTeamId}&year=${this.currentMatchData.year}`;
       try {
@@ -592,8 +640,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           cardEl.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-700 p-2 rounded text-sm text-gray-800 dark:text-gray-200';
           cardEl.innerHTML = `
             <span>${card.player_name || 'Jugador Desc.'} (${card.team_name || 'Equipo Desc.'}) - ${card.type} - Min ${card.minute || 'N/A'}</span>
-            <button type="button" class="delete-card-btn text-red-500 hover:text-red-700 font-bold" data-card-id="${card.id}">X</button>
-          `;
+            <button type="button" class="delete-card-btn text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold px-2" data-card-id="${card.id}">X</button>
+          `; // Added padding to delete button for easier click
           this.cardsListEl!.appendChild(cardEl);
         });
       } catch (error: any) {
@@ -616,6 +664,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         this.displayError(this.cardFormErrorEl, 'Todos los campos son requeridos.');
         return;
       }
+      
+      const submitButton = (this.addCardForm)?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if(submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Añadiendo...';
+      }
 
       const payload: CreateCardPayload = {
         match_id: parseInt(this.currentMatchData.matchId, 10),
@@ -636,6 +690,11 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         this.addCardForm.reset();
       } catch (error: any) {
         this.displayError(this.cardFormErrorEl, error.message);
+      } finally {
+        if(submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Añadir Tarjeta';
+        }
       }
     }
     
@@ -669,7 +728,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     async loadMatchFouls() {
       if (!this.homeFoulsInput || !this.awayFoulsInput || !this.currentMatchData.matchId) return;
       this.clearError(this.foulsFormErrorEl);
-      this.homeFoulsInput.value = '';
+      this.homeFoulsInput.value = ''; // Default to empty, will be set to '0' or actual value
       this.awayFoulsInput.value = '';
 
       try {
@@ -680,13 +739,16 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         }
         const foulsData = await response.json();
 
-        if (foulsData) {
+        if (foulsData) { // Assuming foulsData is { home_fouls: number | null, away_fouls: number | null }
           this.homeFoulsInput.value = foulsData.home_fouls != null ? foulsData.home_fouls.toString() : '0';
           this.awayFoulsInput.value = foulsData.away_fouls != null ? foulsData.away_fouls.toString() : '0';
+        } else { // Fallback if foulsData is null or undefined
+          this.homeFoulsInput.value = '0';
+          this.awayFoulsInput.value = '0';
         }
       } catch (error: any) {
         this.displayError(this.foulsFormErrorEl, "Error al cargar datos de faltas: " + error.message);
-        this.homeFoulsInput.value = '0';
+        this.homeFoulsInput.value = '0'; // Set to '0' on error
         this.awayFoulsInput.value = '0';
       }
     }
@@ -724,6 +786,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         });
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar faltas');
+        // Optionally, provide a success message, e.g., using a toast notification or a temporary message
+        // For now, let's use a simple alert
         alert('Faltas guardadas correctamente.'); 
       } catch (error: any) {
         this.displayError(this.foulsFormErrorEl, error.message);
@@ -800,13 +864,17 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       (button as HTMLButtonElement).addEventListener('click', (event: Event) => {
         const target = event.currentTarget as HTMLButtonElement;
         const matchId = target.dataset.matchId;
-        const homeTeamId = target.dataset.homeTeamId;
+        const homeTeamId = target.dataset.homeTeamId; 
         const awayTeamId = target.dataset.awayTeamId;
         const homeTeamName = target.dataset.homeTeamName;
         const awayTeamName = target.dataset.awayTeamName;
         const year = target.dataset.year;
-        if (matchId && homeTeamId && awayTeamId && homeTeamName && awayTeamName && year) {
+        
+        if (matchId && homeTeamName && awayTeamName && year) {
           manageModal.show(matchId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, year);
+        } else {
+          console.error('Missing critical data for manage match button:', target.dataset);
+          alert('Error: Faltan datos para gestionar este partido. Revise la consola.');
         }
       });
     });
