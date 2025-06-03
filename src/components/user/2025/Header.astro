@@ -14,13 +14,12 @@ const selectedYear =
 
 const pages = [
   {
-    name: 'Equipos, Horarios y Resultados',
+    name: 'El Torneo',
     href: `/user/${selectedYear}/rankings`,
-    disabled: false,
   },
   { name: 'Año', href: '#', disabled: false, dropdown: true },
-  { name: 'Reglamento', href: `/user/${selectedYear}/regulations`, disabled: false, soonDate: 'Próximamente' },
-  { name: 'Directo', href: `/user/${selectedYear}`, disabled: true, soonDate: 'Próximamente' },
+  { name: 'Reglamento', href: `/user/${selectedYear}/regulations` },
+  { name: 'Directo', href: `/user/${selectedYear}` },
 ];
 ---
 
@@ -30,7 +29,7 @@ const pages = [
 
     <div class="hidden lg:flex flex-1 items-center justify-center">
       {
-        pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
+        pages.map(({ disabled, name, href, dropdown }, key) => (
           <Fragment key={key}>
             {dropdown ? (
               <div
@@ -52,11 +51,9 @@ const pages = [
                 ]}
                 id={`nav-link-${key}`}
               >
-                {disabled ? (
-                  <span class="absolute mt-10 -skew-x-6 text-xs text-accent">{soonDate}</span>
-                ) : (
+                {disabled ? 
                   <div class="background absolute -z-10 h-full w-full" />
-                )}
+                : null}
                 <span class="z-10">{name}</span>
               </a>
             )}
@@ -90,43 +87,39 @@ const pages = [
           loading="lazy"
         />
       </a>
-      {
-        pages.map(({ disabled, name, href, dropdown, soonDate }, key) => (
-          <Fragment key={key}>
-            {dropdown ? (
-              <div
-                class:list={[
-                  'block nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
-                ]}
-                id={`nav-link-${key}`}
-              >
-                <span class="z-10">{name}</span>
-                <YearSelector years={years} selectedYear={selectedYear} />
-              </div>
-            ) : (
-              <a
-                href={href}
-                class:list={[
-                  'nav-item relative h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase lg:flex lg:px-7 xl:px-10',
-                  { 'pointer-events-none': disabled },
-                  { 'text-white': !disabled },
-                ]}
-                id={`nav-link-${key}`}
-              >
-                {disabled ? (
-                  <div class="flex flex-col">
-                    <span class="z-10 mr-2">{name}</span>
-                    <span class="mt-2 text-xs text-accent">{soonDate}</span>
-                  </div>
-                ) : (
-                  <div class="background absolute -z-10 h-full w-full" />
-                )}
-              </a>
-            )}
-            {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
-          </Fragment>
-        ))
-      }
+{
+  pages.map(({ disabled, name, href, dropdown }, key) => (
+    <Fragment key={key}>
+      {dropdown ? (
+        <div
+          class:list={[
+            'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
+          ]}
+          id={`nav-link-${key}`}
+        >
+          <span class="z-10">{name}</span>
+          <YearSelector years={years} selectedYear={selectedYear} />
+        </div>
+      ) : (
+        <a
+          href={href}
+          class:list={[
+            'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
+            { 'pointer-events-none': disabled },
+            { 'text-white': !disabled },
+          ]}
+          id={`nav-link-${key}`}
+        >
+          <span class="z-10">{name}</span> 
+          {!disabled && (
+            <div class="background absolute -z-10 h-full w-full" />
+          )}
+        </a>
+      )}
+      {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
+    </Fragment>
+  ))
+}
 
       <nav class="my-4 flex flex-col gap-10">
         <FooterContent />

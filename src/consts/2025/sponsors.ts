@@ -7,7 +7,6 @@ import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astr
 import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro'
 import Refierta from '../../components/user/2025/SponsorsLogos/Refierta.astro'
 import Lozano from '../../components/user/2025/SponsorsLogos/Lozano.astro'
-import CajaRural from '../../components/user/2025/SponsorsLogos/CajaRural.astro'
 import Javita from '../../components/user/2025/SponsorsLogos/Javita.astro'
 import Manin from '../../components/user/2025/SponsorsLogos/Manin.astro'
 import Goblet from '../../components/user/2025/SponsorsLogos/Goblet.astro'
@@ -15,23 +14,15 @@ import Obrador from '../../components/user/2025/SponsorsLogos/Obrador.astro'
 import Casilla from '../../components/user/2025/SponsorsLogos/Casilla.astro'
 import Energy from '../../components/user/2025/SponsorsLogos/Energy.astro'
 import Planb from '../../components/user/2025/SponsorsLogos/Planb.astro'
-import CarpasElNeno from '../../components/user/2025/SponsorsLogos/CarpasElNeno.astro'
-import DeportesAcebo from '../../components/user/2025/SponsorsLogos/DeportesAcebo.astro'
-import CafeMadrid from '../../components/user/2025/SponsorsLogos/CafeMadrid.astro'
 import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro'
 import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro'
-import Forno from '../../components/user/2025/SponsorsLogos/Forno.astro'
-import LaCasera from '../../components/user/2025/SponsorsLogos/LaCasera.astro'
-import Cachican from '../../components/user/2025/SponsorsLogos/Cachican.astro'
 import Bosque from '../../components/user/2025/SponsorsLogos/Bosque.astro'
-import LaBlugo from '../../components/user/2025/SponsorsLogos/LaBlugo.astro'
 import Sidreria from '../../components/user/2025/SponsorsLogos/Sidreria.astro'
-import DeportesCarro from '../../components/user/2025/SponsorsLogos/DeportesCarro.astro'
-import Varesport from '../../components/user/2025/SponsorsLogos/Varesport.astro'
-import Magadan from '../../components/user/2025/SponsorsLogos/Magadan.astro'
-import HuertinaAdela from '../../components/user/2025/SponsorsLogos/HuertinaAdela.astro'
 import Excalex from '../../components/user/2025/SponsorsLogos/Excalex.astro'
 import Farruco from '../../components/user/2025/SponsorsLogos/Farruco.astro'
+import Parla from '../../components/user/2025/SponsorsLogos/Parla.astro'
+import Ingenegreen from '../../components/user/2025/SponsorsLogos/Ingenegreen.astro'
+import Zaira from '../../components/user/2025/SponsorsLogos/Zaira.astro'
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -113,18 +104,6 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
- 
-  {
-    id: 'cajarural',
-    name: 'Caja Rural',
-    url: 'https://www.cajaruraldeasturias.com/es',
-    label: 'Ir a la página de la Caja Rural',
-    image: {
-      logo: CajaRural,
-      width: 200,
-      height: 200,
-    },
-  } ,
   {
     id: 'javita',
     name: 'Javita',
@@ -204,39 +183,6 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
-    id: 'carpaselneno',
-    name: 'Carpas El Neno',
-    url: 'https://www.puertademuniellos.com/patrocinadores/carpas-el-neno/',
-    label: 'Tu carpa por lo que pueda pasar',
-    image: {
-      logo: CarpasElNeno,
-      width: 200,
-      height: 200,
-    },
-  },
-  {
-    id: 'deportesacebo',
-    name: 'Deportes Acebo',
-    url: 'https://g.co/kgs/ucZQwtT',
-    label: 'Ir a la página web de Deportes Acebo',
-    image: {
-      logo: DeportesAcebo,
-      width: 200,
-      height: 200,
-    },
-  },
-  {
-    id: 'cafemadrid',
-    name: 'Cafe Madrid',
-    url: 'https://www.instagram.com/nuevocafemadrid/',
-    label: 'El cafe Madrid',
-    image: {
-      logo: CafeMadrid,
-      width: 200,
-      height: 200,
-    },
-  },
    {
     id: 'barazul',
     name: 'Bar Azul',
@@ -260,55 +206,11 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   {
-    id: 'fornomanolo',
-    name: 'Forno Manolo',
-    url: 'https://www.facebook.com/forno.demanolo',
-    label: 'Tu comida muy rápida',
-    image: {
-      logo: Forno,
-      width: 200,
-      height: 200,
-    },
-  },
-    {
-    id: 'barlacasera',
-    name: 'Bar La Casera',
-    url: 'https://restaurantelacasera.es/',
-    label: 'Tu restaurante de confianza',
-    image: {
-      logo: LaCasera,
-      width: 200,
-      height: 200,
-    },
-  },
-   {
-    id: 'cachican',
-    name: 'Cachican',
-    url: 'https://cachican.es/',
-    label: 'Reserva tu estancia',
-    image: {
-      logo: Cachican,
-      width: 200,
-      height: 200,
-    },
-  },
-   {
-    id: 'lablugo',
-    name: 'La Blugo',
-    url: 'https://pidelablugo.com/',
-    label: 'Haz tu pedido en La Blugo',
-    image: {
-      logo: LaBlugo,
-      width: 200,
-      height: 200,
-    },
-  },
 {
     id: 'bosque',
     name: 'Bosque',
     url: 'https://www.facebook.com/elbosqueoviedo/?locale=es_ES',
-    label: 'Ir a la página web de Maxibon',
+    label: 'Ir al facebook de Bosque',
     image: {
       logo: Bosque,
       width: 200,
@@ -326,55 +228,11 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  {
-    id: 'varesport',
-    name: 'Varesport',
-    url: 'https://www.facebook.com/varesport/?locale=es_ES',
-    label: 'Ir al Facebook de Varesport',
-    image: {
-      logo: Varesport,
-      width: 200,
-      height: 200,
-    },
-  },
-   {
-    id: 'deportescarro',
-    name: 'Deportescarro',
-    url: 'https://www.deportescarro.com/ps/es/',
-    label: 'Ir a la página web de Deportes Carro',
-    image: {
-      logo: DeportesCarro,
-      width: 200,
-      height: 200,
-    },
-  },
-   {
-    id: 'barmagadan',
-    name: 'Bar Magadan',
-    url: 'https://www.facebook.com/people/Bar-Restaurante-Magadan/100063656434186/?paipv=0&eav=AfbI-vq3PSWc0VF5W7uneNRZ87OwCCGiWeZ2CHh1SuhL7Ut9TMQdyQTChh8XngJpY8Y&_rdr',
-    label: 'Ir al Facebook de Bar Magadan',
-    image: {
-      logo: Magadan,
-      width: 200,
-      height: 200,
-    },
-  },
-   {
-    id: 'tiendaadela',
-    name: 'Tienda Adela',
-    url: 'https://www.facebook.com/huertinadeadela/',
-    label: 'Ir al Facebook de la Huertina de Adela',
-    image: {
-      logo: HuertinaAdela,
-      width: 200,
-      height: 200,
-    },
-  },
     {
     id: 'casafarruco',
     name: 'Casa Farruco',
     url: 'https://www.facebook.com/people/Casa-Farruco/61559431012064/',
-    label: 'Ir al facebook de SCasa Farruko',
+    label: 'Ir al facebook de Casa Farruko',
     image: {
       logo: Farruco,
       width: 200,
@@ -385,39 +243,45 @@ export const SPONSORS: Sponsors[] = [
     id: 'excalex',
     name: 'Excalex',
     url: 'https://excalex.com/',
-    label: 'Página Oficial de Casa Farruco',
+    label: 'Página Oficial de Excalex',
     image: {
       logo: Excalex,
       width: 200,
       height: 200,
     },
   },
-] as const;
- 
-  
-
-    /*
- 
-
- 
- 
-  
- 
-  {
-    id: 'sidrerianarcea',
-    name: 'Sidreria Narcea',
-    url: 'https://www.instagram.com/sidrerianarcea/?hl=es',
-    label: 'Ir al instagram de Sidreria Narcea',
+   {
+    id: 'parla',
+    name: 'Parla',
+    url: 'https://casaparla.com/',
+    label: 'Página Oficial de Casa Parla',
     image: {
-      logo: SidreriaNarcea,
+      logo: Parla,
       width: 200,
       height: 200,
     },
   },
-
-  
-
+    {
+    id: 'ingenegreen',
+    name: 'Ingenegreen',
+    url: '',
+    label: '',
+    image: {
+      logo: Ingenegreen,
+      width: 200,
+      height: 200,
+    },
+  },
+    {
+    id: 'zaira',
+    name: 'Zaira',
+    url: '',
+    label: '',
+    image: {
+      logo: Zaira,
+      width: 200,
+      height: 200,
+    },
+  },
+] as const;
  
- 
- 
-  */
