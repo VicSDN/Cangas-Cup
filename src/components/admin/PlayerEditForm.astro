@@ -50,7 +50,7 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
       >
         {availableTeams.map(team => (
           <option value={team.id.toString()} selected={team.id === player.team_id}>
-            {team.name} ({team.year}) {/* Mostrar el año del equipo puede ser útil */}
+            {team.name} ({team.year})
           </option>
         ))}
         {availableTeams.length === 0 && (
@@ -109,26 +109,16 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
         
         successP.textContent = result.message || 'Jugador actualizado correctamente.';
         successP.classList.remove('hidden');
-
-        // ---- INICIO DE LA LÓGICA DE REDIRECCIÓN ----
-        // Obtener el año del formulario (ya que está como campo oculto)
         const playerYear = formData.get('year') as string || new Date().getFullYear().toString();
         
-        // Esperar un poco para que el usuario vea el mensaje de éxito (opcional)
         setTimeout(() => {
-          window.location.href = `/admin/players?year=${playerYear}`; // Redirige a la lista de jugadores del año correspondiente
-        }, 1500); // 1.5 segundos de espera
-        // ---- FIN DE LA LÓGICA DE REDIRECCIÓN ----
+          window.location.href = `/admin/players?year=${playerYear}`; 
+        }, 1500); 
 
       } catch (err) {
         errorP.textContent = (err instanceof Error) ? err.message : 'Ocurrió un error al guardar.';
         errorP.classList.remove('hidden');
-        // No redirigir si hay error, para que el usuario vea el mensaje de error
       } finally {
-          // Solo reestablecer el botón si NO estamos redirigiendo inmediatamente
-          // Si hay redirección, el reestablecimiento puede no ser necesario
-          // o podría causar un "flash" si la redirección es muy rápida.
-          // Si la redirección tiene un timeout, reestablecerlo aquí está bien.
           submitButton.disabled = false;
           submitButton.textContent = originalButtonText;
       }
