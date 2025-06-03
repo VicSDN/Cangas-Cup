@@ -1,0 +1,126 @@
+---
+// src/pages/admin/players/[id].astro
+import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
+import PlayerEditForm from '../../../components/admin/PlayerEditForm.astro';
+import { supabase } from '../../../lib/supabase';
+import ButtonBack from '../../../sections/ButtonBack.astro';
+import type { Player, Team } from '../../../types/tournament'; // Asegúrate que RawPlayerData esté aquí o se define localmente
+
+// Definición local de RawPlayerData si no está en types/tournament.ts o si es específica para este fetch
+interface RawPlayerDataForFetch {
+    id: number;
+    name: string;
+    second_name: string | null;
+    year: number;
+    team_id: number; // Asumimos que no es null después de la validación
+    team: { id: number; name: string; year?: number } | { id: number; name: string; year?: number }[] | null; // El equipo relacionado podría tener 'year'
+}
+
+
+const { id } = Astro.params;
+const currentYearParam = new URL(Astro.request.url).searchParams.get('year');
+
+let currentYearNumber: number;
+if (currentYearParam && !isNaN(parseInt(currentYearParam))) {
+  currentYearNumber = parseInt(currentYearParam);
+} else {
+  const { data: tempPlayerYearData, error: tempPlayerError } = await supabase
+    .from('tournament_player')
+    .select('year')
+    .eq('id', id)
+    .single();
+
+  if (tempPlayerError && !tempPlayerYearData) {
+     console.error('Error fetching player year for fallback:', tempPlayerError.message);
+     currentYearNumber = new Date().getFullYear();
+  } else {
+    currentYearNumber = tempPlayerYearData?.year || new Date().getFullYear();
+  }
+}
+
+const { data: playerData, error: playerError } = await supabase
+  .from('tournament_player')
+  .select(`
+    id,
+    name,
+    second_name,
+    year,
+    team_id,
+    team:tournament_team ( id, name, year ) 
+  `) // Añadido 'year' a la selección del equipo relacionado
+  .eq('id', id)
+  .single();
+
+if (playerError || !playerData) {
+  console.error('Error fetching player:', playerError?.message);
+  return new Response(`Jugador no encontrado con ID ${id}. Error: ${playerError?.message || 'Desconocido'}`, { status: 404 });
+}
+
+const rawPlayer = playerData as RawPlayerDataForFetch; // Usar la definición local o importada
+let teamName: string | undefined = undefined;
+let relatedTeamObject: { id: number; name: string; year?: number } | null = null;
+
+if (rawPlayer.team) {
+  if (Array.isArray(rawPlayer.team)) {
+    relatedTeamObject = rawPlayer.team[0] || null;
+  } else {
+    relatedTeamObject = rawPlayer.team as { id: number; name: string; year?: number };
+  }
+  teamName = relatedTeamObject?.name;
+}
+
+
+if (rawPlayer.team_id === null || rawPlayer.team_id === undefined) { // Chequeo más explícito
+    console.error(`Player ID ${rawPlayer.id} no tiene team_id.`);
+    return new Response(`Datos del jugador incompletos: falta team_id para el jugador ${rawPlayer.id}.`, { status: 500 });
+}
+
+const player: Player = {
+  id: rawPlayer.id,
+  name: rawPlayer.name || '',
+  second_name: rawPlayer.second_name,
+  year: rawPlayer.year,
+  team_id: rawPlayer.team_id,
+  team_name: teamName,
+  team: relatedTeamObject ? { id: relatedTeamObject.id, name: relatedTeamObject.name, year: relatedTeamObject.year || rawPlayer.year } : null,
+};
+
+// Para availableTeams, seleccionamos 'id', 'name', y 'year'
+const { data: teamsData, error: teamsError } = await supabase
+  .from('tournament_team')
+  .select('id, name, year') // <--- CORRECCIÓN AQUÍ: Añadir 'year'
+  .eq('year', player.year) // Filtra por el año del jugador, por lo que todos los equipos tendrán este 'year'
+  .order('name');
+
+if (teamsError) {
+  console.error('Error fetching teams:', teamsError.message);
+}
+
+// Ahora teamsData (si no es null) será del tipo { id: any, name: any, year: any }[]
+// lo cual es compatible con Team[] si los tipos en la DB son correctos.
+// Es mejor castear explícitamente si Supabase devuelve 'any'
+const availableTeams: Team[] = (teamsData as Team[]) || [];
+
+---
+
+<LayoutAdmin title={`Editar Jugador: ${player.name} ${player.second_name || ''}`} description="Editar detalles del jugador">
+  <div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+      <ButtonBack href={`/admin/players?year=${player.year}`} />
+    </div>
+    <PlayerEditForm player={player} availableTeams={availableTeams} currentYear={player.year.toString()} />
+  </div>
+</LayoutAdmin>
+
+<script>
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const backButton = document.querySelector('a[href^="/admin/players?year="]');
+      if (backButton && backButton instanceof HTMLAnchorElement) {
+        window.location.href = backButton.href;
+      } else {
+        window.history.back();
+      }
+    }
+  });
+</script>

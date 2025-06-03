@@ -46,7 +46,7 @@ export interface Player extends DatabaseBase {
   name: string;
   second_name?: string | null;
   team_id: number;
-  team?: { name: string } | null; 
+  team?: Team | null;
   team_name?: string; 
 }
 

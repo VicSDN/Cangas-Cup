@@ -1,0 +1,137 @@
+---
+import type { Player, Team } from '../../types/tournament';
+
+interface Props {
+  player: Player;
+  availableTeams: Team[];
+  currentYear: string;
+}
+
+const { player, availableTeams, currentYear } = Astro.props;
+const formAction = `/api/players/update-player?playerId=${player.id}`;
+---
+
+<div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl w-full max-w-lg mx-auto">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+    Editar Jugador: {player.name} {player.second_name || ''}
+  </h2>
+
+  <form method="POST" action={formAction} id="editPlayerForm">
+    <div class="mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
+      <input
+        type="text"
+        name="name"
+        id="name"
+        value={player.name}
+        required
+        class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+      />
+    </div>
+
+    <div class="mb-4">
+      <label for="second_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Segundo Nombre (Opcional)</label>
+      <input
+        type="text"
+        name="second_name"
+        id="second_name"
+        value={player.second_name || ''}
+        class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+      />
+    </div>
+
+    <div class="mb-6">
+      <label for="team_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Equipo</label>
+      <select
+        name="team_id"
+        id="team_id"
+        required
+        class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+      >
+        {availableTeams.map(team => (
+          <option value={team.id.toString()} selected={team.id === player.team_id}>
+            {team.name} ({team.year}) {/* Mostrar el año del equipo puede ser útil */}
+          </option>
+        ))}
+        {availableTeams.length === 0 && (
+          <option value="" disabled>No hay equipos disponibles para el año {player.year}</option>
+        )}
+      </select>
+    </div>
+
+    <input type="hidden" name="year" value={player.year.toString()} />
+
+    <div class="flex justify-between items-center mt-8">
+      <a href={`/admin/players?year=${currentYear}`} class="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline">
+        Cancelar
+      </a>
+      <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+        Guardar Cambios
+      </button>
+    </div>
+    <p id="form-error" class="text-red-500 text-sm mt-3 hidden"></p>
+    <p id="form-success" class="text-green-500 text-sm mt-3 hidden"></p>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('editPlayerForm') as HTMLFormElement | null;
+  const errorP = document.getElementById('form-error') as HTMLParagraphElement | null;
+  const successP = document.getElementById('form-success') as HTMLParagraphElement | null;
+
+  if (form && errorP && successP) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorP.classList.add('hidden');
+      errorP.textContent = '';
+      successP.classList.add('hidden');
+      successP.textContent = '';
+
+      const formData = new FormData(form);
+      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if (!submitButton) return;
+
+      const originalButtonText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Guardando...';
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || `Error: ${response.status}`);
+        }
+        
+        successP.textContent = result.message || 'Jugador actualizado correctamente.';
+        successP.classList.remove('hidden');
+
+        // ---- INICIO DE LA LÓGICA DE REDIRECCIÓN ----
+        // Obtener el año del formulario (ya que está como campo oculto)
+        const playerYear = formData.get('year') as string || new Date().getFullYear().toString();
+        
+        // Esperar un poco para que el usuario vea el mensaje de éxito (opcional)
+        setTimeout(() => {
+          window.location.href = `/admin/players?year=${playerYear}`; // Redirige a la lista de jugadores del año correspondiente
+        }, 1500); // 1.5 segundos de espera
+        // ---- FIN DE LA LÓGICA DE REDIRECCIÓN ----
+
+      } catch (err) {
+        errorP.textContent = (err instanceof Error) ? err.message : 'Ocurrió un error al guardar.';
+        errorP.classList.remove('hidden');
+        // No redirigir si hay error, para que el usuario vea el mensaje de error
+      } finally {
+          // Solo reestablecer el botón si NO estamos redirigiendo inmediatamente
+          // Si hay redirección, el reestablecimiento puede no ser necesario
+          // o podría causar un "flash" si la redirección es muy rápida.
+          // Si la redirección tiene un timeout, reestablecerlo aquí está bien.
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+      }
+    });
+  }
+</script>
