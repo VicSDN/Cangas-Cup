@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const tagsConfig = ["Clasificación", "Rankings", "Horarios y Resultados"];
+const tagsConfig = ["Clasificación", "Rankings", "Horarios y Resultados","El Salón de los Elegidos"];
 
 interface CompetitionViewProps {
   initialTag?: string;
@@ -17,7 +17,7 @@ export default function CompetitionView({
 }: CompetitionViewProps) {
   const subtagsMapConfig: Record<string, string[]> = {
     Clasificación: availableGroupNames,
-    Rankings: ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas"],
+    Rankings: ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas","MVPs"],
     "Horarios y Resultados": ["Horarios de Grupos", "Eliminatoria", "Final Local"],
   };
 

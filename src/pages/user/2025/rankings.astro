@@ -7,6 +7,7 @@ import PlayerCards from '../../../components/user/2025/PlayerCards.astro';
 import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro';
 import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro';
+import HallOfFame from '../../../components/user/2025/HallOfFame.astro';
 import { supabase } from '../../../lib/supabase';
 
 const YEAR_TO_SHOW = 2025;
@@ -32,12 +33,11 @@ try {
   errorFetchingGroups = "No se pudieron cargar los nombres de los grupos desde la base de datos.";
 }
 
-
 const defaultTag = "Clasificación"; 
 const currentTag = currentTagFromUrl || defaultTag;
 
 let defaultSubtag: string | null = null;
-const rankingsSubtags = ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas"];
+const rankingsSubtags = ["Máx. Goleadores", "Tarjetas Amarillas", "Tarjetas Rojas", "MVPs"];
 const schedulesSubtags = ["Horarios de Grupos", "Eliminatoria", "Final Local"];
 
 if (currentTag === 'Clasificación' && groupNames.length > 0) {
@@ -59,20 +59,20 @@ const showGroupSchedule = currentTag === 'Horarios y Resultados' && currentSubta
 const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
 const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
 
+const showHallOfFame = currentTag === 'El Salón de los Elegidos';
 
 const noContentComponentSelected = !(
     showGroupRanking || showTopScorers || showYellowCards || showRedCards ||
-    showGroupSchedule || showKnockout || showLocalFinal // ACTUALIZADO
+    showGroupSchedule || showKnockout || showLocalFinal || showHallOfFame
 );
 
 let isTagSelectedButNoSubtag = false;
 if (currentTag && !currentSubtag) {
     if (currentTag === 'Clasificación' && groupNames.length > 0) isTagSelectedButNoSubtag = true;
     if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
-    if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0) isTagSelectedButNoSubtag = true; // ACTUALIZADO
+    if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0) isTagSelectedButNoSubtag = true;
 }
 const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentSelected && !isTagSelectedButNoSubtag;
-
 ---
 
 <Layout title={`El torneo ${YEAR_TO_SHOW} - Resultados y Estadísticas`} description={`Resultados, clasificación, goleadores y más de la competición del año ${YEAR_TO_SHOW}.`}>
@@ -91,11 +91,10 @@ const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentS
       {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
       {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
       {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
-
       {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
       {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} 
       {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} 
-
+      {showHallOfFame && <HallOfFame year={YEAR_TO_SHOW} />}
 
       {isTagSelectedButNoSubtag && (
         <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">

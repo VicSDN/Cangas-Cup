@@ -10,6 +10,7 @@ import PlayerCards from '../../components/user/2025/PlayerCards.astro';
 import KnockoutMatches from '../../components/user/2025/KnockoutMatches.astro';
 import LocalFinalMatch from '../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../components/user/2025/GroupMatchesSchedule.astro';
+import ButtonCreateHallOfFame from '../../components/admin/ButtonCreateHallOfFame.astro';
 
 const YEAR_TO_SHOW = 2025;
 
@@ -100,6 +101,7 @@ try {
   Astro.cookies.delete('sb-refresh-token', { path: '/' });
   return Astro.redirect('/admin/signin');
 }
+const currentYear = new Date().getFullYear(); 
 ---
 
 <LayoutAdmin description="La plataforma del Administrador" title="Admin Dashboard">
@@ -121,6 +123,7 @@ try {
     </div>
   </div>
   <h1 class="text-2xl font-bold mb-4 text-center">Vista General del Torneo</h1>
+   <ButtonCreateHallOfFame year={currentYear} />
     <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-grey-700 min-h-screen">
 
     <CompetitionView

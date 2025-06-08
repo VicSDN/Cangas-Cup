@@ -1,0 +1,230 @@
+---
+import LayoutAdmin from '../../layouts/LayoutAdmin.astro';
+import { supabase } from '../../lib/supabase';
+import ButtonBack from '../../sections/ButtonBack.astro'; // Si tienes un componente de botón "atrás"
+
+const currentUrl = new URL(Astro.request.url);
+const yearParam = currentUrl.searchParams.get('year');
+const currentYear = yearParam ? parseInt(yearParam) : new Date().getFullYear();
+
+// Tipos
+interface Team { id: number; name: string; }
+interface RawPlayerData {
+  id: number;
+  name: string;
+  second_name: string | null;
+  team: { name: string } | null;
+}
+interface Player {
+  id: number;
+  name: string;
+  second_name: string | null;
+  team_name?: string | null;
+}
+interface AwardData {
+  award_type: string;
+  team_id: number | null;
+  player_id: number | null;
+}
+
+const assignableAwardsConfig = [
+  { key: 'CampeonTorneo', label: '🏆 Campeón del Torneo', type: 'team' },
+  { key: 'SubcampeonTorneo', label: '🥈 Subcampeón del Torneo', type: 'team' },
+  { key: 'MejorJugador', label: '🌟 Mejor Jugador del Torneo', type: 'player' },
+  { key: 'MejorPortero', label: '🧤 Mejor Portero del Torneo', type: 'player' },
+  { key: 'CampeonLocal', label: '🏠 Campeón Local', type: 'team' },
+  { key: 'MVPFinalAsturtoner', label: '🔥 MVP Final Asturtoner', type: 'player' },
+  { key: 'MVPFinalLocalTrikigol', label: '💥 MVP Final Local Trikigol', type: 'player' },
+];
+
+let teams: Team[] = [];
+let players: Player[] = [];
+let existingAwards: Record<string, AwardData> = {};
+let errorMessage: string | null = null;
+let successMessage: string | null = null;
+
+try {
+  const { data: teamsData, error: teamsError } = await supabase
+    .from('tournament_team')
+    .select('id, name')
+    .eq('year', currentYear)
+    .order('name');
+  if (teamsError) throw teamsError;
+  teams = teamsData || [];
+
+  const { data: playersData, error: playersError } = await supabase
+    .from('tournament_player')
+    .select('id, name, second_name, team:team_id(name)')
+    .eq('year', currentYear)
+    .order('name');
+  if (playersError) throw playersError;
+
+  players = (playersData as any[]).map(p => ({
+    id: p.id,
+    name: p.name,
+    second_name: p.second_name,
+    team_name: p.team ? (Array.isArray(p.team) ? p.team[0]?.name : p.team.name) : null,
+  }));
+
+  const { data: awardsData, error: awardsError } = await supabase
+    .from('tournament_awards')
+    .select('award_type, team_id, player_id')
+    .eq('year', currentYear);
+  if (awardsError) throw awardsError;
+  if (awardsData) {
+    awardsData.forEach(award => {
+      existingAwards[award.award_type] = {
+        award_type: award.award_type,
+        team_id: award.team_id,
+        player_id: award.player_id,
+      };
+    });
+  }
+
+} catch (e: any) {
+  errorMessage = `Error al cargar datos: ${e.message}`;
+}
+
+// Manejo del POST (si el formulario se envía a esta misma página)
+if (Astro.request.method === "POST") {
+  try {
+    const formData = await Astro.request.formData();
+    const awardsToSave: Partial<AwardData>[] = [];
+
+    for (const config of assignableAwardsConfig) {
+      const teamIdValue = formData.get(`${config.key}_team_id`);
+      const playerIdValue = formData.get(`${config.key}_player_id`);
+
+      const awardEntry: Partial<AwardData> & { award_type: string; year: number } = {
+        award_type: config.key,
+        year: currentYear,
+      };
+
+      if (config.type === 'team' && teamIdValue && teamIdValue !== 'null') {
+        awardEntry.team_id = parseInt(teamIdValue.toString());
+        awardEntry.player_id = null;
+      } else if (config.type === 'player' && playerIdValue && playerIdValue !== 'null') {
+        awardEntry.player_id = parseInt(playerIdValue.toString());
+        awardEntry.team_id = null;
+      } else {
+        awardEntry.team_id = null;
+        awardEntry.player_id = null;
+      }
+
+      if (awardEntry.team_id !== undefined || awardEntry.player_id !== undefined) {
+        awardsToSave.push(awardEntry);
+      }
+    }
+
+    if (awardsToSave.length > 0) {
+      const { error: upsertError } = await supabase
+        .from('tournament_awards')
+        .upsert(awardsToSave, { onConflict: 'year, award_type' });
+
+      if (upsertError) throw upsertError;
+
+      successMessage = "Salón de los Elegidos actualizado correctamente!";
+      const { data: newAwardsData, error: newAwardsError } = await supabase
+        .from('tournament_awards')
+        .select('award_type, team_id, player_id')
+        .eq('year', currentYear);
+      if (newAwardsError) throw newAwardsError;
+
+      existingAwards = {};
+      if (newAwardsData) {
+        newAwardsData.forEach(award => {
+          existingAwards[award.award_type] = {
+            award_type: award.award_type,
+            team_id: award.team_id,
+            player_id: award.player_id,
+          };
+        });
+      }
+    } else {
+      successMessage = "No se realizaron cambios (no se seleccionaron premios).";
+    }
+
+  } catch (e: any) {
+    errorMessage = `Error al guardar: ${e.message}`;
+    successMessage = null;
+  }
+}
+---
+
+<LayoutAdmin title={`Editar Salón de los Elegidos ${currentYear}`} description="Editar el Salón de los Elegidos para el torneo">
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 dark:text-white">
+        Editar Salón de los Elegidos <span class="text-indigo-600 dark:text-indigo-400">{currentYear}</span>
+      </h1>
+      <ButtonBack href="/admin" /> <!-- Ajusta el href si es necesario -->
+    </div>
+
+    {errorMessage && (
+      <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 dark:bg-red-900 dark:border-red-700 dark:text-red-200 rounded">
+        <p class="font-bold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )}
+    {successMessage && (
+      <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-200 rounded">
+        <p>{successMessage}</p>
+      </div>
+    )}
+
+    <form method="POST" class="bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 md:p-8 space-y-6">
+      <input type="hidden" name="year" value={currentYear} />
+
+      {assignableAwardsConfig.map(awardConfig => (
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0">
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">{awardConfig.label}</h3>
+          {awardConfig.type === 'team' && teams.length > 0 && (
+            <div>
+              <label for={`${awardConfig.key}_team_id`} class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Seleccionar Equipo:</label>
+              <select 
+                name={`${awardConfig.key}_team_id`} 
+                id={`${awardConfig.key}_team_id`}
+                class="form-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="null">-- Ninguno --</option>
+                {teams.map(team => (
+                  <option value={team.id.toString()} selected={existingAwards[awardConfig.key]?.team_id === team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {awardConfig.type === 'player' && players.length > 0 && (
+            <div>
+              <label for={`${awardConfig.key}_player_id`} class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Seleccionar Jugador:</label>
+              <select 
+                name={`${awardConfig.key}_player_id`} 
+                id={`${awardConfig.key}_player_id`}
+                class="form-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="null">-- Ninguno --</option>
+                {players.map(player => (
+                  <option value={player.id.toString()} selected={existingAwards[awardConfig.key]?.player_id === player.id}>
+                    {player.name} {player.second_name || ''} ({player.team_name || 'Sin equipo'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {(awardConfig.type === 'team' && teams.length === 0) && <p class="text-sm text-gray-500 dark:text-gray-400">No hay equipos disponibles para este año.</p>}
+          {(awardConfig.type === 'player' && players.length === 0) && <p class="text-sm text-gray-500 dark:text-gray-400">No hay jugadores disponibles para este año.</p>}
+        </div>
+      ))}
+
+      <div class="pt-5">
+        <button 
+          type="submit"
+          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
+        >
+          Guardar Cambios en Salón de los Elegidos
+        </button>
+      </div>
+    </form>
+  </div>
+</LayoutAdmin>
