@@ -5,8 +5,6 @@ export interface Props {
   year?: number;
 }
 const { year = 2025 } = Astro.props;
-
-// Helper para obtener el nombre de una relación que puede ser objeto o array[0]
 function getNameFromRelation(data: unknown): string | null {
   if (data && typeof data === 'object') {
     if (Array.isArray(data)) {
@@ -74,8 +72,6 @@ try {
       }
       
       const date = new Date(match.match_date);
-
-      // getNameFromRelation handles if home_team_data is an object or array (it should be an object here)
       const home_team_name = getNameFromRelation(match.home_team_data) || 'Por definir';
       const away_team_name = getNameFromRelation(match.away_team_data) || 'Por definir';
 

@@ -1,4 +1,3 @@
-// src/lib/teamService.ts
 import { supabase } from './supabase';
 
 export interface Team {

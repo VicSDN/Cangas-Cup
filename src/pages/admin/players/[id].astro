@@ -1,18 +1,16 @@
 ---
-// src/pages/admin/players/[id].astro
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import PlayerEditForm from '../../../components/admin/PlayerEditForm.astro';
 import { supabase } from '../../../lib/supabase';
 import ButtonBack from '../../../sections/ButtonBack.astro';
-import type { Player, Team } from '../../../types/tournament'; // Asegúrate que RawPlayerData esté aquí o se define localmente
+import type { Player, Team } from '../../../types/tournament'; 
 
-// Definición local de RawPlayerData si no está en types/tournament.ts o si es específica para este fetch
 interface RawPlayerDataForFetch {
     id: number;
     name: string;
     second_name: string | null;
     year: number;
-    team_id: number; // Asumimos que no es null después de la validación
+    team_id: number; 
     team: { id: number; name: string; year?: number } | { id: number; name: string; year?: number }[] | null; // El equipo relacionado podría tener 'year'
 }
 
@@ -47,7 +45,7 @@ const { data: playerData, error: playerError } = await supabase
     year,
     team_id,
     team:tournament_team ( id, name, year ) 
-  `) // Añadido 'year' a la selección del equipo relacionado
+  `) 
   .eq('id', id)
   .single();
 
@@ -56,7 +54,7 @@ if (playerError || !playerData) {
   return new Response(`Jugador no encontrado con ID ${id}. Error: ${playerError?.message || 'Desconocido'}`, { status: 404 });
 }
 
-const rawPlayer = playerData as RawPlayerDataForFetch; // Usar la definición local o importada
+const rawPlayer = playerData as RawPlayerDataForFetch; 
 let teamName: string | undefined = undefined;
 let relatedTeamObject: { id: number; name: string; year?: number } | null = null;
 
@@ -70,7 +68,7 @@ if (rawPlayer.team) {
 }
 
 
-if (rawPlayer.team_id === null || rawPlayer.team_id === undefined) { // Chequeo más explícito
+if (rawPlayer.team_id === null || rawPlayer.team_id === undefined) {
     console.error(`Player ID ${rawPlayer.id} no tiene team_id.`);
     return new Response(`Datos del jugador incompletos: falta team_id para el jugador ${rawPlayer.id}.`, { status: 500 });
 }
@@ -85,20 +83,17 @@ const player: Player = {
   team: relatedTeamObject ? { id: relatedTeamObject.id, name: relatedTeamObject.name, year: relatedTeamObject.year || rawPlayer.year } : null,
 };
 
-// Para availableTeams, seleccionamos 'id', 'name', y 'year'
+
 const { data: teamsData, error: teamsError } = await supabase
   .from('tournament_team')
-  .select('id, name, year') // <--- CORRECCIÓN AQUÍ: Añadir 'year'
-  .eq('year', player.year) // Filtra por el año del jugador, por lo que todos los equipos tendrán este 'year'
+  .select('id, name, year') 
+  .eq('year', player.year) 
   .order('name');
 
 if (teamsError) {
   console.error('Error fetching teams:', teamsError.message);
 }
 
-// Ahora teamsData (si no es null) será del tipo { id: any, name: any, year: any }[]
-// lo cual es compatible con Team[] si los tipos en la DB son correctos.
-// Es mejor castear explícitamente si Supabase devuelve 'any'
 const availableTeams: Team[] = (teamsData as Team[]) || [];
 
 ---

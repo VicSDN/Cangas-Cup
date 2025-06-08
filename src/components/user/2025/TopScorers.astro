@@ -19,7 +19,7 @@ let errorMessage: string | null = null;
 try {
   const { data: goals, error: goalsError } = await supabase
     .from('tournament_goal')
-    .select('player_id') // Only select player_id
+    .select('player_id') 
     .eq('year', year);
 
   if (goalsError) throw new Error(`Error al cargar goles: ${goalsError.message}`);
@@ -28,7 +28,7 @@ try {
     topScorers = [];
   } else {
     const goalCounts = goals.reduce<Record<number, { count: number }>>((acc, goal) => {
-      if (goal.player_id === null) return acc; // Skip if player_id is null
+      if (goal.player_id === null) return acc; 
       acc[goal.player_id] = acc[goal.player_id] || { count: 0 };
       acc[goal.player_id].count += 1;
       return acc;
@@ -43,7 +43,7 @@ try {
             id, 
             name, 
             team:tournament_team ( name ) 
-        `) // Fetches related team name directly
+        `) 
         .in('id', playerIds)
         .eq('year', year);
 
@@ -64,7 +64,7 @@ try {
             .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
         }
     } else {
-        topScorers = []; // Ensure it's empty if no valid player IDs
+        topScorers = []; 
     }
   }
 } catch (e: any) {

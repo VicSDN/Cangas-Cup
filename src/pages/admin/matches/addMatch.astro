@@ -21,7 +21,6 @@ interface GroupForClientData {
   name: string;
 }
 
-// Usamos los tipos explícitos al declarar las variables
 let teamsForClient: TeamForClientData[] = [];
 let groupsForClient: GroupForClientData[] = [];
 let fetchError: string | null = null;
@@ -34,7 +33,6 @@ try {
     .order('name', { ascending: true });
 
   if (teamsError) throw teamsError;
-  // Aseguramos que el mapeo cumpla con la interfaz
   teamsForClient = (teamsData || []).map(t => ({ 
     id: t.id, 
     name: t.name, 

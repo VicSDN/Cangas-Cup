@@ -766,18 +766,18 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       }
     }
 
-    async handleAddCardSubmit(event: SubmitEvent) { // CORREGIDO PARA TARJETAS
+    async handleAddCardSubmit(event: SubmitEvent) { 
       event.preventDefault();
       this.clearError(this.cardFormErrorEl);
       if (!this.cardPlayerSelect || !this.cardTypeSelect || !this.cardMinuteInput || !this.addCardForm || !this.currentMatchData.matchId || !this.currentMatchData.year) return;
 
       const playerId = this.cardPlayerSelect.value;
       const cardType = this.cardTypeSelect.value as 'Amarilla' | 'Roja';
-      const minuteValue = this.cardMinuteInput.value; // Es 'minute' para tarjetas
+      const minuteValue = this.cardMinuteInput.value;
       const selectedOption = this.cardPlayerSelect.options[this.cardPlayerSelect.selectedIndex];
       const teamId = selectedOption?.dataset.teamId;
 
-      if (!playerId || !cardType || !minuteValue || !teamId) { // minuteValue en lugar de minute
+      if (!playerId || !cardType || !minuteValue || !teamId) { 
         this.displayError(this.cardFormErrorEl, 'Todos los campos son requeridos.');
         return;
       }
@@ -788,12 +788,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         submitButton.textContent = 'Añadiendo...';
       }
 
-      const payload: CreateCardPayload = { // Usar CreateCardPayload
+      const payload: CreateCardPayload = { 
         match_id: parseInt(this.currentMatchData.matchId, 10),
         player_id: parseInt(playerId, 10),
         team_id: parseInt(teamId, 10),
         type: cardType,
-        minute: parseInt(minuteValue, 10), // Propiedad es 'minute'
+        minute: parseInt(minuteValue, 10), 
         year: parseInt(this.currentMatchData.year, 10)
       };
       
@@ -804,7 +804,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar tarjeta');
         this.loadMatchCards();
-        if (this.addCardForm) { // Comprobación de nulidad
+        if (this.addCardForm) { 
            this.addCardForm.reset();
         }
       } catch (error: any) {
@@ -970,7 +970,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         }
     }
 
-    async handleAddGoalSubmit(event: SubmitEvent) { // CORREGIDO PARA GOLES
+    async handleAddGoalSubmit(event: SubmitEvent) { 
         event.preventDefault();
         this.clearError(this.goalFormErrorEl);
         if (!this.goalPlayerSelect || !this.goalTeamIdInput || !this.addGoalForm || !this.currentMatchData.matchId || !this.currentMatchData.year || !this.goalMinuteInput) return;
@@ -990,7 +990,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             submitButton.textContent = 'Añadiendo...';
         }
 
-        const payload: CreateGoalPayload = { // Usar CreateGoalPayload
+        const payload: CreateGoalPayload = {
             match_id: parseInt(this.currentMatchData.matchId, 10),
             player_id: parseInt(playerId, 10),
             team_id: parseInt(teamId, 10),
@@ -1004,7 +1004,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                  if(submitButton) { submitButton.disabled = false; submitButton.textContent = 'Añadir Gol'; }
                  return;
             }
-            payload.goal_minute = minuteNum; // Propiedad es 'goal_minute'
+            payload.goal_minute = minuteNum; 
         }
         
         try {
@@ -1014,7 +1014,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             const responseData = await response.json();
             if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar gol');
             this.loadMatchGoals();
-            if (this.addGoalForm) { // Comprobación de nulidad
+            if (this.addGoalForm) { 
                 this.addGoalForm.reset();
             }
             this.updateGoalTeamInfo();
@@ -1031,17 +1031,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
    handleGoalsListClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (target.classList.contains('delete-goal-btn')) {
-        const goalId = target.dataset.goalId; // <--- PUNTO CLAVE
+        const goalId = target.dataset.goalId; 
         console.log("[FRONTEND] Delete button clicked. Raw data-goal-id:", target.dataset.goalId); 
         console.log("[FRONTEND] Parsed goalId to be used:", goalId); 
-
-        // La validación aquí es importante:
         if (goalId && goalId.trim() !== "" && goalId !== "undefined" && !isNaN(Number(goalId))) {
             if (confirm('¿Seguro que quieres eliminar este gol?')) {
                 this.deleteGoal(goalId, target.closest('div') as HTMLDivElement | null);
             }
         } else {
-            // Si entra aquí, es porque goalId es "undefined", vacío, o no es un número.
             console.error("[FRONTEND] Invalid goalId from dataset:", goalId, "Full dataset:", target.dataset);
             this.displayError(this.goalFormErrorEl, "Error interno: ID de gol inválido para eliminar.");
         }
@@ -1052,8 +1049,7 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
     console.log(`[FRONTEND] deleteGoal method called with ID: '${goalId}'. Type: ${typeof goalId}`);
     this.clearError(this.goalFormErrorEl);
     try {
-        // La URL se construye aquí:
-        const urlToDelete = `/api/matches/goals/${goalId}`; // <--- Si goalId es "undefined", la URL será /api/matches/goals/undefined
+        const urlToDelete = `/api/matches/goals/${goalId}`; 
         console.log("[FRONTEND] Attempting to fetch DELETE:", urlToDelete);
         const response = await fetch(urlToDelete, { method: 'DELETE' }); 
             

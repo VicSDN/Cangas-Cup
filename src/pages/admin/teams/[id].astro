@@ -23,7 +23,7 @@ interface RankingEntry {
   games_played: number;
   goals_for: number;
   goals_against: number;
-  goal_difference: number; // Calculado en la vista o aquí
+  goal_difference: number;
   fair_play_points: number;
   fouls_committed: number;
   h2h_points?: number | string;
@@ -31,10 +31,10 @@ interface RankingEntry {
   h2h_goals_for?: number | string;
   position_in_group: number;
   is_local?: boolean;
-  overall_goal_difference?: number; // De la vista
-  overall_goals_for?: number;     // De la vista
-  sort_key?: number;              // De la vista
-  team_name?: string; // La vista devuelve team_name, lo usamos para 'name'
+  overall_goal_difference?: number; 
+  overall_goals_for?: number;     
+  sort_key?: number;              
+  team_name?: string; 
 }
 
 
@@ -109,8 +109,8 @@ if (!teamIdParam) {
             if (rankingEntry) {
               return {
                 ...rankingEntry,
-                id: rankingEntry.team_id, // Asegurar que 'id' sea el team_id para la key
-                name: rankingEntry.team_name || team.name, // Usar team_name de la vista si existe
+                id: rankingEntry.team_id, 
+                name: rankingEntry.team_name || team.name, 
               };
             } else {
               return {

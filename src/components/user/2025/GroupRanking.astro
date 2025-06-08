@@ -41,9 +41,8 @@ function getRowStyling(position: number, isLocal: boolean, totalTeams: number) {
   let badgeSpanClasses = "ml-1.5 text-xs font-semibold py-0.5 px-1.5 rounded-full";
 
   const isQualified = position === 1 || position === 2;
-  const isNonAdvancingStyleTarget = position > 2 && totalTeams > 2; // Target for red style
+  const isNonAdvancingStyleTarget = position > 2 && totalTeams > 2; 
 
-  // Default hover, will be used if no specific border is applied by qualification/elimination status
   rowClasses += isLocal ? " hover:bg-sky-800/30" : " hover:bg-slate-700/50";
 
   if (isQualified) {
@@ -57,8 +56,6 @@ function getRowStyling(position: number, isLocal: boolean, totalTeams: number) {
     teamNameCellClasses += " text-red-400";
     badgeSpanClasses += " bg-sky-600 text-sky-100";
   } else {
-    // Neutral style for rows not explicitly qualified or non-advancing (e.g. if group <= 2 teams, and it's not pos 1 or 2)
-    // Or for pos 3+ if totalTeams <= 2 (though this condition is covered by isNonAdvancingStyleTarget)
     positionCellClasses += " text-slate-300";
     teamNameCellClasses += isLocal ? " text-sky-400 font-medium" : " text-slate-100";
     badgeSpanClasses += isLocal ? " bg-sky-600 text-sky-100" : ""; // Only show badge if local
@@ -126,7 +123,7 @@ function getRowStyling(position: number, isLocal: boolean, totalTeams: number) {
         <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-amber-400 flex-shrink-0"></span>
         Clasifica a la siguiente ronda.
       </div>
-      { totalTeamsInGroup > 2 && ( // Solo mostrar leyenda de "No clasifica" si hay más de 2 equipos
+      { totalTeamsInGroup > 2 && ( 
         <div class="flex items-center">
           <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-red-500 flex-shrink-0"></span>
           No clasifica en esta fase de grupos.

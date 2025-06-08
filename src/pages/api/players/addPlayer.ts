@@ -49,10 +49,9 @@ export const POST: APIRoute = async ({ request }) => {
       .single();
 
     if (insertError) {
-      // Manejar errores específicos de la BD, como violaciones de unicidad si las tienes
-      if (insertError.code === '23505') { // Código para unique_violation
+      if (insertError.code === '23505') { 
          return new Response(JSON.stringify({ error: "Error: Ya existe un jugador con esos datos para ese equipo y año.", details: insertError.message } as ApiErrorResponse), {
-            status: 409, headers: { 'Content-Type': 'application/json' }, // Conflict
+            status: 409, headers: { 'Content-Type': 'application/json' }, 
         });
       }
       throw insertError;

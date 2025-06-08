@@ -1,4 +1,3 @@
-// src/pages/api/matches/cards/[cardId].ts
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../../lib/supabase';
 import type { ApiErrorResponse } from '../../../../types/tournament';
@@ -24,11 +23,11 @@ export const DELETE: APIRoute = async ({ params }) => {
 
   try {
     console.log(`[API DELETE CARD] Calling supabase.delete() for id: ${numericCardId}`);
-    const { data, error, status, count } = await supabase // Capturar más info
+    const { data, error, status, count } = await supabase 
       .from('tournament_card')
       .delete()
       .eq('id', numericCardId)
-      .select(); // Añadir .select() para ver qué devuelve si el delete es "exitoso"
+      .select(); 
 
     console.log('[API DELETE CARD] Supabase response:', { data, error, status, count });
 
@@ -43,18 +42,14 @@ export const DELETE: APIRoute = async ({ params }) => {
         status: 500, headers: { 'Content-Type': 'application/json' }
       });
     }
-
-    // Incluso si no hay error, verifica el status y count si es necesario.
-    // Un status 204 es típico para un DELETE sin .select(). Con .select(), podría ser 200.
-    // Si count es 0, no se eliminó nada (quizás ya no existía o RLS lo impidió sin error explícito).
-    if (count === 0 && status !== 404) { // 404 si el recurso no se encontró
+    if (count === 0 && status !== 404) { 
          console.warn(`[API DELETE CARD] Card with id ${numericCardId} not found or no rows affected, but no explicit error. Status: ${status}, Count: ${count}`);
     }
 
 
     console.log(`[API DELETE CARD] Successfully processed delete for cardId: ${numericCardId}. Status: ${status}`);
     return new Response(JSON.stringify({ message: "Tarjeta eliminada procesada", deletedCard: data }), { // Devolver 'data' si se usa .select()
-      status: 200, // O 204 si no devuelves contenido
+      status: 200, 
       headers: { 'Content-Type': 'application/json' }
     });
 

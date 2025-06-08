@@ -1,4 +1,3 @@
-// src/pages/api/matches/goals/index.ts
 import type { APIRoute } from 'astro';
 import { supabase } from '../../../../lib/supabase';
 import type { CreateGoalPayload, Goal } from '../../../../types/tournament';

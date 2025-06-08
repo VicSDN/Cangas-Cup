@@ -177,8 +177,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
         displayError(msg);
         return;
       }
-      
-      // General validation
+
       if (!name || groupIdNumeric <= 0 || !location || location === "") {
         const msg = 'Por favor, rellene todos los campos correctamente.';
         showToast('Validación fallida', 'error', msg);
