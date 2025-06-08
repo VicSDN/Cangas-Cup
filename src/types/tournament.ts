@@ -107,3 +107,22 @@ export interface RankingEntry {
   sort_key?: number; 
   position_in_group: number;
 }
+
+export interface Goal {
+  id: number;
+  match_id: number;
+  player_id: number;
+  team_id: number;
+  goal_minute?: number | null;
+  year: number;
+  player_name?: string; 
+  team_name?: string;  
+}
+
+export interface CreateGoalPayload {
+  match_id: number;
+  player_id: number;
+  team_id: number;
+  goal_minute?: number;
+  year: number;
+}
