@@ -4,12 +4,13 @@ import type {
   Team,
   Group,
   TransformedMatchBase,
-  Player, 
-  Card, 
-  CreateCardPayload, 
+  Player,
+  Card,
+  CreateCardPayload,
   UpdateMatchTeamFoulsPayload,
   Goal,
-  CreateGoalPayload
+  CreateGoalPayload,
+  UpdateMatchMvpPayload 
 } from '../../../types/tournament';
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import ButtonBack from '../../../sections/ButtonBack.astro';
@@ -41,17 +42,28 @@ let teamsMap: Map<number, {id: number, name: string, year: number}> = new Map();
 let groupsMap: Map<number, string> = new Map();
 let ssrErrorMessage: string | null = null;
 
-try {
+  try {
   const { data: matchesData, error: matchesError } = await supabase
     .from('tournament_match')
     .select<string, Match>(`
-      id, home_team, away_team, group_id, match_date, year,
-      home_score, away_score, match_stage, round_name, is_local_final,
-      home_team_match_fouls, away_team_match_fouls 
+      id,
+      home_team,
+      away_team,
+      group_id,
+      match_date,
+      year,
+      home_score,
+      away_score,
+      match_stage,
+      round_name,
+      is_local_final,
+      home_team_match_fouls,
+      away_team_match_fouls,
+      home_team_mvp_player_id,
+      away_team_mvp_player_id
     `) 
     .eq('year', currentYear)
     .order('match_date', { ascending: true });
-
   if (matchesError) throw matchesError;
   matchesFromDb = matchesData || [];
 
@@ -102,7 +114,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       if (parts.length === 2) {
         homeTeamDisplayName = parts[0].trim();
         awayTeamDisplayName = parts[1].trim();
-      } else { 
+      } else {
         homeTeamDisplayName = `(Por definir: ${match.round_name} - Local)`;
         awayTeamDisplayName = `(Por definir: ${match.round_name} - Visitante)`;
       }
@@ -133,6 +145,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     year: match.year,
     home_team_year: homeTeamInfo?.year || currentYear,
     away_team_year: awayTeamInfo?.year || currentYear,
+    home_team_mvp_player_id: match.home_team_mvp_player_id, 
+    away_team_mvp_player_id: match.away_team_mvp_player_id, 
   };
 });
 ---
@@ -194,16 +208,16 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                   {match.is_local_final && <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded-full dark:bg-green-700 dark:text-green-100">Final Local</span>}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  <a 
-                    href={match.home_team_id != null ? `/admin/teams/${match.home_team_id}?year=${match.home_team_year}` : '#'} 
+                  <a
+                    href={match.home_team_id != null ? `/admin/teams/${match.home_team_id}?year=${match.home_team_year}` : '#'}
                     class={`hover:underline ${match.home_team_id != null ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 cursor-default'}`}
                   >
                     {match.home_team_name}
                   </a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                  <a 
-                    href={match.away_team_id != null ? `/admin/teams/${match.away_team_id}?year=${match.away_team_year}` : '#'} 
+                  <a
+                    href={match.away_team_id != null ? `/admin/teams/${match.away_team_id}?year=${match.away_team_year}` : '#'}
                     class={`hover:underline ${match.away_team_id != null ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 cursor-default'}`}
                   >
                     {match.away_team_name}
@@ -225,6 +239,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                     data-home-team-name={match.home_team_name}
                     data-away-team-name={match.away_team_name}
                     data-year={match.year.toString()}
+                    data-home-mvp-id={match.home_team_mvp_player_id ? match.home_team_mvp_player_id.toString() : undefined}
+                    data-away-mvp-id={match.away_team_mvp_player_id ? match.away_team_mvp_player_id.toString() : undefined}
                   >
                     Gestionar Partido
                   </button>
@@ -259,6 +275,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       <input type="hidden" id="modal-match-year-main" />
       <input type="hidden" id="modal-home-team-id-main" />
       <input type="hidden" id="modal-away-team-id-main" />
+      <input type="hidden" id="modal-home-mvp-id-main" /> {/* For storing current MVP */}
+      <input type="hidden" id="modal-away-mvp-id-main" /> {/* For storing current MVP */}
+
 
       <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="manage-match-tabs" role="tablist">
@@ -274,10 +293,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           <li class="mr-2" role="presentation">
             <button class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="goals-content" type="button" role="tab">Goles</button>
           </li>
+          <li class="mr-2" role="presentation"> {/* New MVP Tab */}
+            <button class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" data-tab-target="mvp-content" type="button" role="tab">MVP</button>
+          </li>
         </ul>
       </div>
 
       <div id="modal-tab-content-container" class="flex-grow overflow-y-auto pr-1">
+        {/* Scores Content */}
         <div class="modal-tab-pane p-1" id="scores-content" role="tabpanel">
           <form id="update-score-form" class="space-y-3">
             <div>
@@ -295,6 +318,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           </form>
         </div>
 
+        {/* Cards Content */}
         <div class="modal-tab-pane hidden p-1" id="cards-content" role="tabpanel">
           <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Registrar Tarjetas</h3>
           <form id="add-card-form" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-2 mb-3 items-end">
@@ -324,6 +348,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           </div>
         </div>
 
+        {/* Fouls Content */}
         <div class="modal-tab-pane hidden p-1" id="fouls-content" role="tabpanel">
            <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Registrar Faltas (por equipo)</h3>
            <form id="update-fouls-form" class="space-y-3">
@@ -342,6 +367,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
            </form>
         </div>
 
+        {/* Goals Content */}
         <div class="modal-tab-pane hidden p-1" id="goals-content" role="tabpanel">
           <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Registrar Goles</h3>
           <form id="add-goal-form" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-2 mb-3 items-end">
@@ -363,11 +389,34 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             <button type="submit" id="submit-add-goal-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-sm self-end h-fit w-full sm:w-auto">Añadir Gol</button>
           </form>
           <p id="goal-form-error" class="text-xs text-red-600 dark:text-red-400 mb-2 hidden"></p>
-          
+
           <h4 class="text-md font-semibold mt-3 mb-1 text-gray-700 dark:text-gray-200">Goles Registrados</h4>
           <div id="goals-list" class="space-y-2 max-h-48 overflow-y-auto border dark:border-gray-600 p-2 rounded-md bg-gray-50 dark:bg-gray-700/30">
             <p class="text-sm text-gray-500 dark:text-gray-400 italic">No hay goles registrados o cargando...</p>
           </div>
+        </div>
+
+        {/* MVP Content - New Tab */}
+        <div class="modal-tab-pane hidden p-1" id="mvp-content" role="tabpanel">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Seleccionar MVP del Partido</h3>
+          <form id="update-mvp-form" class="space-y-4">
+            <div>
+              <label for="modal-home-mvp-player-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">MVP Equipo Local (<span id="mvp-home-team-name" class="font-semibold"></span>)</label>
+              <select id="modal-home-mvp-player-id" name="homeMvpPlayerId" class="mt-1 form-select block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Cargando jugadores...</option>
+              </select>
+            </div>
+            <div>
+              <label for="modal-away-mvp-player-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">MVP Equipo Visitante (<span id="mvp-away-team-name" class="font-semibold"></span>)</label>
+              <select id="modal-away-mvp-player-id" name="awayMvpPlayerId" class="mt-1 form-select block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Cargando jugadores...</option>
+              </select>
+            </div>
+            <div class="flex justify-end pt-2">
+               <button type="submit" id="submit-update-mvp-btn" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Guardar MVPs</button>
+            </div>
+            <p id="mvp-form-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
+          </form>
         </div>
 
       </div>
@@ -380,6 +429,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     </div>
   </div>
 
+  {/* Delete Confirm Modal (unchanged) */}
   <div id="delete-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-delete" role="dialog" aria-modal="true">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all">
       <div class="sm:flex sm:items-start">
@@ -415,7 +465,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 </LayoutAdmin>
 
 <script>
-  import type { Player, Card, CreateCardPayload, UpdateMatchTeamFoulsPayload, Goal, CreateGoalPayload } from "../../../types/tournament";
+  import type { Player, Card, CreateCardPayload, UpdateMatchTeamFoulsPayload, Goal, CreateGoalPayload, UpdateMatchMvpPayload } from "../../../types/tournament";
 
   interface MatchModalData {
     matchId: string | null;
@@ -424,6 +474,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     awayTeamId: string | null;
     homeTeamName: string;
     awayTeamName: string;
+    homeMvpId?: string | null; 
+    awayMvpId?: string | null; 
   }
 
   class ManageMatchModal {
@@ -432,6 +484,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     matchYearInput: HTMLInputElement | null;
     homeTeamIdInput: HTMLInputElement | null;
     awayTeamIdInput: HTMLInputElement | null;
+    homeMvpIdInput: HTMLInputElement | null; 
+    awayMvpIdInput: HTMLInputElement | null; 
     matchInfoElement: HTMLElement | null;
 
     scoreForm: HTMLFormElement | null;
@@ -448,7 +502,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     cardMinuteInput: HTMLInputElement | null;
     cardFormErrorEl: HTMLElement | null;
     cardsListEl: HTMLElement | null;
-    
+
     foulsForm: HTMLFormElement | null;
     homeFoulsInput: HTMLInputElement | null;
     awayFoulsInput: HTMLInputElement | null;
@@ -464,10 +518,20 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     goalFormErrorEl: HTMLElement | null;
     goalsListEl: HTMLElement | null;
 
+    mvpForm: HTMLFormElement | null;
+    homeMvpPlayerSelect: HTMLSelectElement | null;
+    awayMvpPlayerSelect: HTMLSelectElement | null;
+    mvpHomeTeamNameEl: HTMLElement | null;
+    mvpAwayTeamNameEl: HTMLElement | null;
+    mvpFormErrorEl: HTMLElement | null;
+    submitMvpButton: HTMLButtonElement | null;
+
+
     tabs: HTMLElement[] = [];
     tabPanes: HTMLElement[] = [];
-    
+
     currentMatchData: MatchModalData;
+    allPlayersForMatch: Player[] = []; 
 
     constructor() {
       this.modalElement = document.getElementById('manage-match-modal') as HTMLElement | null;
@@ -475,8 +539,11 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       this.matchYearInput = document.getElementById('modal-match-year-main') as HTMLInputElement | null;
       this.homeTeamIdInput = document.getElementById('modal-home-team-id-main') as HTMLInputElement | null;
       this.awayTeamIdInput = document.getElementById('modal-away-team-id-main') as HTMLInputElement | null;
+      this.homeMvpIdInput = document.getElementById('modal-home-mvp-id-main') as HTMLInputElement | null;
+      this.awayMvpIdInput = document.getElementById('modal-away-mvp-id-main') as HTMLInputElement | null;
       this.matchInfoElement = document.getElementById('modal-match-info-main') as HTMLElement | null;
 
+      // ... (existing score, card, fouls, goal element initializations)
       this.scoreForm = document.getElementById('update-score-form') as HTMLFormElement | null;
       this.homeScoreInput = document.getElementById('modal-home-score') as HTMLInputElement | null;
       this.awayScoreInput = document.getElementById('modal-away-score') as HTMLInputElement | null;
@@ -491,7 +558,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       this.cardMinuteInput = document.getElementById('card-minute') as HTMLInputElement | null;
       this.cardFormErrorEl = document.getElementById('card-form-error') as HTMLElement | null;
       this.cardsListEl = document.getElementById('cards-list') as HTMLElement | null;
-      
+
       this.foulsForm = document.getElementById('update-fouls-form') as HTMLFormElement | null;
       this.homeFoulsInput = document.getElementById('modal-home-fouls') as HTMLInputElement | null;
       this.awayFoulsInput = document.getElementById('modal-away-fouls') as HTMLInputElement | null;
@@ -506,7 +573,16 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       this.goalMinuteInput = document.getElementById('goal-minute') as HTMLInputElement | null;
       this.goalFormErrorEl = document.getElementById('goal-form-error') as HTMLElement | null;
       this.goalsListEl = document.getElementById('goals-list') as HTMLElement | null;
-      
+
+      // MVP Elements Initialization
+      this.mvpForm = document.getElementById('update-mvp-form') as HTMLFormElement | null;
+      this.homeMvpPlayerSelect = document.getElementById('modal-home-mvp-player-id') as HTMLSelectElement | null;
+      this.awayMvpPlayerSelect = document.getElementById('modal-away-mvp-player-id') as HTMLSelectElement | null;
+      this.mvpHomeTeamNameEl = document.getElementById('mvp-home-team-name') as HTMLElement | null;
+      this.mvpAwayTeamNameEl = document.getElementById('mvp-away-team-name') as HTMLElement | null;
+      this.mvpFormErrorEl = document.getElementById('mvp-form-error') as HTMLElement | null;
+      this.submitMvpButton = document.getElementById('submit-update-mvp-btn') as HTMLButtonElement | null;
+
       this.currentMatchData = {
         matchId: null,
         year: null,
@@ -514,12 +590,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         awayTeamId: null,
         homeTeamName: '',
         awayTeamName: '',
+        homeMvpId: null,
+        awayMvpId: null,
       };
 
       if (this.modalElement) {
         document.getElementById('close-manage-modal-btn')?.addEventListener('click', () => this.hide());
         document.getElementById('cancel-manage-modal-btn')?.addEventListener('click', () => this.hide());
-        
+
         this.tabs = Array.from(this.modalElement.querySelectorAll('#manage-match-tabs .modal-tab-button')) as HTMLElement[];
         this.tabPanes = Array.from(this.modalElement.querySelectorAll('#modal-tab-content-container .modal-tab-pane')) as HTMLElement[];
 
@@ -536,6 +614,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       this.addGoalForm?.addEventListener('submit', (e: SubmitEvent) => this.handleAddGoalSubmit(e));
       this.goalsListEl?.addEventListener('click', (e: MouseEvent) => this.handleGoalsListClick(e));
       this.goalPlayerSelect?.addEventListener('change', () => this.updateGoalTeamInfo());
+
+      // MVP Form Event Listener
+      this.mvpForm?.addEventListener('submit', (e: SubmitEvent) => this.handleMvpSubmit(e));
     }
 
     handleTabClick(clickedTab: HTMLElement) {
@@ -557,7 +638,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         }
       });
     }
-    
+
     displayError(el: HTMLElement | null, message: string) {
       if (el) { el.textContent = message; el.classList.remove('hidden'); }
     }
@@ -565,40 +646,58 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       if (el) { el.textContent = ''; el.classList.add('hidden'); }
     }
 
-    async show(matchId: string, homeTeamId: string | undefined, awayTeamId: string | undefined, homeTeamName: string, awayTeamName: string, year: string | number) {
-      if (!this.modalElement || !this.matchIdInput || !this.matchInfoElement || !this.matchYearInput || !this.homeTeamIdInput || !this.awayTeamIdInput) return;
-      
-      this.currentMatchData = { 
-        matchId, 
-        homeTeamId: homeTeamId ?? null,
-        awayTeamId: awayTeamId ?? null,
-        homeTeamName, 
-        awayTeamName, 
-        year: String(year) 
+    async show(matchData: {
+        matchId: string,
+        homeTeamId?: string,
+        awayTeamId?: string,
+        homeTeamName: string,
+        awayTeamName: string,
+        year: string | number,
+        homeMvpId?: string,
+        awayMvpId?: string
+    }) {
+      if (!this.modalElement || !this.matchIdInput || !this.matchInfoElement || !this.matchYearInput || !this.homeTeamIdInput || !this.awayTeamIdInput || !this.homeMvpIdInput || !this.awayMvpIdInput) return;
+
+      this.currentMatchData = {
+        matchId: matchData.matchId,
+        homeTeamId: matchData.homeTeamId ?? null,
+        awayTeamId: matchData.awayTeamId ?? null,
+        homeTeamName: matchData.homeTeamName,
+        awayTeamName: matchData.awayTeamName,
+        year: String(matchData.year),
+        homeMvpId: matchData.homeMvpId ?? null,
+        awayMvpId: matchData.awayMvpId ?? null
       };
 
-      this.matchIdInput.value = matchId;
-      this.matchYearInput.value = String(year);
-      this.homeTeamIdInput.value = homeTeamId ?? '';
-      this.awayTeamIdInput.value = awayTeamId ?? '';
+      this.matchIdInput.value = matchData.matchId;
+      this.matchYearInput.value = String(matchData.year);
+      this.homeTeamIdInput.value = matchData.homeTeamId ?? '';
+      this.awayTeamIdInput.value = matchData.awayTeamId ?? '';
+      this.homeMvpIdInput.value = matchData.homeMvpId ?? ''; 
+      this.awayMvpIdInput.value = matchData.awayMvpId ?? ''; 
 
-      if (this.matchInfoElement) this.matchInfoElement.textContent = `${homeTeamName} vs ${awayTeamName}`;
-      if (this.homeTeamNameScoreEl) this.homeTeamNameScoreEl.textContent = homeTeamName;
-      if (this.awayTeamNameScoreEl) this.awayTeamNameScoreEl.textContent = awayTeamName;
-      if (this.foulsHomeTeamNameEl) this.foulsHomeTeamNameEl.textContent = homeTeamName;
-      if (this.foulsAwayTeamNameEl) this.foulsAwayTeamNameEl.textContent = awayTeamName;
-      
+
+      if (this.matchInfoElement) this.matchInfoElement.textContent = `${matchData.homeTeamName} vs ${matchData.awayTeamName}`;
+      if (this.homeTeamNameScoreEl) this.homeTeamNameScoreEl.textContent = matchData.homeTeamName;
+      if (this.awayTeamNameScoreEl) this.awayTeamNameScoreEl.textContent = matchData.awayTeamName;
+      if (this.foulsHomeTeamNameEl) this.foulsHomeTeamNameEl.textContent = matchData.homeTeamName;
+      if (this.foulsAwayTeamNameEl) this.foulsAwayTeamNameEl.textContent = matchData.awayTeamName;
+      if (this.mvpHomeTeamNameEl) this.mvpHomeTeamNameEl.textContent = matchData.homeTeamName;
+      if (this.mvpAwayTeamNameEl) this.mvpAwayTeamNameEl.textContent = matchData.awayTeamName;
+
       this.clearError(this.scoreFormErrorEl);
       this.clearError(this.cardFormErrorEl);
       this.clearError(this.foulsFormErrorEl);
       this.clearError(this.goalFormErrorEl);
+      this.clearError(this.mvpFormErrorEl);
 
       this.scoreForm?.reset();
       this.addCardForm?.reset();
       this.foulsForm?.reset();
       this.addGoalForm?.reset();
-      
-      const row = document.querySelector(`tr[data-match-row-id="${matchId}"]`);
+      this.mvpForm?.reset();
+
+      const row = document.querySelector(`tr[data-match-row-id="${matchData.matchId}"]`);
       if (this.homeScoreInput && this.awayScoreInput) {
         this.homeScoreInput.value = '';
         this.awayScoreInput.value = '';
@@ -612,25 +711,28 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           }
         }
       }
-      
+
       this.modalElement.classList.remove('hidden');
       this.modalElement.classList.add('flex');
-      
+
       if (this.tabs.length > 0) {
-        this.handleTabClick(this.tabs[0]); 
+        this.handleTabClick(this.tabs[0]);
       }
 
-      this.loadPlayersForForms();
+      await this.loadAndCachePlayersForMatch();
+      this.populatePlayerSelects(); 
       this.loadMatchCards();
       this.loadMatchFouls();
       this.loadMatchGoals();
       this.updateGoalTeamInfo();
+      this.populateMvpSelects(); 
     }
 
     hide() {
       if (this.modalElement) {
         this.modalElement.classList.add('hidden');
         this.modalElement.classList.remove('flex');
+        this.allPlayersForMatch = []; 
       }
     }
 
@@ -662,7 +764,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         });
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
-        
+
         const rowToUpdate = document.querySelector(`tr[data-match-row-id="${this.currentMatchData.matchId}"]`);
         if (rowToUpdate) {
           const resultCell = rowToUpdate.querySelector('.result-cell');
@@ -680,64 +782,105 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       }
     }
 
-    async loadPlayersForForms() {
-      const selectsToPopulate = [
-        { el: this.cardPlayerSelect, errorEl: this.cardFormErrorEl },
-        { el: this.goalPlayerSelect, errorEl: this.goalFormErrorEl }
-      ];
-
-      selectsToPopulate.forEach(s => {
-        if (s.el) s.el.innerHTML = '<option value="">Cargando jugadores...</option>';
-        this.clearError(s.errorEl);
-      });
-
-      if (this.currentMatchData.homeTeamId == null || this.currentMatchData.awayTeamId == null || !this.currentMatchData.year) {
-        const noTeamsMsg = '<option value="">No hay equipos definidos para este partido.</option>';
-        selectsToPopulate.forEach(s => { if (s.el) s.el.innerHTML = noTeamsMsg; });
-        return;
-      }
-
-      const apiUrl = `/api/matches/players?homeTeamId=${this.currentMatchData.homeTeamId}&awayTeamId=${this.currentMatchData.awayTeamId}&year=${this.currentMatchData.year}`;
-      
-      try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Error al cargar jugadores: ${response.status} ${errorText}`);
+    async loadAndCachePlayersForMatch() {
+        this.allPlayersForMatch = []; 
+        if (this.currentMatchData.homeTeamId == null || this.currentMatchData.awayTeamId == null || !this.currentMatchData.year) {
+            return;
         }
-        const players: Player[] = await response.json();
-        
-        const initialOptionMsg = '<option value="">Seleccionar jugador...</option>';
-        selectsToPopulate.forEach(s => { if (s.el) s.el.innerHTML = initialOptionMsg; });
 
-        if (players && players.length > 0) {
-          players.forEach(player => {
+        const apiUrl = `/api/matches/players?homeTeamId=${this.currentMatchData.homeTeamId}&awayTeamId=${this.currentMatchData.awayTeamId}&year=${this.currentMatchData.year}`;
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error al cargar jugadores: ${response.status} ${errorText}`);
+            }
+            this.allPlayersForMatch = await response.json();
+        } catch (error: any) {
+            this.displayError(this.cardFormErrorEl, 'No se pudieron cargar los jugadores: ' + error.message);
+            this.displayError(this.goalFormErrorEl, 'No se pudieron cargar los jugadores: ' + error.message);
+            this.displayError(this.mvpFormErrorEl, 'No se pudieron cargar los jugadores: ' + error.message);
+        }
+    }
+
+    populatePlayerSelects() {
+        // Populate for Cards and Goals (combined players)
+        const combinedPlayerSelects = [
+            { el: this.cardPlayerSelect, errorEl: this.cardFormErrorEl },
+            { el: this.goalPlayerSelect, errorEl: this.goalFormErrorEl }
+        ];
+
+        combinedPlayerSelects.forEach(s => {
+            if (s.el) s.el.innerHTML = '<option value="">Seleccionar jugador...</option>';
+            this.clearError(s.errorEl);
+        });
+
+        if (this.allPlayersForMatch.length > 0) {
+            this.allPlayersForMatch.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id.toString();
+                const playerName = player.name || 'Nombre Desc.';
+                const playerSecondName = player.second_name || '';
+                const teamName = player.team_name || 'Equipo Desc.';
+                option.textContent = `${playerName} ${playerSecondName}`.trim() + ` (${teamName})`;
+                option.dataset.teamId = player.team_id.toString();
+                option.dataset.teamName = teamName;
+
+                combinedPlayerSelects.forEach(s => {
+                    if (s.el) s.el.appendChild(option.cloneNode(true));
+                });
+            });
+        } else {
+            const noPlayersMsg = this.currentMatchData.homeTeamId == null || this.currentMatchData.awayTeamId == null
+                ? '<option value="">No hay equipos definidos para este partido.</option>'
+                : '<option value="">No se encontraron jugadores para estos equipos.</option>';
+            combinedPlayerSelects.forEach(s => { if (s.el) s.el.innerHTML = noPlayersMsg; });
+        }
+        this.updateGoalTeamInfo();
+    }
+
+    populateMvpSelects() {
+        const homeSelect = this.homeMvpPlayerSelect;
+        const awaySelect = this.awayMvpPlayerSelect;
+
+        if (!homeSelect || !awaySelect) return;
+
+        [homeSelect, awaySelect].forEach(sel => {
+            sel.innerHTML = '<option value="">Ninguno (Sin MVP)</option>'; 
+        });
+        this.clearError(this.mvpFormErrorEl);
+
+        if (this.allPlayersForMatch.length === 0) {
+            const noPlayersMsg = this.currentMatchData.homeTeamId == null || this.currentMatchData.awayTeamId == null
+                ? '<option value="">No hay equipos definidos</option>'
+                : '<option value="">No hay jugadores</option>';
+            homeSelect.innerHTML = noPlayersMsg; 
+            awaySelect.innerHTML = noPlayersMsg;
+            return;
+        }
+
+        this.allPlayersForMatch.forEach(player => {
             const option = document.createElement('option');
             option.value = player.id.toString();
             const playerName = player.name || 'Nombre Desc.';
             const playerSecondName = player.second_name || '';
-            const teamName = player.team_name || 'Equipo Desc.';
-            option.textContent = `${playerName} ${playerSecondName}`.trim() + ` (${teamName})`;
-            option.dataset.teamId = player.team_id.toString();
-            option.dataset.teamName = teamName;
+            option.textContent = `${playerName} ${playerSecondName}`.trim();
 
-            selectsToPopulate.forEach(s => {
-              if (s.el) s.el.appendChild(option.cloneNode(true));
-            });
-          });
-        } else {
-          const noPlayersMsg = '<option value="">No se encontraron jugadores para estos equipos.</option>';
-           selectsToPopulate.forEach(s => { if (s.el) s.el.innerHTML = noPlayersMsg; });
-        }
-      } catch (error: any) {
-        const errorMsgOption = '<option value="">Error al cargar jugadores</option>';
-        selectsToPopulate.forEach(s => {
-          if (s.el) s.el.innerHTML = errorMsgOption;
-          if (s.errorEl) this.displayError(s.errorEl, 'No se pudieron cargar los jugadores: ' + error.message);
+            if (player.team_id.toString() === this.currentMatchData.homeTeamId) {
+                homeSelect.appendChild(option.cloneNode(true));
+            }
+            if (player.team_id.toString() === this.currentMatchData.awayTeamId) {
+                awaySelect.appendChild(option.cloneNode(true));
+            }
         });
-      }
-      this.updateGoalTeamInfo();
+        if (this.currentMatchData.homeMvpId) {
+            homeSelect.value = this.currentMatchData.homeMvpId;
+        }
+        if (this.currentMatchData.awayMvpId) {
+            awaySelect.value = this.currentMatchData.awayMvpId;
+        }
     }
+
 
     async loadMatchCards() {
       if (!this.cardsListEl || !this.currentMatchData.matchId) return;
@@ -746,7 +889,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         const response = await fetch(`/api/matches/cards?matchId=${this.currentMatchData.matchId}`);
         if (!response.ok) throw new Error('Error al cargar tarjetas');
         const cards: Card[] = await response.json();
-        
+
         this.cardsListEl.innerHTML = '';
         if (cards.length === 0) {
           this.cardsListEl.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">No hay tarjetas registradas.</p>';
@@ -765,7 +908,6 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         if (this.cardsListEl) this.cardsListEl.innerHTML = '<p class="text-sm text-red-500 dark:text-red-300 italic">Error al cargar tarjetas.</p>';
       }
     }
-
     async handleAddCardSubmit(event: SubmitEvent) { 
       event.preventDefault();
       this.clearError(this.cardFormErrorEl);
@@ -777,26 +919,26 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       const selectedOption = this.cardPlayerSelect.options[this.cardPlayerSelect.selectedIndex];
       const teamId = selectedOption?.dataset.teamId;
 
-      if (!playerId || !cardType || !minuteValue || !teamId) { 
+      if (!playerId || !cardType || !minuteValue || !teamId) {
         this.displayError(this.cardFormErrorEl, 'Todos los campos son requeridos.');
         return;
       }
-      
+
       const submitButton = this.addCardForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
       if(submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = 'Añadiendo...';
       }
 
-      const payload: CreateCardPayload = { 
+      const payload: CreateCardPayload = {
         match_id: parseInt(this.currentMatchData.matchId, 10),
         player_id: parseInt(playerId, 10),
         team_id: parseInt(teamId, 10),
         type: cardType,
-        minute: parseInt(minuteValue, 10), 
+        minute: parseInt(minuteValue, 10),
         year: parseInt(this.currentMatchData.year, 10)
       };
-      
+
       try {
         const response = await fetch('/api/matches/cards', {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
@@ -804,7 +946,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar tarjeta');
         this.loadMatchCards();
-        if (this.addCardForm) { 
+        if (this.addCardForm) {
            this.addCardForm.reset();
         }
       } catch (error: any) {
@@ -816,7 +958,6 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         }
       }
     }
-    
     handleCardsListClick(event: MouseEvent) {
         const target = event.target as HTMLElement;
         if (target.classList.contains('delete-card-btn')) {
@@ -826,7 +967,6 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             }
         }
     }
-
     async deleteCard(cardId: string, cardElement: HTMLDivElement | null) {
         this.clearError(this.cardFormErrorEl);
         try {
@@ -843,8 +983,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             this.displayError(this.cardFormErrorEl, error.message);
         }
     }
-
-    async loadMatchFouls() {
+    async loadMatchFouls() { 
       if (!this.homeFoulsInput || !this.awayFoulsInput || !this.currentMatchData.matchId) return;
       this.clearError(this.foulsFormErrorEl);
       this.homeFoulsInput.value = '';
@@ -861,7 +1000,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         if (foulsData) {
           this.homeFoulsInput.value = foulsData.home_fouls != null ? foulsData.home_fouls.toString() : '0';
           this.awayFoulsInput.value = foulsData.away_fouls != null ? foulsData.away_fouls.toString() : '0';
-        } else { 
+        } else {
           this.homeFoulsInput.value = '0';
           this.awayFoulsInput.value = '0';
         }
@@ -871,8 +1010,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         if (this.awayFoulsInput) this.awayFoulsInput.value = '0';
       }
     }
-
-    async handleFoulsSubmit(event: SubmitEvent) {
+    async handleFoulsSubmit(event: SubmitEvent) { 
       event.preventDefault();
       if (!this.homeFoulsInput || !this.awayFoulsInput || !this.currentMatchData.matchId || !this.foulsForm) return;
       this.clearError(this.foulsFormErrorEl);
@@ -905,7 +1043,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         });
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar faltas');
-        alert('Faltas guardadas correctamente.'); 
+        if(this.foulsFormErrorEl) {
+            this.foulsFormErrorEl.textContent = 'Faltas guardadas correctamente.';
+            this.foulsFormErrorEl.className = 'text-xs text-green-600 dark:text-green-400 mt-2';
+            this.foulsFormErrorEl.classList.remove('hidden');
+            setTimeout(() => this.clearError(this.foulsFormErrorEl), 3000);
+        }
       } catch (error: any) {
         this.displayError(this.foulsFormErrorEl, error.message);
       } finally {
@@ -916,7 +1059,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       }
     }
 
-    updateGoalTeamInfo() {
+    updateGoalTeamInfo() { 
         if (!this.goalPlayerSelect || !this.goalTeamNameInput || !this.goalTeamIdInput) return;
 
         const selectedOption = this.goalPlayerSelect.options[this.goalPlayerSelect.selectedIndex];
@@ -931,8 +1074,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             this.goalTeamNameInput.value = this.goalPlayerSelect.value ? 'Equipo no disponible' : '';
         }
     }
-
-    async loadMatchGoals() {
+    async loadMatchGoals() { 
         if (!this.goalsListEl || !this.currentMatchData.matchId) return;
         this.goalsListEl.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">Cargando goles...</p>';
         try {
@@ -942,9 +1084,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
                  throw new Error(errorData.message || `Error del servidor (${response.status})`);
             }
             const goals: Goal[] = await response.json();
-            
+
             console.log("Frontend loadMatchGoals - Goals received from API:", JSON.stringify(goals, null, 2));
-            
+
             this.goalsListEl.innerHTML = '';
             if (goals.length === 0) {
                 this.goalsListEl.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 italic">No hay goles registrados.</p>';
@@ -953,7 +1095,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             goals.forEach(goal => {
                 if (typeof goal.id !== 'number' || isNaN(goal.id)) {
                     console.error("Frontend loadMatchGoals - Invalid or missing goal.id for a goal object:", goal);
-                    return; 
+                    return;
                 }
 
                 const goalEl = document.createElement('div');
@@ -969,21 +1111,20 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             if (this.goalsListEl) this.goalsListEl.innerHTML = `<p class="text-sm text-red-500 dark:text-red-300 italic">Error al cargar goles: ${error.message}</p>`;
         }
     }
-
-    async handleAddGoalSubmit(event: SubmitEvent) { 
+    async handleAddGoalSubmit(event: SubmitEvent) {
         event.preventDefault();
         this.clearError(this.goalFormErrorEl);
         if (!this.goalPlayerSelect || !this.goalTeamIdInput || !this.addGoalForm || !this.currentMatchData.matchId || !this.currentMatchData.year || !this.goalMinuteInput) return;
 
         const playerId = this.goalPlayerSelect.value;
         const teamId = this.goalTeamIdInput.value;
-        const minuteStr = this.goalMinuteInput.value; 
+        const minuteStr = this.goalMinuteInput.value;
 
         if (!playerId || !teamId) {
             this.displayError(this.goalFormErrorEl, 'Jugador y equipo son requeridos.');
             return;
         }
-        
+
         const submitButton = this.addGoalForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
         if(submitButton) {
             submitButton.disabled = true;
@@ -999,14 +1140,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 
         if (minuteStr && minuteStr.trim() !== '') {
             const minuteNum = parseInt(minuteStr, 10);
-            if (isNaN(minuteNum) || minuteNum < 0 || minuteNum > 150) { 
+            if (isNaN(minuteNum) || minuteNum < 0 || minuteNum > 150) {
                  this.displayError(this.goalFormErrorEl, 'Minuto inválido.');
                  if(submitButton) { submitButton.disabled = false; submitButton.textContent = 'Añadir Gol'; }
                  return;
             }
-            payload.goal_minute = minuteNum; 
+            payload.goal_minute = minuteNum;
         }
-        
+
         try {
             const response = await fetch('/api/matches/goals', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
@@ -1014,7 +1155,7 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             const responseData = await response.json();
             if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar gol');
             this.loadMatchGoals();
-            if (this.addGoalForm) { 
+            if (this.addGoalForm) {
                 this.addGoalForm.reset();
             }
             this.updateGoalTeamInfo();
@@ -1027,13 +1168,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             }
         }
     }
-    
-   handleGoalsListClick(event: MouseEvent) {
+    handleGoalsListClick(event: MouseEvent) { 
     const target = event.target as HTMLElement;
     if (target.classList.contains('delete-goal-btn')) {
-        const goalId = target.dataset.goalId; 
-        console.log("[FRONTEND] Delete button clicked. Raw data-goal-id:", target.dataset.goalId); 
-        console.log("[FRONTEND] Parsed goalId to be used:", goalId); 
+        const goalId = target.dataset.goalId;
+        console.log("[FRONTEND] Delete button clicked. Raw data-goal-id:", target.dataset.goalId);
+        console.log("[FRONTEND] Parsed goalId to be used:", goalId);
         if (goalId && goalId.trim() !== "" && goalId !== "undefined" && !isNaN(Number(goalId))) {
             if (confirm('¿Seguro que quieres eliminar este gol?')) {
                 this.deleteGoal(goalId, target.closest('div') as HTMLDivElement | null);
@@ -1044,15 +1184,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         }
     }
 }
-
-async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
+    async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) { /* ... existing code ... */
     console.log(`[FRONTEND] deleteGoal method called with ID: '${goalId}'. Type: ${typeof goalId}`);
     this.clearError(this.goalFormErrorEl);
     try {
-        const urlToDelete = `/api/matches/goals/${goalId}`; 
+        const urlToDelete = `/api/matches/goals/${goalId}`;
         console.log("[FRONTEND] Attempting to fetch DELETE:", urlToDelete);
-        const response = await fetch(urlToDelete, { method: 'DELETE' }); 
-            
+        const response = await fetch(urlToDelete, { method: 'DELETE' });
+
             if (!response.ok) {
                 const responseData = await response.json().catch(() => ({ error: 'Error al decodificar respuesta del servidor' }));
                 throw new Error(responseData.error || responseData.message || `Error al eliminar gol (${response.status})`);
@@ -1065,9 +1204,69 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
             this.displayError(this.goalFormErrorEl, error.message);
         }
     }
+
+    // MVP Specific Methods
+    async handleMvpSubmit(event: SubmitEvent) {
+        event.preventDefault();
+        this.clearError(this.mvpFormErrorEl);
+
+        if (!this.mvpForm || !this.homeMvpPlayerSelect || !this.awayMvpPlayerSelect || !this.submitMvpButton || !this.currentMatchData.matchId || !this.currentMatchData.year) return;
+
+        const homeMvpPlayerId = this.homeMvpPlayerSelect.value ? parseInt(this.homeMvpPlayerSelect.value, 10) : null;
+        const awayMvpPlayerId = this.awayMvpPlayerSelect.value ? parseInt(this.awayMvpPlayerSelect.value, 10) : null;
+
+        this.submitMvpButton.disabled = true;
+        this.submitMvpButton.textContent = 'Guardando...';
+
+        const payload: UpdateMatchMvpPayload = {
+            match_id: parseInt(this.currentMatchData.matchId, 10),
+            home_team_mvp_player_id: homeMvpPlayerId,
+            away_team_mvp_player_id: awayMvpPlayerId,
+            year: parseInt(this.currentMatchData.year, 10)
+        };
+
+        try {
+            const response = await fetch('/api/matches/mvp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const responseData = await response.json();
+            if (!response.ok) throw new Error(responseData.error || responseData.message || 'Error al guardar MVPs');
+
+            this.currentMatchData.homeMvpId = homeMvpPlayerId ? homeMvpPlayerId.toString() : null;
+            this.currentMatchData.awayMvpId = awayMvpPlayerId ? awayMvpPlayerId.toString() : null;
+            
+            if (this.homeMvpIdInput) this.homeMvpIdInput.value = this.currentMatchData.homeMvpId || '';
+            if (this.awayMvpIdInput) this.awayMvpIdInput.value = this.currentMatchData.awayMvpId || '';
+            
+            const manageButton = document.querySelector(`.manage-match-btn[data-match-id="${this.currentMatchData.matchId}"]`) as HTMLButtonElement;
+            if (manageButton) {
+                if (homeMvpPlayerId) manageButton.dataset.homeMvpId = homeMvpPlayerId.toString();
+                else delete manageButton.dataset.homeMvpId;
+                if (awayMvpPlayerId) manageButton.dataset.awayMvpId = awayMvpPlayerId.toString();
+                else delete manageButton.dataset.awayMvpId;
+            }
+
+            if(this.mvpFormErrorEl) {
+                this.mvpFormErrorEl.textContent = 'MVPs guardados correctamente.';
+                this.mvpFormErrorEl.className = 'text-xs text-green-600 dark:text-green-400 mt-2';
+                this.mvpFormErrorEl.classList.remove('hidden');
+                setTimeout(() => this.clearError(this.mvpFormErrorEl), 3000);
+            }
+
+        } catch (error: any) {
+            this.displayError(this.mvpFormErrorEl, error.message);
+        } finally {
+            if (this.submitMvpButton) {
+                this.submitMvpButton.disabled = false;
+                this.submitMvpButton.textContent = 'Guardar MVPs';
+            }
+        }
+    }
   }
 
-  class DeleteConfirmModal {
+  class DeleteConfirmModal { 
     modalElement: HTMLElement | null;
     matchInfoElement: HTMLElement | null;
     confirmButton: HTMLButtonElement | null;
@@ -1085,14 +1284,14 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
     }
 
     displayError(message: string) {
-      if (this.errorElement) { 
-        this.errorElement.textContent = message; 
+      if (this.errorElement) {
+        this.errorElement.textContent = message;
         this.errorElement.classList.remove('hidden');
       }
     }
     clearError() {
-      if (this.errorElement) { 
-        this.errorElement.textContent = ''; 
+      if (this.errorElement) {
+        this.errorElement.textContent = '';
         this.errorElement.classList.add('hidden');
       }
     }
@@ -1105,10 +1304,10 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
       this.modalElement.classList.add('flex');
     }
     hide() {
-      if (this.modalElement) { 
-        this.modalElement.classList.add('hidden'); 
-        this.modalElement.classList.remove('flex'); 
-        this.currentMatchId = null; 
+      if (this.modalElement) {
+        this.modalElement.classList.add('hidden');
+        this.modalElement.classList.remove('flex');
+        this.currentMatchId = null;
         this.clearError();
       }
     }
@@ -1123,7 +1322,7 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
         });
         const responseData = await response.json();
         if (!response.ok) throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
-        
+
         const rowToRemove = document.querySelector(`tr[data-match-row-id="${this.currentMatchId}"]`);
         rowToRemove?.remove();
         this.hide();
@@ -1134,8 +1333,8 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
           console.error("Delete modal error element not found, error:", error.message);
         }
       } finally {
-        if(this.confirmButton) { 
-          this.confirmButton.disabled = false; 
+        if(this.confirmButton) {
+          this.confirmButton.disabled = false;
           this.confirmButton.textContent = 'Eliminar';
         }
       }
@@ -1158,14 +1357,25 @@ async deleteGoal(goalId: string, goalElement: HTMLDivElement | null) {
       button.addEventListener('click', (event: Event) => {
         const target = event.currentTarget as HTMLButtonElement;
         const matchId = target.dataset.matchId;
-        const homeTeamId = target.dataset.homeTeamId; 
+        const homeTeamId = target.dataset.homeTeamId;
         const awayTeamId = target.dataset.awayTeamId;
         const homeTeamName = target.dataset.homeTeamName;
         const awayTeamName = target.dataset.awayTeamName;
         const year = target.dataset.year;
-        
+        const homeMvpId = target.dataset.homeMvpId; 
+        const awayMvpId = target.dataset.awayMvpId; 
+
         if (matchId && homeTeamName && awayTeamName && year) {
-          manageModal.show(matchId, homeTeamId, awayTeamId, homeTeamName, awayTeamName, year);
+          manageModal.show({
+            matchId,
+            homeTeamId,
+            awayTeamId,
+            homeTeamName,
+            awayTeamName,
+            year,
+            homeMvpId,
+            awayMvpId
+          });
         } else {
           console.error('Missing critical data for manage match button:', target.dataset);
           alert('Error: Faltan datos para gestionar este partido. Revise la consola.');

@@ -1,0 +1,124 @@
+---
+import { supabase } from '../../../lib/supabase';
+
+export interface Props {
+  year: number;
+}
+
+const { year } = Astro.props;
+
+interface MVPData {
+  id: number;
+  name: string;
+  team: string;
+  mvpCount: number; // Nueva propiedad para el conteo
+}
+
+interface PlayerRecord {
+  id: number;
+  name: string;
+  second_name: string | null;
+  team: { name: string } | null;
+}
+
+let mvps: MVPData[] = [];
+let errorMessage: string | null = null;
+
+try {
+const orFilterForMvps = 'home_team_mvp_player_id.not.is.null,away_team_mvp_player_id.not.is.null';
+
+  const { data: matchMvpData, error: matchError } = await supabase
+    .from('tournament_match')
+    .select('home_team_mvp_player_id, away_team_mvp_player_id')
+    .eq('year', year)
+    .or(orFilterForMvps);
+  if (matchError) {
+    throw new Error(`Error al cargar datos de MVP de partidos: ${matchError.message}`);
+  }
+
+  const allMvpPlayerIds: number[] = [];
+  if (matchMvpData && matchMvpData.length > 0) {
+    matchMvpData.forEach(match => {
+      if (match.home_team_mvp_player_id) {
+        allMvpPlayerIds.push(match.home_team_mvp_player_id);
+      }
+      if (match.away_team_mvp_player_id && match.away_team_mvp_player_id !== match.home_team_mvp_player_id) {
+        allMvpPlayerIds.push(match.away_team_mvp_player_id);
+      } else if (match.away_team_mvp_player_id && !match.home_team_mvp_player_id) { // Si solo hay away_mvp
+        allMvpPlayerIds.push(match.away_team_mvp_player_id);
+      }
+    });
+  }
+
+  const uniquePlayerIds = [...new Set(allMvpPlayerIds)];
+
+  if (uniquePlayerIds.length > 0) {
+    const { data: playersData, error: playerError } = await supabase
+      .from('tournament_player')
+      .select('id, name, second_name, team:tournament_team(name)')
+      .in('id', uniquePlayerIds)
+      .returns<PlayerRecord[]>();
+
+    if (playerError) {
+      throw new Error(`Error al cargar los jugadores MVP: ${playerError.message}`);
+    }
+
+    if (playersData) {
+      mvps = playersData.map(p => {
+        let playerName = p.name;
+        if (p.second_name) {
+          playerName += ` ${p.second_name}`;
+        }
+        const count = allMvpPlayerIds.filter(id => id === p.id).length;
+
+        return {
+          id: p.id,
+          name: playerName.trim(),
+          team: p.team?.name || 'Equipo Desconocido',
+          mvpCount: count, 
+        };
+      }).sort((a, b) => b.mvpCount - a.mvpCount); 
+    }
+  }
+} catch (e: any) {
+  const currentFileName = "MVP.astro"; 
+  console.error(`[${currentFileName}] Error fetching MVPs:`, e);
+  errorMessage = e.message || `Un error inesperado ocurrió al obtener los MVPs desde ${currentFileName}.`;
+  mvps = [];
+}
+---
+
+<div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden">
+  <div class="p-5 md:p-6 bg-gradient-to-r from-purple-700 to-purple-600">
+    <h2 class="text-xl md:text-2xl font-bold text-white text-center">Jugadores MVP del Partido ({year})</h2>
+  </div>
+
+  {errorMessage && (
+    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+      <p class="font-semibold">Error:</p>
+      <p>{errorMessage}</p>
+    </div>
+  )}
+
+  {!errorMessage && mvps.length > 0 && (
+    <ul class="divide-y divide-slate-700">
+      {mvps.map((mvp) => (
+        <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-700/70">
+          <div>
+            <p class="font-semibold text-white">{mvp.name}</p>
+            <p class="text-sm text-slate-400">
+              {mvp.team} - <span class="font-medium">{mvp.mvpCount} {mvp.mvpCount === 1 ? 'vez' : 'veces'} MVP</span>
+            </p>
+          </div>
+          <span class="text-purple-400 font-bold text-lg">🏆 {mvp.mvpCount > 1 ? `x${mvp.mvpCount}` : ''}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {!errorMessage && mvps.length === 0 && (
+    <div class="p-6 text-center text-slate-300">
+      <p>No se han registrado MVPs de partidos para el año {year}.</p>
+    </div>
+  )}
+</div>

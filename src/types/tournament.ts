@@ -24,6 +24,8 @@ export interface Match extends DatabaseBase {
   is_local_final: boolean;
   home_team_match_fouls?: number | null; 
   away_team_match_fouls?: number | null; 
+  home_team_mvp_player_id?: number | null;
+  away_team_mvp_player_id?: number | null;
 }
 
 export interface TransformedMatchBase { 
@@ -40,6 +42,15 @@ export interface TransformedMatchBase {
   match_stage: string;
   round_name: string | null;
   is_local_final: boolean;
+  home_team_mvp_player_id?: number | null;
+  away_team_mvp_player_id?: number | null;
+}
+
+export interface UpdateMatchMvpPayload {
+  match_id: number;
+  home_team_mvp_player_id: number | null;
+  away_team_mvp_player_id: number | null;
+  year: number; 
 }
 
 export interface Player extends DatabaseBase {

@@ -8,6 +8,7 @@ import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro
 import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro';
 import HallOfFame from '../../../components/user/2025/HallOfFame.astro';
+import MVPList from '../../../components/user/2025/MVP.astro';
 import { supabase } from '../../../lib/supabase';
 
 const YEAR_TO_SHOW = 2025;
@@ -54,7 +55,7 @@ const showGroupRanking = currentTag === 'Clasificación' && currentSubtag && gro
 const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
 const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
 const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
-
+const showMVPs = currentTag === 'Rankings' && currentSubtag === 'MVPs';
 const showGroupSchedule = currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
 const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
 const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
@@ -72,7 +73,6 @@ if (currentTag && !currentSubtag) {
     if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
     if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0) isTagSelectedButNoSubtag = true;
 }
-const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentSelected && !isTagSelectedButNoSubtag;
 ---
 
 <Layout title={`El torneo ${YEAR_TO_SHOW} - Resultados y Estadísticas`} description={`Resultados, clasificación, goleadores y más de la competición del año ${YEAR_TO_SHOW}.`}>
@@ -95,7 +95,7 @@ const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentS
       {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />} 
       {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />} 
       {showHallOfFame && <HallOfFame year={YEAR_TO_SHOW} />}
-
+      {showMVPs && <MVPList year={YEAR_TO_SHOW} />}
       {isTagSelectedButNoSubtag && (
         <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-sky-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -103,16 +103,6 @@ const isSubtagInvalidForTag = currentTag && currentSubtag && noContentComponentS
           </svg>
           <p class="text-lg font-medium">Por favor, selecciona una subcategoría.</p>
           <p class="text-sm">Elige una opción de "{currentTag}" para ver el contenido detallado.</p>
-        </div>
-      )}
-
-      {isSubtagInvalidForTag && (
-         <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-red-600">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p class="text-lg font-medium">Contenido no disponible.</p>
-          <p class="text-sm">La combinación "{currentTag} - {currentSubtag}" no es válida o no tiene contenido.</p>
         </div>
       )}
     </div>
