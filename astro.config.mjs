@@ -3,7 +3,6 @@ import tailwind from '@astrojs/tailwind';
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 import svgr from 'vite-plugin-svgr';
-
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
@@ -11,7 +10,7 @@ export default defineConfig({
     '/': '/user/2025',
     '/admin': '/admin/signin'
   },
-
+   site: 'https://www.cangascup.es',
   integrations: [tailwind(), react(), sitemap()],
   prefetch: true,
   output: 'server',
