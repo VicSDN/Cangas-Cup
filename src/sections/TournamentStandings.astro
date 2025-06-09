@@ -70,15 +70,72 @@ try {
   }
 
   if (selectedGroup) {
-    const { data: standingsData, error: standingsError } = await supabase
-      .from('view_group_ranking_ordered')
-      .select<string, RankingEntry>('*')
-      .eq('group_id', selectedGroup.id)
+    // Obtener todos los equipos del grupo
+    const { data: allTeamsData, error: teamsError } = await supabase
+      .from('tournament_team')
+      .select('id, name, is_local')
       .eq('year', selectedYear)
-      .order('position_in_group', { ascending: true });
+      .eq('group_id', selectedGroup.id)
+      .order('name');
 
-    if (standingsError) throw standingsError;
-    standingsForSelectedGroup = standingsData || [];
+    if (teamsError) {
+      throw teamsError;
+    }
+    if (allTeamsData && allTeamsData.length > 0) {
+      const { data: standingsData, error: standingsError } = await supabase
+        .from('view_group_ranking_ordered')
+        .select<string, RankingEntry>('*')
+        .eq('group_id', selectedGroup.id)
+        .eq('year', selectedYear)
+        .order('position_in_group', { ascending: true });
+
+      const standingsMap = new Map<number, RankingEntry>();
+      if (standingsData && !standingsError) {
+        standingsData.forEach((team: RankingEntry) => {
+          standingsMap.set(team.team_id, team);
+        });
+      }
+
+      standingsForSelectedGroup = allTeamsData.map((team: any, index: number): RankingEntry => {
+        const existingStats = standingsMap.get(team.id);
+        return {
+          year: selectedYear,
+          group_id: selectedGroup.id,
+          team_id: team.id,
+          points: existingStats?.points || 0,
+          games_played: existingStats?.games_played || 0,
+          goals_for: existingStats?.goals_for || 0,
+          goals_against: existingStats?.goals_against || 0,
+          goal_difference: existingStats?.goal_difference || 0,
+          fair_play_points: existingStats?.fair_play_points || 0,
+          fouls_committed: existingStats?.fouls_committed || 0,
+          group_name: selectedGroup.name,
+          team_name: team.name,
+          is_local: team.is_local || false,
+          h2h_points: existingStats?.h2h_points || 0,
+          h2h_goal_difference: existingStats?.h2h_goal_difference || 0,
+          h2h_goals_for: existingStats?.h2h_goals_for || 0,
+          overall_goal_difference: existingStats?.overall_goal_difference || 0,
+          overall_goals_for: existingStats?.overall_goals_for || 0,
+          position_in_group: existingStats?.position_in_group || (index + 1)
+        };
+      });
+
+      // Ordenar: equipos con partidos jugados primero por posición, luego equipos sin partidos alfabéticamente
+      standingsForSelectedGroup.sort((a, b) => {
+        if (a.games_played > 0 && b.games_played === 0) return -1;
+        if (a.games_played === 0 && b.games_played > 0) return 1;
+        if (a.games_played > 0 && b.games_played > 0) {
+          return a.position_in_group - b.position_in_group;
+        }
+        return a.team_name.localeCompare(b.team_name);
+      });
+
+      // Actualizar posiciones
+      standingsForSelectedGroup.forEach((team, index) => {
+        team.position_in_group = index + 1;
+      });
+    }
   }
 
 } catch (error: any) {

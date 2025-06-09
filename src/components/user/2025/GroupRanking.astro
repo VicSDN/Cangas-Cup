@@ -14,19 +14,76 @@ let totalTeamsInGroup = 0;
 
 if (groupName) {
     try {
-      const { data, error } = await supabase
-        .from('view_group_ranking_ordered')
-        .select('team_name, is_local, points, games_played, overall_goals_for, goals_against, overall_goal_difference, fair_play_points, position_in_group')
+      // Primero obtener el ID del grupo
+      const { data: groupData, error: groupError } = await supabase
+        .from('tournament_group')
+        .select('id')
+        .eq('name', groupName)
         .eq('year', year)
-        .eq('group_name', groupName)
-        .order('position_in_group');
+        .single();
 
-      if (error) {
-        throw error;
+      if (groupError || !groupData) {
+        throw new Error(`No se encontró el grupo ${groupName} para el año ${year}`);
       }
-      groupRanking = data || [];
-      totalTeamsInGroup = groupRanking.length;
 
+      // Obtener todos los equipos del grupo
+      const { data: allTeamsData, error: teamsError } = await supabase
+        .from('tournament_team')
+        .select('name, is_local')
+        .eq('year', year)
+        .eq('group_id', groupData.id)
+        .order('name');
+
+      if (teamsError) {
+        throw teamsError;
+      }
+      if (!allTeamsData || allTeamsData.length === 0) {
+        errorMessage = `No se encontraron equipos en el grupo ${groupName} para el año ${year}.`;
+      } else {
+        const { data: rankingData, error: rankingError } = await supabase
+          .from('view_group_ranking_ordered')
+          .select('team_name, is_local, points, games_played, overall_goals_for, goals_against, overall_goal_difference, fair_play_points, position_in_group')
+          .eq('year', year)
+          .eq('group_name', groupName)
+          .order('position_in_group');
+
+        const rankingMap = new Map();
+        if (rankingData && !rankingError) {
+          rankingData.forEach((team: any) => {
+            rankingMap.set(team.team_name, team);
+          });
+        }
+
+        groupRanking = allTeamsData.map((team: any, index: number) => {
+          const existingStats = rankingMap.get(team.name);
+          return {
+            team_name: team.name,
+            is_local: team.is_local || false,
+            points: existingStats?.points || 0,
+            games_played: existingStats?.games_played || 0,
+            overall_goals_for: existingStats?.overall_goals_for || 0,
+            goals_against: existingStats?.goals_against || 0,
+            overall_goal_difference: existingStats?.overall_goal_difference || 0,
+            fair_play_points: existingStats?.fair_play_points || 0,
+            position_in_group: existingStats?.position_in_group || (index + 1)
+          };
+        });
+
+        groupRanking.sort((a, b) => {
+          if (a.games_played > 0 && b.games_played === 0) return -1;
+          if (a.games_played === 0 && b.games_played > 0) return 1;
+          if (a.games_played > 0 && b.games_played > 0) {
+            return a.position_in_group - b.position_in_group;
+          }
+          return a.team_name.localeCompare(b.team_name);
+        });
+
+        groupRanking.forEach((team, index) => {
+          team.position_in_group = index + 1;
+        });
+
+        totalTeamsInGroup = groupRanking.length;
+      }
     } catch (e: any) {
         errorMessage = e.message || `No se pudo cargar la clasificación del ${groupName}.`;
     }
