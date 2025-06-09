@@ -11,7 +11,7 @@ interface MVPData {
   id: number;
   name: string;
   team: string;
-  mvpCount: number; // Nueva propiedad para el conteo
+  mvpCount: number; 
 }
 
 interface PlayerRecord {
@@ -44,7 +44,7 @@ const orFilterForMvps = 'home_team_mvp_player_id.not.is.null,away_team_mvp_playe
       }
       if (match.away_team_mvp_player_id && match.away_team_mvp_player_id !== match.home_team_mvp_player_id) {
         allMvpPlayerIds.push(match.away_team_mvp_player_id);
-      } else if (match.away_team_mvp_player_id && !match.home_team_mvp_player_id) { // Si solo hay away_mvp
+      } else if (match.away_team_mvp_player_id && !match.home_team_mvp_player_id) { 
         allMvpPlayerIds.push(match.away_team_mvp_player_id);
       }
     });
