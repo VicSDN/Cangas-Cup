@@ -33,7 +33,7 @@ const pages = [
                 id={`nav-link-${key}`}
               >
                 <span class="z-10">{name}</span>
-                <YearSelector years={years} selectedYear={selectedYear} />
+                <YearSelector years={years} selectedYear={selectedYear} id="year-selector-2024-desktop" />
               </div>
             ) : (
               <a
@@ -88,7 +88,7 @@ const pages = [
                   id={`nav-link-${key}`}
                 >
                   <span class="z-10">{name}</span>
-                  <YearSelector years={years} selectedYear={selectedYear} />
+                  <YearSelector years={years} selectedYear={selectedYear} id="year-selector-2024-mobile" />
                 </div>
               ) : (
                 <a
@@ -280,7 +280,7 @@ const pages = [
       toggleMenu(nav, menuMobileContent, navContent);
     }
 
-    const yearSelectors = document.querySelectorAll('#year-selector');
+    const yearSelectors = document.querySelectorAll('[id*="year-selector"]');
     yearSelectors.forEach((yearSelector) => {
       yearSelector.addEventListener('change', onYearChange);
     });

@@ -25,7 +25,7 @@ let mvps: MVPData[] = [];
 let errorMessage: string | null = null;
 
 try {
-const orFilterForMvps = 'home_team_mvp_player_id.not.is.null,away_team_mvp_player_id.not.is.null';
+  const orFilterForMvps = 'home_team_mvp_player_id.not.is.null,away_team_mvp_player_id.not.is.null';
 
   const { data: matchMvpData, error: matchError } = await supabase
     .from('tournament_match')
@@ -56,8 +56,7 @@ const orFilterForMvps = 'home_team_mvp_player_id.not.is.null,away_team_mvp_playe
     const { data: playersData, error: playerError } = await supabase
       .from('tournament_player')
       .select('id, name, second_name, team:tournament_team(name)')
-      .in('id', uniquePlayerIds)
-      .returns<PlayerRecord[]>();
+      .in('id', uniquePlayerIds);
 
     if (playerError) {
       throw new Error(`Error al cargar los jugadores MVP: ${playerError.message}`);
