@@ -45,11 +45,11 @@ try {
       home_score,
       away_score,
       match_date,
-      group_data:tournament_group (name)
+      group_data:tournament_group!tournament_match_group_id_fkey (name) 
     `)
     .eq('year', year)
     .eq('match_stage', 'Fase de Grupos')
-    .order('name', { foreignTable: 'tournament_group', ascending: true })
+    .order('name', { foreignTable: 'tournament_group', ascending: true }) 
     .order('match_date', { ascending: true })
     .order('id', { ascending: true });
 

@@ -32,7 +32,11 @@ try {
       away_score,
       match_date,
       round_name,
-      match_stage
+      match_stage,
+      home_team_placeholder_type,
+      home_team_source_match_id,
+      away_team_placeholder_type,
+      away_team_source_match_id
     `)
     .eq('year', year)
     .eq('is_local_final', true)
@@ -44,11 +48,45 @@ try {
     localFinalMatches = rawMatches.map(match => {
         const date = new Date(match.match_date);
 
+        let home_team_name: string;
         const homeTeamDataObject = match.home_team_data as unknown as ({ id: number; name: string } | null);
-        const home_team_name = homeTeamDataObject ? homeTeamDataObject.name : 'Por definir';
+        if (homeTeamDataObject?.name) {
+          home_team_name = homeTeamDataObject.name;
+        } else {
+          switch (match.home_team_placeholder_type) {
+            case 'WINNER_MATCH':
+              home_team_name = match.home_team_source_match_id ? `Ganador P.${match.home_team_source_match_id}` : 'Ganador Partido Anterior';
+              break;
+            case 'LOSER_MATCH':
+              home_team_name = match.home_team_source_match_id ? `Perdedor P.${match.home_team_source_match_id}` : 'Perdedor Partido Anterior';
+              break;
+            case 'GROUP_POSITION':
+              home_team_name = 'Clasificado por Grupo';
+              break;
+            default:
+              home_team_name = 'Por definir';
+          }
+        }
 
+        let away_team_name: string;
         const awayTeamDataObject = match.away_team_data as unknown as ({ id: number; name: string } | null);
-        const away_team_name = awayTeamDataObject ? awayTeamDataObject.name : 'Por definir';
+        if (awayTeamDataObject?.name) {
+          away_team_name = awayTeamDataObject.name;
+        } else {
+          switch (match.away_team_placeholder_type) {
+            case 'WINNER_MATCH':
+              away_team_name = match.away_team_source_match_id ? `Ganador P.${match.away_team_source_match_id}` : 'Ganador Partido Anterior';
+              break;
+            case 'LOSER_MATCH':
+              away_team_name = match.away_team_source_match_id ? `Perdedor P.${match.away_team_source_match_id}` : 'Perdedor Partido Anterior';
+              break;
+            case 'GROUP_POSITION':
+              away_team_name = 'Clasificado por Grupo';
+              break;
+            default:
+              away_team_name = 'Por definir';
+          }
+        }
         
         return {
             id: match.id,

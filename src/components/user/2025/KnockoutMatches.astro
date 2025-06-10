@@ -35,7 +35,15 @@ try {
       away_score,
       match_date,
       round_name,
-      match_stage
+      match_stage,
+      home_team_placeholder_type,
+      home_team_source_match_id,
+      home_team_source_group_id,
+      home_team_source_group_position,
+      away_team_placeholder_type,
+      away_team_source_match_id,
+      away_team_source_group_id,
+      away_team_source_group_position
     `)
     .eq('year', year)
     .in('match_stage', KNOCKOUT_STAGES_ORDER)
@@ -43,18 +51,99 @@ try {
     .order('match_date', { ascending: true })
     .order('id', { ascending: true });
 
-  if (error) throw new Error(`Error al cargar partidos de eliminatoria: ${error.message}`);
+  if (error) {
+    throw new Error(`Error al cargar partidos de eliminatoria: ${error.message}`);
+  }
   
   if (rawMatches && rawMatches.length > 0) {
+    const matchLabelsMap = new Map<number, string>();
+    const sourceMatchIds = new Set<number>();
+
+    rawMatches.forEach(match => {
+      if (match.home_team_placeholder_type === 'WINNER_MATCH' || match.home_team_placeholder_type === 'LOSER_MATCH') {
+        if(match.home_team_source_match_id) sourceMatchIds.add(match.home_team_source_match_id);
+      }
+      if (match.away_team_placeholder_type === 'WINNER_MATCH' || match.away_team_placeholder_type === 'LOSER_MATCH') {
+        if(match.away_team_source_match_id) sourceMatchIds.add(match.away_team_source_match_id);
+      }
+    });
+
+    if (sourceMatchIds.size > 0) {
+      const { data: sourceMatchesInfo, error: sourceError } = await supabase
+        .from('tournament_match')
+        .select('id, round_name, match_label')
+        .in('id', Array.from(sourceMatchIds));
+
+      if (sourceError) {
+        console.error("Error cargando info de partidos fuente:", sourceError.message);
+      } else if (sourceMatchesInfo) {
+        sourceMatchesInfo.forEach(info => {
+          matchLabelsMap.set(info.id, info.match_label || info.round_name || `P.${info.id}`);
+        });
+      }
+    }
+
     rawMatches.forEach(match => {
       matchesByStage[match.match_stage] = matchesByStage[match.match_stage] || [];
       const date = new Date(match.match_date);
 
+      let home_team_name: string;
       const homeTeamDataObject = match.home_team_data as unknown as ({ id: number; name: string } | null);
-      const home_team_name = homeTeamDataObject ? homeTeamDataObject.name : 'Por definir';
+      if (homeTeamDataObject?.name) {
+        home_team_name = homeTeamDataObject.name;
+      } else {
+        switch (match.home_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            const homeMatchLabel = matchLabelsMap.get(match.home_team_source_match_id) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            home_team_name = `Ganador ${homeMatchLabel}`;
+            break;
+          case 'LOSER_MATCH':
+            const homeLoserMatchLabel = matchLabelsMap.get(match.home_team_source_match_id) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            home_team_name = `Perdedor ${homeLoserMatchLabel}`;
+            break;
+          case 'GROUP_POSITION':
+            let determinedHomeGroupName: string = 'Grupo Desc.';
+            if (match.home_team_source_group_id && match.home_team_source_group_id >= 1 && match.home_team_source_group_id <= 26) {
+              const groupLetter = String.fromCharCode(64 + match.home_team_source_group_id);
+              determinedHomeGroupName = `Grupo ${groupLetter}`;
+            } else if (match.home_team_source_group_id) {
+              determinedHomeGroupName = `Grup.ID ${match.home_team_source_group_id}`;
+            }
+            home_team_name = `${match.home_team_source_group_position || '?'}º ${determinedHomeGroupName}`;
+            break;
+          default:
+            home_team_name = 'Por definir';
+        }
+      }
 
+      let away_team_name: string;
       const awayTeamDataObject = match.away_team_data as unknown as ({ id: number; name: string } | null);
-      const away_team_name = awayTeamDataObject ? awayTeamDataObject.name : 'Por definir';
+      if (awayTeamDataObject?.name) {
+        away_team_name = awayTeamDataObject.name;
+      } else {
+        switch (match.away_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            const awayMatchLabel = matchLabelsMap.get(match.away_team_source_match_id) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            away_team_name = `Ganador ${awayMatchLabel}`;
+            break;
+          case 'LOSER_MATCH':
+            const awayLoserMatchLabel = matchLabelsMap.get(match.away_team_source_match_id) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            away_team_name = `Perdedor ${awayLoserMatchLabel}`;
+            break;
+          case 'GROUP_POSITION':
+            let determinedAwayGroupName: string = 'Grupo Desc.';
+            if (match.away_team_source_group_id && match.away_team_source_group_id >= 1 && match.away_team_source_group_id <= 26) {
+              const groupLetter = String.fromCharCode(64 + match.away_team_source_group_id);
+              determinedAwayGroupName = `Grupo ${groupLetter}`;
+            } else if (match.away_team_source_group_id) {
+              determinedAwayGroupName = `Grup.ID ${match.away_team_source_group_id}`;
+            }
+            away_team_name = `${match.away_team_source_group_position || '?'}º ${determinedAwayGroupName}`;
+            break;
+          default:
+            away_team_name = 'Por definir';
+        }
+      }
 
       matchesByStage[match.match_stage].push({
         id: match.id,
