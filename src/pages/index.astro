@@ -132,47 +132,38 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
 </style>
 
 <script>
-  // Client-side redirect after page loads (SEO-friendly)
-  document.addEventListener('DOMContentLoaded', function () {
-    // Track user interactions to prevent unwanted redirects
-    let userInteracted = false;
-
-    // Detect any user interaction
-    ['click', 'scroll', 'keydown', 'touchstart'].forEach((event) => {
-      document.addEventListener(
-        event,
-        function () {
-          userInteracted = true;
-          sessionStorage.setItem('user-interacted', 'true');
-        },
-        { once: true }
-      );
-    });
-
-    // Small delay to ensure Google can read the content
-    setTimeout(() => {
-      // Check if we're on the homepage and not already redirected
-      // Also check if user hasn't interacted with the page
-      if (
-        window.location.pathname === '/' &&
-        !window.location.search.includes('no-redirect') &&
-        !userInteracted &&
-        !sessionStorage.getItem('user-interacted')
-      ) {
-        // Show loading message
-        const redirectMessage = document.getElementById('redirect-message');
-        if (redirectMessage) {
-          redirectMessage.classList.remove('hidden');
-        }
-
-        // Add a subtle transition effect
-        document.body.classList.add('redirecting');
-
-        // Redirect to current year
-        setTimeout(() => {
-          window.location.href = '/user/2025';
-        }, 1500);
+  // Instant redirect for users, SEO content for bots
+  (function() {
+    // Simple bot detection
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isBot = /bot|crawler|spider|crawling|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0|developers\.google\.com\/\+\/web\/snippet/i.test(userAgent);
+    
+    // Skip redirect for bots, testing, or if user already interacted
+    if (isBot || 
+        window.location.search.includes('no-redirect') || 
+        sessionStorage.getItem('user-interacted')) {
+      return;
+    }
+    
+    // For real users: instant redirect
+    if (window.location.pathname === '/') {
+      // Show loading message immediately
+      const redirectMessage = document.getElementById('redirect-message');
+      if (redirectMessage) {
+        redirectMessage.classList.remove('hidden');
       }
-    }, 2000); // 2 second delay for SEO crawlers
+      
+      // Immediate redirect (no delay for users)
+      window.location.replace('/user/2025');
+    }
+  })();
+  
+  // Track user interactions for future visits
+  document.addEventListener('DOMContentLoaded', function() {
+    ['click', 'scroll', 'keydown', 'touchstart'].forEach(event => {
+      document.addEventListener(event, function() {
+        sessionStorage.setItem('user-interacted', 'true');
+      }, { once: true });
+    });
   });
 </script>
