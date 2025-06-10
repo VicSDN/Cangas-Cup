@@ -7,6 +7,7 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   redirects: {
+    '/': '/user/2025',
     '/admin': '/admin/signin'
   },
    site: 'https://www.cangascup.es',
