@@ -64,7 +64,11 @@ try {
               home_team_name = 'Clasificado por Grupo';
               break;
             default:
-              home_team_name = 'Por definir';
+              if (homeTeamDataObject?.id) {
+                home_team_name = homeTeamDataObject.name || `Equipo ${homeTeamDataObject.id}`;
+              } else {
+                home_team_name = 'Equipo pendiente';
+              }
           }
         }
 
@@ -84,7 +88,11 @@ try {
               away_team_name = 'Clasificado por Grupo';
               break;
             default:
-              away_team_name = 'Por definir';
+              if (awayTeamDataObject?.id) {
+                away_team_name = awayTeamDataObject.name || `Equipo ${awayTeamDataObject.id}`;
+              } else {
+                away_team_name = 'Equipo pendiente';
+              }
           }
         }
         

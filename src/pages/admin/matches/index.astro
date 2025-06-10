@@ -115,15 +115,15 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         homeTeamDisplayName = parts[0].trim();
         awayTeamDisplayName = parts[1].trim();
       } else {
-        homeTeamDisplayName = `(Por definir: ${match.round_name} - Local)`;
-        awayTeamDisplayName = `(Por definir: ${match.round_name} - Visitante)`;
+        homeTeamDisplayName = `(Pendiente: ${match.round_name} - Local)`;
+        awayTeamDisplayName = `(Pendiente: ${match.round_name} - Visitante)`;
       }
     } else {
       if (match.home_team == null) {
-        homeTeamDisplayName = match.round_name ? `(Por definir: ${match.round_name} - Local)` : `(Por definir ${match.match_stage} - Local)`;
+        homeTeamDisplayName = match.round_name ? `(Pendiente: ${match.round_name} - Local)` : `(Pendiente ${match.match_stage} - Local)`;
       }
       if (match.away_team == null) {
-        awayTeamDisplayName = match.round_name ? `(Por definir: ${match.round_name} - Visitante)` : `(Por definir ${match.match_stage} - Visitante)`;
+        awayTeamDisplayName = match.round_name ? `(Pendiente: ${match.round_name} - Visitante)` : `(Pendiente ${match.match_stage} - Visitante)`;
       }
     }
   }

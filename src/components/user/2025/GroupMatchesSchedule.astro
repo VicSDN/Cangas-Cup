@@ -5,6 +5,7 @@ export interface Props {
   year?: number;
 }
 const { year = 2025 } = Astro.props;
+
 function getNameFromRelation(data: unknown): string | null {
   if (data && typeof data === 'object') {
     if (Array.isArray(data)) {
@@ -45,11 +46,19 @@ try {
       home_score,
       away_score,
       match_date,
-      group_data:tournament_group!tournament_match_group_id_fkey (name) 
+      group_data:tournament_group!tournament_match_group_id_fkey(name),
+      home_team_placeholder_type,
+      home_team_source_match_id,
+      home_team_source_group_id,       
+      home_team_source_group_position, 
+      away_team_placeholder_type,
+      away_team_source_match_id,
+      away_team_source_group_id,       
+      away_team_source_group_position  
     `)
     .eq('year', year)
     .eq('match_stage', 'Fase de Grupos')
-    .order('name', { foreignTable: 'tournament_group', ascending: true }) 
+     .order('group_id', { ascending: true }) 
     .order('match_date', { ascending: true })
     .order('id', { ascending: true });
 
@@ -59,8 +68,35 @@ try {
 
   if (rawMatches && rawMatches.length > 0) {
     const groupNamesEncountered = new Set<string>();
+    const matchLabelsMap = new Map<number, string>();
+    const sourceMatchIds = new Set<number>();
 
     rawMatches.forEach(match => {
+      if (match.home_team_placeholder_type === 'WINNER_MATCH' || match.home_team_placeholder_type === 'LOSER_MATCH') {
+        if(match.home_team_source_match_id) sourceMatchIds.add(match.home_team_source_match_id);
+      }
+      if (match.away_team_placeholder_type === 'WINNER_MATCH' || match.away_team_placeholder_type === 'LOSER_MATCH') {
+        if(match.away_team_source_match_id) sourceMatchIds.add(match.away_team_source_match_id);
+      }
+    });
+
+    if (sourceMatchIds.size > 0) {
+      const { data: sourceMatchesInfo, error: sourceError } = await supabase
+        .from('tournament_match')
+        .select('id, round_name, match_label') 
+        .in('id', Array.from(sourceMatchIds));
+
+      if (sourceError) {
+        console.error("Error cargando info de partidos fuente para grupos:", sourceError.message);
+      } else if (sourceMatchesInfo) {
+        sourceMatchesInfo.forEach(info => {
+          matchLabelsMap.set(info.id, info.match_label || info.round_name || `P.${info.id}`);
+        });
+      }
+    }
+
+    rawMatches.forEach(match => {
+      // console.log(`Procesando partido ID: ${match.id}, HPT: ${match.home_team_placeholder_type}, APT: ${match.away_team_placeholder_type}`); // DEBUG
       const groupName = getNameFromRelation(match.group_data) || 'Grupo Desconocido';
       
       if (!matchesByGroup[groupName]) {
@@ -72,13 +108,71 @@ try {
       }
       
       const date = new Date(match.match_date);
-      const home_team_name = getNameFromRelation(match.home_team_data) || 'Por definir';
-      const away_team_name = getNameFromRelation(match.away_team_data) || 'Por definir';
+      
+      let home_team_name: string;
+      const homeTeamDataObject = match.home_team_data as unknown as ({ id: number; name: string } | null);
+
+      if (homeTeamDataObject?.name) {
+        home_team_name = homeTeamDataObject.name;
+      } else {
+        switch (match.home_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            const homeMatchLabel = matchLabelsMap.get(match.home_team_source_match_id) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            home_team_name = `Ganador ${homeMatchLabel}`;
+            break;
+          case 'LOSER_MATCH':
+            const homeLoserMatchLabel = matchLabelsMap.get(match.home_team_source_match_id) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            home_team_name = `Perdedor ${homeLoserMatchLabel}`;
+            break;
+          case 'GROUP_POSITION': // Este caso es para KnockoutMatches, no tanto para GroupMatchesSchedule
+            let determinedHomeGroupName: string = 'Grupo Desc.';
+            if (match.home_team_source_group_id && match.home_team_source_group_id >= 1 && match.home_team_source_group_id <= 26) {
+              const groupLetter = String.fromCharCode(64 + match.home_team_source_group_id);
+              determinedHomeGroupName = `Grupo ${groupLetter}`;
+            } else if (match.home_team_source_group_id) {
+              determinedHomeGroupName = `Grup.ID ${match.home_team_source_group_id}`;
+            }
+            home_team_name = `${match.home_team_source_group_position || '?'}º ${determinedHomeGroupName}`;
+            break;
+          default:
+            home_team_name = 'Por definir'; // Cambiado de 'Equipo pendiente'
+        }
+      }
+
+      let away_team_name: string;
+      const awayTeamDataObject = match.away_team_data as unknown as ({ id: number; name: string } | null);
+      if (awayTeamDataObject?.name) {
+        away_team_name = awayTeamDataObject.name;
+      } else {
+        switch (match.away_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            const awayMatchLabel = matchLabelsMap.get(match.away_team_source_match_id) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            away_team_name = `Ganador ${awayMatchLabel}`;
+            break;
+          case 'LOSER_MATCH':
+            const awayLoserMatchLabel = matchLabelsMap.get(match.away_team_source_match_id) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            away_team_name = `Perdedor ${awayLoserMatchLabel}`;
+            break;
+          case 'GROUP_POSITION':
+            let determinedAwayGroupName: string = 'Grupo Desc.';
+            if (match.away_team_source_group_id && match.away_team_source_group_id >= 1 && match.away_team_source_group_id <= 26) {
+              const groupLetter = String.fromCharCode(64 + match.away_team_source_group_id);
+              determinedAwayGroupName = `Grupo ${groupLetter}`;
+            } else if (match.away_team_source_group_id) {
+              determinedAwayGroupName = `Grup.ID ${match.away_team_source_group_id}`;
+            }
+            away_team_name = `${match.away_team_source_group_position || '?'}º ${determinedAwayGroupName}`;
+            break;
+          default:
+            away_team_name = 'Por definir'; // Cambiado de 'Equipo pendiente'
+        }
+      }
 
       matchesByGroup[groupName].push({
         id: match.id,
         home_team_name: home_team_name,
         away_team_name: away_team_name,
+        // ... resto de los campos
         home_score: match.home_score,
         away_score: match.away_score,
         match_date_formatted: date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -91,6 +185,7 @@ try {
         const getSortablePart = (name: string) => name.replace('Grupo ', '');
         const partA = getSortablePart(a);
         const partB = getSortablePart(b);
+        // ... resto de tu lógica de sort
         const numA = parseInt(partA, 10);
         const numB = parseInt(partB, 10);
 
@@ -105,6 +200,7 @@ try {
   errorMessage = e.message || "No se pudieron cargar los horarios de los partidos de grupos.";
 }
 ---
+<!-- HTML sin cambios -->
 <div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden">
   <div class="p-5 md:p-6 bg-gradient-to-r from-cyan-700 to-cyan-600">
     <h2 class="text-xl md:text-2xl font-bold text-white text-center">Horarios y Resultados - Fase de Grupos ({year})</h2>
