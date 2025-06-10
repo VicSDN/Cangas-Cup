@@ -22,13 +22,13 @@ export interface Match extends DatabaseBase {
   match_stage: string;
   round_name: string | null;
   is_local_final: boolean;
-  home_team_match_fouls?: number | null; 
-  away_team_match_fouls?: number | null; 
+  home_team_match_fouls?: number | null;
+  away_team_match_fouls?: number | null;
   home_team_mvp_player_id?: number | null;
   away_team_mvp_player_id?: number | null;
 }
 
-export interface TransformedMatchBase { 
+export interface TransformedMatchBase {
   id: number;
   display_date: string;
   home_team_id: number;
@@ -50,7 +50,7 @@ export interface UpdateMatchMvpPayload {
   match_id: number;
   home_team_mvp_player_id: number | null;
   away_team_mvp_player_id: number | null;
-  year: number; 
+  year: number;
 }
 
 export interface Player extends DatabaseBase {
@@ -58,7 +58,7 @@ export interface Player extends DatabaseBase {
   second_name?: string | null;
   team_id: number;
   team?: Team | null;
-  team_name?: string; 
+  team_name?: string;
 }
 
 export interface Card {
@@ -71,7 +71,7 @@ export interface Card {
   year: number;
   player_name?: string;
   team_name?: string;
-  player?: { id: number; name: string; second_name?: string | null } | null; 
+  player?: { id: number; name: string; second_name?: string | null } | null;
   team?: { id: number; name: string } | null;
 }
 
@@ -85,9 +85,9 @@ export interface CreateCardPayload {
 }
 
 export interface UpdateMatchTeamFoulsPayload {
-    match_id: number;
-    home_fouls: number;
-    away_fouls: number;
+  match_id: number;
+  home_fouls: number;
+  away_fouls: number;
 }
 
 export interface ApiErrorResponse {
@@ -97,25 +97,25 @@ export interface ApiErrorResponse {
 }
 
 export interface RankingEntry {
-  year: number | null; 
+  year: number | null;
   group_id: number;
   team_id: number;
   points: number | null;
   games_played: number;
-  goals_for: number | null;     
-  goals_against: number | null;    
-  goal_difference: number | bigint | null; 
+  goals_for: number | null;
+  goals_against: number | null;
+  goal_difference: number | bigint | null;
   fair_play_points: number | null;
   fouls_committed: number | null;
   group_name: string;
   team_name: string;
   is_local?: boolean | null;
-  h2h_points: number | string | bigint | null; 
+  h2h_points: number | string | bigint | null;
   h2h_goal_difference: number | string | bigint | null;
   h2h_goals_for: number | string | bigint | null;
-  overall_goal_difference: number | bigint | null; 
-  overall_goals_for: number | bigint | null;     
-  sort_key?: number; 
+  overall_goal_difference: number | bigint | null;
+  overall_goals_for: number | bigint | null;
+  sort_key?: number;
   position_in_group: number;
 }
 
@@ -126,8 +126,8 @@ export interface Goal {
   team_id: number;
   goal_minute?: number | null;
   year: number;
-  player_name?: string; 
-  team_name?: string;  
+  player_name?: string;
+  team_name?: string;
 }
 
 export interface CreateGoalPayload {

@@ -33,7 +33,11 @@ const pages = [
                 id={`nav-link-${key}`}
               >
                 <span class="z-10">{name}</span>
-                <YearSelector years={years} selectedYear={selectedYear} id="year-selector-2024-desktop" />
+                <YearSelector
+                  years={years}
+                  selectedYear={selectedYear}
+                  id="year-selector-2024-desktop"
+                />
               </div>
             ) : (
               <a
@@ -88,7 +92,11 @@ const pages = [
                   id={`nav-link-${key}`}
                 >
                   <span class="z-10">{name}</span>
-                  <YearSelector years={years} selectedYear={selectedYear} id="year-selector-2024-mobile" />
+                  <YearSelector
+                    years={years}
+                    selectedYear={selectedYear}
+                    id="year-selector-2024-mobile"
+                  />
                 </div>
               ) : (
                 <a
@@ -122,7 +130,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/user/${selectedYear}`} class="focus-visible:!ring-0">
           <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
@@ -131,7 +140,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
         style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
     </div>
   </div>
 </header>

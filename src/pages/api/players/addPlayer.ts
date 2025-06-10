@@ -14,23 +14,33 @@ export const POST: APIRoute = async ({ request }) => {
     const payload = (await request.json()) as AddPlayerPayload;
 
     if (!payload.name || !payload.team_id || !payload.year) {
-      return new Response(JSON.stringify({ error: "Nombre, ID de equipo y año son requeridos" } as ApiErrorResponse), {
-        status: 400, headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ error: 'Nombre, ID de equipo y año son requeridos' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const { data: teamExists, error: teamError } = await supabase
       .from('tournament_team')
       .select('id')
       .eq('id', payload.team_id)
-      .eq('year', payload.year) 
+      .eq('year', payload.year)
       .maybeSingle();
 
     if (teamError) throw teamError;
     if (!teamExists) {
-        return new Response(JSON.stringify({ error: `El equipo con ID ${payload.team_id} no existe para el año ${payload.year}` } as ApiErrorResponse), {
-            status: 400, headers: { 'Content-Type': 'application/json' },
-        });
+      return new Response(
+        JSON.stringify({
+          error: `El equipo con ID ${payload.team_id} no existe para el año ${payload.year}`,
+        } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const insertData: any = {
@@ -49,22 +59,36 @@ export const POST: APIRoute = async ({ request }) => {
       .single();
 
     if (insertError) {
-      if (insertError.code === '23505') { 
-         return new Response(JSON.stringify({ error: "Error: Ya existe un jugador con esos datos para ese equipo y año.", details: insertError.message } as ApiErrorResponse), {
-            status: 409, headers: { 'Content-Type': 'application/json' }, 
-        });
+      if (insertError.code === '23505') {
+        return new Response(
+          JSON.stringify({
+            error: 'Error: Ya existe un jugador con esos datos para ese equipo y año.',
+            details: insertError.message,
+          } as ApiErrorResponse),
+          {
+            status: 409,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
       throw insertError;
     }
 
     return new Response(JSON.stringify(newPlayer), {
-      status: 201, headers: { 'Content-Type': 'application/json' },
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
     });
-
   } catch (error: any) {
     console.error('Error creating player:', error);
-    return new Response(JSON.stringify({ error: "Error interno al crear el jugador", message: error.message } as ApiErrorResponse), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Error interno al crear el jugador',
+        message: error.message,
+      } as ApiErrorResponse),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 };

@@ -13,12 +13,15 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
 
 <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl w-full max-w-lg mx-auto">
   <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
-    Editar Jugador: {player.name} {player.second_name || ''}
+    Editar Jugador: {player.name}
+    {player.second_name || ''}
   </h2>
 
   <form method="POST" action={formAction} id="editPlayerForm">
     <div class="mb-4">
-      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
+      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Nombre</label
+      >
       <input
         type="text"
         name="name"
@@ -30,7 +33,11 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
     </div>
 
     <div class="mb-4">
-      <label for="second_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Segundo Nombre (Opcional)</label>
+      <label
+        for="second_name"
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Segundo Nombre (Opcional)</label
+      >
       <input
         type="text"
         name="second_name"
@@ -41,31 +48,45 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
     </div>
 
     <div class="mb-6">
-      <label for="team_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Equipo</label>
+      <label for="team_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >Equipo</label
+      >
       <select
         name="team_id"
         id="team_id"
         required
         class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
       >
-        {availableTeams.map(team => (
-          <option value={team.id.toString()} selected={team.id === player.team_id}>
-            {team.name} ({team.year})
-          </option>
-        ))}
-        {availableTeams.length === 0 && (
-          <option value="" disabled>No hay equipos disponibles para el año {player.year}</option>
-        )}
+        {
+          availableTeams.map((team) => (
+            <option value={team.id.toString()} selected={team.id === player.team_id}>
+              {team.name} ({team.year})
+            </option>
+          ))
+        }
+        {
+          availableTeams.length === 0 && (
+            <option value="" disabled>
+              No hay equipos disponibles para el año {player.year}
+            </option>
+          )
+        }
       </select>
     </div>
 
     <input type="hidden" name="year" value={player.year.toString()} />
 
     <div class="flex justify-between items-center mt-8">
-      <a href={`/admin/players?year=${currentYear}`} class="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline">
+      <a
+        href={`/admin/players?year=${currentYear}`}
+        class="text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+      >
         Cancelar
       </a>
-      <button type="submit" class="bg-indigo-600 text-white px-6 py-2.5 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
+      <button
+        type="submit"
+        class="bg-indigo-600 text-white px-6 py-2.5 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+      >
         Guardar Cambios
       </button>
     </div>
@@ -106,21 +127,20 @@ const formAction = `/api/players/update-player?playerId=${player.id}`;
         if (!response.ok) {
           throw new Error(result.message || `Error: ${response.status}`);
         }
-        
+
         successP.textContent = result.message || 'Jugador actualizado correctamente.';
         successP.classList.remove('hidden');
-        const playerYear = formData.get('year') as string || new Date().getFullYear().toString();
-        
-        setTimeout(() => {
-          window.location.href = `/admin/players?year=${playerYear}`; 
-        }, 1500); 
+        const playerYear = (formData.get('year') as string) || new Date().getFullYear().toString();
 
+        setTimeout(() => {
+          window.location.href = `/admin/players?year=${playerYear}`;
+        }, 1500);
       } catch (err) {
-        errorP.textContent = (err instanceof Error) ? err.message : 'Ocurrió un error al guardar.';
+        errorP.textContent = err instanceof Error ? err.message : 'Ocurrió un error al guardar.';
         errorP.classList.remove('hidden');
       } finally {
-          submitButton.disabled = false;
-          submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
       }
     });
   }

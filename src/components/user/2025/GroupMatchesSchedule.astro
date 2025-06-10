@@ -14,7 +14,7 @@ type SupabaseRawMatch = {
   home_score: number | null;
   away_score: number | null;
   match_date: string;
-  group_data: { name: string, id?: number } | { name: string, id?: number }[] | null;
+  group_data: { name: string; id?: number } | { name: string; id?: number }[] | null;
   home_team_placeholder_type: string | null;
   home_team_source_match_id: number | null;
   home_team_source_group_id: number | null;
@@ -28,15 +28,14 @@ type SupabaseRawMatch = {
   match_label?: string;
 };
 
-
 function getNameFromRelation(data: unknown): string | null {
   if (data && typeof data === 'object') {
     if (Array.isArray(data)) {
       if (data.length > 0 && data[0] && typeof data[0].name === 'string') {
         return data[0].name.trim();
       }
-    } else if ('name' in data && typeof (data as {name: any}).name === 'string') {
-      return (data as {name: string}).name.trim();
+    } else if ('name' in data && typeof (data as { name: any }).name === 'string') {
+      return (data as { name: string }).name.trim();
     }
   }
   return null;
@@ -65,7 +64,8 @@ let rawMatchesData: SupabaseRawMatch[] | null = null;
 try {
   const { data: supabaseFetchedMatches, error } = await supabase
     .from('tournament_match')
-    .select(`
+    .select(
+      `
       id,
       home_team_data:tournament_team!tournament_match_home_team_fkey(id, name),
       away_team_data:tournament_team!tournament_match_away_team_fkey(id, name),
@@ -81,10 +81,11 @@ try {
       away_team_source_match_id,
       away_team_source_group_id,       
       away_team_source_group_position  
-    `)
+    `
+    )
     .eq('year', year)
     .eq('match_stage', 'Fase de Grupos')
-    .order('group_id', { ascending: true }) 
+    .order('group_id', { ascending: true })
     .order('match_date', { ascending: true })
     .order('id', { ascending: true });
 
@@ -99,54 +100,75 @@ try {
     const matchLabelsMap = new Map<number, string>();
     const sourceMatchIds = new Set<number>();
 
-    rawMatchesData.forEach(match => {
-      if (match.home_team_placeholder_type === 'WINNER_MATCH' || match.home_team_placeholder_type === 'LOSER_MATCH') {
-        if(match.home_team_source_match_id) sourceMatchIds.add(match.home_team_source_match_id);
+    rawMatchesData.forEach((match) => {
+      if (
+        match.home_team_placeholder_type === 'WINNER_MATCH' ||
+        match.home_team_placeholder_type === 'LOSER_MATCH'
+      ) {
+        if (match.home_team_source_match_id) sourceMatchIds.add(match.home_team_source_match_id);
       }
-      if (match.away_team_placeholder_type === 'WINNER_MATCH' || match.away_team_placeholder_type === 'LOSER_MATCH') {
-        if(match.away_team_source_match_id) sourceMatchIds.add(match.away_team_source_match_id);
+      if (
+        match.away_team_placeholder_type === 'WINNER_MATCH' ||
+        match.away_team_placeholder_type === 'LOSER_MATCH'
+      ) {
+        if (match.away_team_source_match_id) sourceMatchIds.add(match.away_team_source_match_id);
       }
     });
 
     if (sourceMatchIds.size > 0) {
       const { data: sourceMatchesInfo, error: sourceError } = await supabase
         .from('tournament_match')
-        .select('id, round_name, match_label') 
+        .select('id, round_name, match_label')
         .in('id', Array.from(sourceMatchIds));
 
       if (sourceError) {
-        console.error("Error cargando info de partidos fuente para grupos:", sourceError.message);
+        console.error('Error cargando info de partidos fuente para grupos:', sourceError.message);
       } else if (sourceMatchesInfo) {
-        sourceMatchesInfo.forEach(info => {
+        sourceMatchesInfo.forEach((info) => {
           matchLabelsMap.set(info.id, info.match_label || info.round_name || `P.${info.id}`);
         });
       }
     }
-    
+
     const processedMatches: MatchDisplay[] = [];
 
-    rawMatchesData.forEach(match => {
+    rawMatchesData.forEach((match) => {
       const groupName = getNameFromRelation(match.group_data) || 'Grupo Desconocido';
       const date = new Date(match.match_date);
-      
+
       let home_team_name: string;
-      const homeTeamDataObject = match.home_team_data as unknown as ({ id: number; name: string } | null);
+      const homeTeamDataObject = match.home_team_data as unknown as {
+        id: number;
+        name: string;
+      } | null;
 
       if (homeTeamDataObject?.name) {
         home_team_name = homeTeamDataObject.name;
       } else {
         switch (match.home_team_placeholder_type) {
           case 'WINNER_MATCH':
-            const homeMatchLabel = matchLabelsMap.get(match.home_team_source_match_id!) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            const homeMatchLabel =
+              matchLabelsMap.get(match.home_team_source_match_id!) ||
+              (match.home_team_source_match_id
+                ? `P.${match.home_team_source_match_id}`
+                : 'Anterior');
             home_team_name = `Ganador ${homeMatchLabel}`;
             break;
           case 'LOSER_MATCH':
-            const homeLoserMatchLabel = matchLabelsMap.get(match.home_team_source_match_id!) || (match.home_team_source_match_id ? `P.${match.home_team_source_match_id}` : 'Anterior');
+            const homeLoserMatchLabel =
+              matchLabelsMap.get(match.home_team_source_match_id!) ||
+              (match.home_team_source_match_id
+                ? `P.${match.home_team_source_match_id}`
+                : 'Anterior');
             home_team_name = `Perdedor ${homeLoserMatchLabel}`;
             break;
           case 'GROUP_POSITION':
             let determinedHomeGroupName: string = 'Grupo Desc.';
-            if (match.home_team_source_group_id && match.home_team_source_group_id >= 1 && match.home_team_source_group_id <= 26) {
+            if (
+              match.home_team_source_group_id &&
+              match.home_team_source_group_id >= 1 &&
+              match.home_team_source_group_id <= 26
+            ) {
               const groupLetter = String.fromCharCode(64 + match.home_team_source_group_id);
               determinedHomeGroupName = `Grupo ${groupLetter}`;
             } else if (match.home_team_source_group_id) {
@@ -160,22 +182,37 @@ try {
       }
 
       let away_team_name: string;
-      const awayTeamDataObject = match.away_team_data as unknown as ({ id: number; name: string } | null);
+      const awayTeamDataObject = match.away_team_data as unknown as {
+        id: number;
+        name: string;
+      } | null;
       if (awayTeamDataObject?.name) {
         away_team_name = awayTeamDataObject.name;
       } else {
         switch (match.away_team_placeholder_type) {
           case 'WINNER_MATCH':
-            const awayMatchLabel = matchLabelsMap.get(match.away_team_source_match_id!) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            const awayMatchLabel =
+              matchLabelsMap.get(match.away_team_source_match_id!) ||
+              (match.away_team_source_match_id
+                ? `P.${match.away_team_source_match_id}`
+                : 'Anterior');
             away_team_name = `Ganador ${awayMatchLabel}`;
             break;
           case 'LOSER_MATCH':
-            const awayLoserMatchLabel = matchLabelsMap.get(match.away_team_source_match_id!) || (match.away_team_source_match_id ? `P.${match.away_team_source_match_id}` : 'Anterior');
+            const awayLoserMatchLabel =
+              matchLabelsMap.get(match.away_team_source_match_id!) ||
+              (match.away_team_source_match_id
+                ? `P.${match.away_team_source_match_id}`
+                : 'Anterior');
             away_team_name = `Perdedor ${awayLoserMatchLabel}`;
             break;
           case 'GROUP_POSITION':
             let determinedAwayGroupName: string = 'Grupo Desc.';
-            if (match.away_team_source_group_id && match.away_team_source_group_id >= 1 && match.away_team_source_group_id <= 26) {
+            if (
+              match.away_team_source_group_id &&
+              match.away_team_source_group_id >= 1 &&
+              match.away_team_source_group_id <= 26
+            ) {
               const groupLetter = String.fromCharCode(64 + match.away_team_source_group_id);
               determinedAwayGroupName = `Grupo ${groupLetter}`;
             } else if (match.away_team_source_group_id) {
@@ -184,7 +221,7 @@ try {
             away_team_name = `${match.away_team_source_group_position || '?'}º ${determinedAwayGroupName}`;
             break;
           default:
-            away_team_name = 'Por definir'; 
+            away_team_name = 'Por definir';
         }
       }
 
@@ -195,54 +232,62 @@ try {
         home_score: match.home_score,
         away_score: match.away_score,
         match_date_raw: date,
-        match_date_formatted: date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }),
-        match_time_formatted: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        match_date_formatted: date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        match_time_formatted: date.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }),
         group_name: groupName,
       };
-      
+
       processedMatches.push(matchDisplayData);
 
       if (!matchesByGroup[groupName]) {
         matchesByGroup[groupName] = [];
       }
       matchesByGroup[groupName].push(matchDisplayData);
-      
+
       if (groupName !== 'Grupo Desconocido') {
         groupNamesEncountered.add(groupName);
       }
     });
 
     orderedGroupNamesWithMatches = Array.from(groupNamesEncountered).sort((a, b) => {
-        const getSortablePart = (name: string) => name.replace('Grupo ', '');
-        const partA = getSortablePart(a);
-        const partB = getSortablePart(b);
-        const numA = parseInt(partA, 10);
-        const numB = parseInt(partB, 10);
+      const getSortablePart = (name: string) => name.replace('Grupo ', '');
+      const partA = getSortablePart(a);
+      const partB = getSortablePart(b);
+      const numA = parseInt(partA, 10);
+      const numB = parseInt(partB, 10);
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-            return numA - numB;
-        }
-        return partA.localeCompare(partB);
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
+      return partA.localeCompare(partB);
     });
 
     if (sortBy === 'time') {
       allMatchesChronological = [...processedMatches].sort((a, b) => {
         const dateComparison = a.match_date_raw.getTime() - b.match_date_raw.getTime();
         if (dateComparison !== 0) return dateComparison;
-        return a.id - b.id; 
+        return a.id - b.id;
       });
     }
   }
-} catch (e: any)  {
-  errorMessage = e.message || "No se pudieron cargar los horarios de los partidos de grupos.";
-  console.error("Error in GroupMatchesSchedule:", e);
+} catch (e: any) {
+  errorMessage = e.message || 'No se pudieron cargar los horarios de los partidos de grupos.';
+  console.error('Error in GroupMatchesSchedule:', e);
 }
 
 const currentPath = Astro.url.pathname;
 const existingParams = new URLSearchParams(Astro.url.search);
 existingParams.delete('sort');
 const baseQuery = existingParams.toString() ? `?${existingParams.toString()}` : '';
-const baseUrl = `${currentPath}${baseQuery ? (baseQuery + '&') : '?'}`;
+const baseUrl = `${currentPath}${baseQuery ? baseQuery + '&' : '?'}`;
 ---
 
 <style>
@@ -259,94 +304,138 @@ const baseUrl = `${currentPath}${baseQuery ? (baseQuery + '&') : '?'}`;
 
 <div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden">
   <div class="p-5 md:p-6 bg-gradient-to-r from-cyan-700 to-cyan-600">
-    <h2 class="text-xl md:text-2xl font-bold text-white text-center">Horarios y Resultados - Fase de Grupos ({year})</h2>
+    <h2 class="text-xl md:text-2xl font-bold text-white text-center">
+      Horarios y Resultados - Fase de Grupos ({year})
+    </h2>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
-
-  {!errorMessage && (rawMatchesData && rawMatchesData.length > 0) && (
-    <div class="px-4 md:px-6 pt-4">
-      <div class="flex justify-center space-x-2 mb-6">
-        <a 
-          href={`${baseUrl}sort=group`} 
-          class:list={["sort-button", sortBy === 'group' ? 'active' : 'inactive']}
-        >
-          Ordenar por Grupo
-        </a>
-        <a 
-          href={`${baseUrl}sort=time`} 
-          class:list={["sort-button", sortBy === 'time' ? 'active' : 'inactive']}
-        >
-          Ordenar por Fecha
-        </a>
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
       </div>
-    </div>
-  )}
+    )
+  }
 
-  {!errorMessage && sortBy === 'group' && orderedGroupNamesWithMatches.length > 0 && (
-    <div class="p-4 md:p-6 pt-0 space-y-8">
-      {orderedGroupNamesWithMatches.map(groupName => ( 
-        <section> 
-          <h3 class="text-xl font-semibold mb-4 text-cyan-400 border-b-2 border-cyan-800 pb-2">{groupName}</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {matchesByGroup[groupName] && matchesByGroup[groupName].map(match => (
-              <article class="p-4 bg-slate-700 rounded-lg shadow-md border border-slate-600 hover:shadow-slate-900/30 hover:border-slate-500 transition-all duration-200">
-                <div class="flex items-center justify-between mb-2 text-sm">
-                  <span class="font-semibold text-slate-200 truncate w-2/5 text-right pr-2" title={match.home_team_name}>{match.home_team_name}</span>
-                  {match.home_score !== null && match.away_score !== null ? (
-                    <span class="text-lg font-bold text-cyan-300 px-2.5 py-1 bg-cyan-700/50 rounded-md shadow-sm">
-                      {match.home_score} - {match.away_score}
-                    </span>
-                  ) : (
-                    <span class="text-md font-bold text-slate-500 px-2">vs</span>
-                  )}
-                  <span class="font-semibold text-slate-200 truncate w-2/5 text-left pl-2" title={match.away_team_name}>{match.away_team_name}</span>
-                </div>
-                <p class="text-xs text-center text-slate-400">{match.match_date_formatted} • {match.match_time_formatted} hs</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  )}
+  {
+    !errorMessage && rawMatchesData && rawMatchesData.length > 0 && (
+      <div class="px-4 md:px-6 pt-4">
+        <div class="flex justify-center space-x-2 mb-6">
+          <a
+            href={`${baseUrl}sort=group`}
+            class:list={['sort-button', sortBy === 'group' ? 'active' : 'inactive']}
+          >
+            Ordenar por Grupo
+          </a>
+          <a
+            href={`${baseUrl}sort=time`}
+            class:list={['sort-button', sortBy === 'time' ? 'active' : 'inactive']}
+          >
+            Ordenar por Fecha
+          </a>
+        </div>
+      </div>
+    )
+  }
 
-  {!errorMessage && sortBy === 'time' && allMatchesChronological.length > 0 && (
-    <div class="p-4 md:p-6 pt-0 space-y-4">
-      <h3 class="text-xl font-semibold mb-4 text-cyan-400 border-b-2 border-cyan-800 pb-2">Todos los Partidos por Fecha</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {allMatchesChronological.map(match => (
-          <article class="p-4 bg-slate-700 rounded-lg shadow-md border border-slate-600 hover:shadow-slate-900/30 hover:border-slate-500 transition-all duration-200">
-            <div class="flex items-center justify-between mb-1 text-sm">
-              <span class="font-semibold text-slate-200 truncate w-2/5 text-right pr-2" title={match.home_team_name}>{match.home_team_name}</span>
-              {match.home_score !== null && match.away_score !== null ? (
-                <span class="text-lg font-bold text-cyan-300 px-2.5 py-1 bg-cyan-700/50 rounded-md shadow-sm">
-                  {match.home_score} - {match.away_score}
-                </span>
-              ) : (
-                <span class="text-md font-bold text-slate-500 px-2">vs</span>
-              )}
-              <span class="font-semibold text-slate-200 truncate w-2/5 text-left pl-2" title={match.away_team_name}>{match.away_team_name}</span>
+  {
+    !errorMessage && sortBy === 'group' && orderedGroupNamesWithMatches.length > 0 && (
+      <div class="p-4 md:p-6 pt-0 space-y-8">
+        {orderedGroupNamesWithMatches.map((groupName) => (
+          <section>
+            <h3 class="text-xl font-semibold mb-4 text-cyan-400 border-b-2 border-cyan-800 pb-2">
+              {groupName}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {matchesByGroup[groupName] &&
+                matchesByGroup[groupName].map((match) => (
+                  <article class="p-4 bg-slate-700 rounded-lg shadow-md border border-slate-600 hover:shadow-slate-900/30 hover:border-slate-500 transition-all duration-200">
+                    <div class="flex items-center justify-between mb-2 text-sm">
+                      <span
+                        class="font-semibold text-slate-200 truncate w-2/5 text-right pr-2"
+                        title={match.home_team_name}
+                      >
+                        {match.home_team_name}
+                      </span>
+                      {match.home_score !== null && match.away_score !== null ? (
+                        <span class="text-lg font-bold text-cyan-300 px-2.5 py-1 bg-cyan-700/50 rounded-md shadow-sm">
+                          {match.home_score} - {match.away_score}
+                        </span>
+                      ) : (
+                        <span class="text-md font-bold text-slate-500 px-2">vs</span>
+                      )}
+                      <span
+                        class="font-semibold text-slate-200 truncate w-2/5 text-left pl-2"
+                        title={match.away_team_name}
+                      >
+                        {match.away_team_name}
+                      </span>
+                    </div>
+                    <p class="text-xs text-center text-slate-400">
+                      {match.match_date_formatted} • {match.match_time_formatted} hs
+                    </p>
+                  </article>
+                ))}
             </div>
-            <p class="text-xs text-center text-slate-400">
-              {match.match_date_formatted} • {match.match_time_formatted} hs
-            </p>
-            <p class="text-xs text-center text-cyan-500 mt-1">{match.group_name}</p>
-          </article>
+          </section>
         ))}
       </div>
-    </div>
-  )}
+    )
+  }
 
-  {!errorMessage && (
-    (sortBy === 'group' && orderedGroupNamesWithMatches.length === 0 && (!rawMatchesData || rawMatchesData.length === 0)) ||
-    (sortBy === 'time' && allMatchesChronological.length === 0 && (!rawMatchesData || rawMatchesData.length === 0))
-  ) && (
-    <p class="p-6 text-center text-slate-500">No hay partidos de grupos programados o disponibles para el año {year}.</p>
-  )}
+  {
+    !errorMessage && sortBy === 'time' && allMatchesChronological.length > 0 && (
+      <div class="p-4 md:p-6 pt-0 space-y-4">
+        <h3 class="text-xl font-semibold mb-4 text-cyan-400 border-b-2 border-cyan-800 pb-2">
+          Todos los Partidos por Fecha
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {allMatchesChronological.map((match) => (
+            <article class="p-4 bg-slate-700 rounded-lg shadow-md border border-slate-600 hover:shadow-slate-900/30 hover:border-slate-500 transition-all duration-200">
+              <div class="flex items-center justify-between mb-1 text-sm">
+                <span
+                  class="font-semibold text-slate-200 truncate w-2/5 text-right pr-2"
+                  title={match.home_team_name}
+                >
+                  {match.home_team_name}
+                </span>
+                {match.home_score !== null && match.away_score !== null ? (
+                  <span class="text-lg font-bold text-cyan-300 px-2.5 py-1 bg-cyan-700/50 rounded-md shadow-sm">
+                    {match.home_score} - {match.away_score}
+                  </span>
+                ) : (
+                  <span class="text-md font-bold text-slate-500 px-2">vs</span>
+                )}
+                <span
+                  class="font-semibold text-slate-200 truncate w-2/5 text-left pl-2"
+                  title={match.away_team_name}
+                >
+                  {match.away_team_name}
+                </span>
+              </div>
+              <p class="text-xs text-center text-slate-400">
+                {match.match_date_formatted} • {match.match_time_formatted} hs
+              </p>
+              <p class="text-xs text-center text-cyan-500 mt-1">{match.group_name}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  {
+    !errorMessage &&
+      ((sortBy === 'group' &&
+        orderedGroupNamesWithMatches.length === 0 &&
+        (!rawMatchesData || rawMatchesData.length === 0)) ||
+        (sortBy === 'time' &&
+          allMatchesChronological.length === 0 &&
+          (!rawMatchesData || rawMatchesData.length === 0))) && (
+        <p class="p-6 text-center text-slate-500">
+          No hay partidos de grupos programados o disponibles para el año {year}.
+        </p>
+      )
+  }
 </div>

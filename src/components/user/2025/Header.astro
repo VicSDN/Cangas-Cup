@@ -39,7 +39,11 @@ const pages = [
                 id={`nav-link-${key}`}
               >
                 <span class="z-10">{name}</span>
-                <YearSelector years={years} selectedYear={selectedYear} id="year-selector-desktop" />
+                <YearSelector
+                  years={years}
+                  selectedYear={selectedYear}
+                  id="year-selector-desktop"
+                />
               </div>
             ) : (
               <a
@@ -51,9 +55,7 @@ const pages = [
                 ]}
                 id={`nav-link-${key}`}
               >
-                {disabled ? 
-                  <div class="background absolute -z-10 h-full w-full" />
-                : null}
+                {disabled ? <div class="background absolute -z-10 h-full w-full" /> : null}
                 <span class="z-10">{name}</span>
               </a>
             )}
@@ -87,39 +89,37 @@ const pages = [
           loading="lazy"
         />
       </a>
-{
-  pages.map(({ disabled, name, href, dropdown }, key) => (
-    <Fragment key={key}>
-      {dropdown ? (
-        <div
-          class:list={[
-            'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
-          ]}
-          id={`nav-link-${key}`}
-        >
-          <span class="z-10">{name}</span>
-          <YearSelector years={years} selectedYear={selectedYear} id="year-selector-mobile" />
-        </div>
-      ) : (
-        <a
-          href={href}
-          class:list={[
-            'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
-            { 'pointer-events-none': disabled },
-            { 'text-white': !disabled },
-          ]}
-          id={`nav-link-${key}`}
-        >
-          <span class="z-10">{name}</span> 
-          {!disabled && (
-            <div class="background absolute -z-10 h-full w-full" />
-          )}
-        </a>
-      )}
-      {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
-    </Fragment>
-  ))
-}
+      {
+        pages.map(({ disabled, name, href, dropdown }, key) => (
+          <Fragment key={key}>
+            {dropdown ? (
+              <div
+                class:list={[
+                  'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                <YearSelector years={years} selectedYear={selectedYear} id="year-selector-mobile" />
+              </div>
+            ) : (
+              <a
+                href={href}
+                class:list={[
+                  'nav-item relative flex h-full select-none flex-col items-center justify-center gap-1 text-center text-xl uppercase px-4',
+                  { 'pointer-events-none': disabled },
+                  { 'text-white': !disabled },
+                ]}
+                id={`nav-link-${key}`}
+              >
+                <span class="z-10">{name}</span>
+                {!disabled && <div class="background absolute -z-10 h-full w-full" />}
+              </a>
+            )}
+            {key === 1 && <div class:list={'hidden w-64 lg:block'} />}
+          </Fragment>
+        ))
+      }
 
       <nav class="my-4 flex flex-col gap-10">
         <FooterContent />
@@ -133,7 +133,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/user/${selectedYear}`} class="focus-visible:!ring-0">
           <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
@@ -142,7 +143,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
         style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
     </div>
   </div>
 </header>

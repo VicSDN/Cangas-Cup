@@ -13,109 +13,111 @@ let errorMessage: string | null = null;
 let totalTeamsInGroup = 0;
 
 if (groupName) {
-    try {
-      // Primero obtener el ID del grupo
-      const { data: groupData, error: groupError } = await supabase
-        .from('tournament_group')
-        .select('id')
-        .eq('name', groupName)
-        .eq('year', year)
-        .single();
+  try {
+    // Primero obtener el ID del grupo
+    const { data: groupData, error: groupError } = await supabase
+      .from('tournament_group')
+      .select('id')
+      .eq('name', groupName)
+      .eq('year', year)
+      .single();
 
-      if (groupError || !groupData) {
-        throw new Error(`No se encontró el grupo ${groupName} para el año ${year}`);
-      }
-
-      // Obtener todos los equipos del grupo
-      const { data: allTeamsData, error: teamsError } = await supabase
-        .from('tournament_team')
-        .select('name, is_local')
-        .eq('year', year)
-        .eq('group_id', groupData.id)
-        .order('name');
-
-      if (teamsError) {
-        throw teamsError;
-      }
-      if (!allTeamsData || allTeamsData.length === 0) {
-        errorMessage = `No se encontraron equipos en el grupo ${groupName} para el año ${year}.`;
-      } else {
-        const { data: rankingData, error: rankingError } = await supabase
-          .from('view_group_ranking_ordered')
-          .select('team_name, is_local, points, games_played, overall_goals_for, goals_against, overall_goal_difference, fair_play_points, position_in_group')
-          .eq('year', year)
-          .eq('group_name', groupName)
-          .order('position_in_group');
-
-        const rankingMap = new Map();
-        if (rankingData && !rankingError) {
-          rankingData.forEach((team: any) => {
-            rankingMap.set(team.team_name, team);
-          });
-        }
-
-        groupRanking = allTeamsData.map((team: any, index: number) => {
-          const existingStats = rankingMap.get(team.name);
-          return {
-            team_name: team.name,
-            is_local: team.is_local || false,
-            points: existingStats?.points || 0,
-            games_played: existingStats?.games_played || 0,
-            overall_goals_for: existingStats?.overall_goals_for || 0,
-            goals_against: existingStats?.goals_against || 0,
-            overall_goal_difference: existingStats?.overall_goal_difference || 0,
-            fair_play_points: existingStats?.fair_play_points || 0,
-            position_in_group: existingStats?.position_in_group || (index + 1)
-          };
-        });
-
-        groupRanking.sort((a, b) => {
-          if (a.games_played > 0 && b.games_played === 0) return -1;
-          if (a.games_played === 0 && b.games_played > 0) return 1;
-          if (a.games_played > 0 && b.games_played > 0) {
-            return a.position_in_group - b.position_in_group;
-          }
-          return a.team_name.localeCompare(b.team_name);
-        });
-
-        groupRanking.forEach((team, index) => {
-          team.position_in_group = index + 1;
-        });
-
-        totalTeamsInGroup = groupRanking.length;
-      }
-    } catch (e: any) {
-        errorMessage = e.message || `No se pudo cargar la clasificación del ${groupName}.`;
+    if (groupError || !groupData) {
+      throw new Error(`No se encontró el grupo ${groupName} para el año ${year}`);
     }
+
+    // Obtener todos los equipos del grupo
+    const { data: allTeamsData, error: teamsError } = await supabase
+      .from('tournament_team')
+      .select('name, is_local')
+      .eq('year', year)
+      .eq('group_id', groupData.id)
+      .order('name');
+
+    if (teamsError) {
+      throw teamsError;
+    }
+    if (!allTeamsData || allTeamsData.length === 0) {
+      errorMessage = `No se encontraron equipos en el grupo ${groupName} para el año ${year}.`;
+    } else {
+      const { data: rankingData, error: rankingError } = await supabase
+        .from('view_group_ranking_ordered')
+        .select(
+          'team_name, is_local, points, games_played, overall_goals_for, goals_against, overall_goal_difference, fair_play_points, position_in_group'
+        )
+        .eq('year', year)
+        .eq('group_name', groupName)
+        .order('position_in_group');
+
+      const rankingMap = new Map();
+      if (rankingData && !rankingError) {
+        rankingData.forEach((team: any) => {
+          rankingMap.set(team.team_name, team);
+        });
+      }
+
+      groupRanking = allTeamsData.map((team: any, index: number) => {
+        const existingStats = rankingMap.get(team.name);
+        return {
+          team_name: team.name,
+          is_local: team.is_local || false,
+          points: existingStats?.points || 0,
+          games_played: existingStats?.games_played || 0,
+          overall_goals_for: existingStats?.overall_goals_for || 0,
+          goals_against: existingStats?.goals_against || 0,
+          overall_goal_difference: existingStats?.overall_goal_difference || 0,
+          fair_play_points: existingStats?.fair_play_points || 0,
+          position_in_group: existingStats?.position_in_group || index + 1,
+        };
+      });
+
+      groupRanking.sort((a, b) => {
+        if (a.games_played > 0 && b.games_played === 0) return -1;
+        if (a.games_played === 0 && b.games_played > 0) return 1;
+        if (a.games_played > 0 && b.games_played > 0) {
+          return a.position_in_group - b.position_in_group;
+        }
+        return a.team_name.localeCompare(b.team_name);
+      });
+
+      groupRanking.forEach((team, index) => {
+        team.position_in_group = index + 1;
+      });
+
+      totalTeamsInGroup = groupRanking.length;
+    }
+  } catch (e: any) {
+    errorMessage = e.message || `No se pudo cargar la clasificación del ${groupName}.`;
+  }
 } else {
-    errorMessage = "Nombre de grupo no proporcionado.";
+  errorMessage = 'Nombre de grupo no proporcionado.';
 }
 
 function getRowStyling(position: number, isLocal: boolean, totalTeams: number) {
-  let rowClasses = "transition-colors duration-150";
-  let positionCellClasses = "px-4 py-3 text-center text-sm";
-  let teamNameCellClasses = "px-4 py-3 text-sm";
-  let badgeSpanClasses = "ml-1.5 text-xs font-semibold py-0.5 px-1.5 rounded-full";
+  let rowClasses = 'transition-colors duration-150';
+  let positionCellClasses = 'px-4 py-3 text-center text-sm';
+  let teamNameCellClasses = 'px-4 py-3 text-sm';
+  let badgeSpanClasses = 'ml-1.5 text-xs font-semibold py-0.5 px-1.5 rounded-full';
 
   const isQualified = position === 1 || position === 2;
-  const isNonAdvancingStyleTarget = position > 2 && totalTeams > 2; 
+  const isNonAdvancingStyleTarget = position > 2 && totalTeams > 2;
 
-  rowClasses += isLocal ? " hover:bg-sky-800/30" : " hover:bg-slate-700/50";
+  rowClasses += isLocal ? ' hover:bg-sky-800/30' : ' hover:bg-slate-700/50';
 
   if (isQualified) {
-    rowClasses += " border-l-4 border-amber-400";
-    positionCellClasses += " text-amber-300 font-medium";
-    teamNameCellClasses += " text-amber-300 font-medium";
-    badgeSpanClasses += " bg-sky-600 text-sky-100";
+    rowClasses += ' border-l-4 border-amber-400';
+    positionCellClasses += ' text-amber-300 font-medium';
+    teamNameCellClasses += ' text-amber-300 font-medium';
+    badgeSpanClasses += ' bg-sky-600 text-sky-100';
   } else if (isNonAdvancingStyleTarget) {
-    rowClasses += " border-l-4 border-red-500";
-    positionCellClasses += " text-red-400";
-    teamNameCellClasses += " text-red-400";
-    badgeSpanClasses += " bg-sky-600 text-sky-100";
+    rowClasses += ' border-l-4 border-red-500';
+    positionCellClasses += ' text-red-400';
+    teamNameCellClasses += ' text-red-400';
+    badgeSpanClasses += ' bg-sky-600 text-sky-100';
   } else {
-    positionCellClasses += " text-slate-300";
-    teamNameCellClasses += isLocal ? " text-sky-400 font-medium" : " text-slate-100";
-    badgeSpanClasses += isLocal ? " bg-sky-600 text-sky-100" : ""; // Only show badge if local
+    positionCellClasses += ' text-slate-300';
+    teamNameCellClasses += isLocal ? ' text-sky-400 font-medium' : ' text-slate-100';
+    badgeSpanClasses += isLocal ? ' bg-sky-600 text-sky-100' : ''; // Only show badge if local
   }
 
   return { rowClasses, positionCellClasses, teamNameCellClasses, badgeSpanClasses };
@@ -124,76 +126,116 @@ function getRowStyling(position: number, isLocal: boolean, totalTeams: number) {
 
 <div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden text-slate-100">
   <div class="p-5 md:p-6 bg-gradient-to-r from-slate-700 to-slate-600">
-    <h2 class="text-xl md:text-2xl font-bold text-white text-center">Clasificación - {groupName || 'No especificado'} ({year})</h2>
+    <h2 class="text-xl md:text-2xl font-bold text-white text-center">
+      Clasificación - {groupName || 'No especificado'} ({year})
+    </h2>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
 
-  {!errorMessage && groupRanking.length > 0 && (
-    <div class="overflow-x-auto">
-      <table class="min-w-full">
-        <thead class="bg-slate-700">
-          <tr>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">#</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Equipo</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Pts</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">PJ</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">GF</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">GC</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">DG</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">FP</th>
-          </tr>
-        </thead>
-        <tbody class="bg-slate-800 divide-y divide-slate-700">
-          {groupRanking.map(row => {
-            const styling = getRowStyling(row.position_in_group, row.is_local, totalTeamsInGroup);
-            return (
-            <tr class={styling.rowClasses}>
-              <td class={styling.positionCellClasses}>{row.position_in_group}</td>
-              <td class={styling.teamNameCellClasses}>
-                {row.team_name}
-                {row.is_local && <span class={styling.badgeSpanClasses}>L</span>}
-              </td>
-              <td class="px-4 py-3 text-center text-sm font-bold text-slate-100">{row.points}</td>
-              <td class="px-4 py-3 text-center text-sm text-slate-300">{row.games_played}</td>
-              <td class="px-4 py-3 text-center text-sm text-slate-300 hidden sm:table-cell">{row.overall_goals_for}</td>
-              <td class="px-4 py-3 text-center text-sm text-slate-300 hidden sm:table-cell">{row.goals_against}</td>
-              <td class="px-4 py-3 text-center text-sm text-slate-300">{row.overall_goal_difference}</td>
-              <td class="px-4 py-3 text-center text-sm text-slate-300 hidden md:table-cell">{row.fair_play_points}</td>
+  {
+    !errorMessage && groupRanking.length > 0 && (
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-slate-700">
+            <tr>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                #
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                Equipo
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                Pts
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                PJ
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">
+                GF
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden sm:table-cell">
+                GC
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                DG
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider hidden md:table-cell">
+                FP
+              </th>
             </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  )}
-  
-  {!errorMessage && groupRanking.length > 0 && (
-    <div class="mt-4 pt-4 px-4 md:px-6 text-xs text-slate-400 space-y-1.5 border-t border-slate-700">
-      <p class="font-semibold text-slate-300 mb-1.5">Leyenda:</p>
-      <div class="flex items-center">
-        <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-amber-400 flex-shrink-0"></span>
-        Clasifica a la siguiente ronda.
+          </thead>
+          <tbody class="bg-slate-800 divide-y divide-slate-700">
+            {groupRanking.map((row) => {
+              const styling = getRowStyling(row.position_in_group, row.is_local, totalTeamsInGroup);
+              return (
+                <tr class={styling.rowClasses}>
+                  <td class={styling.positionCellClasses}>{row.position_in_group}</td>
+                  <td class={styling.teamNameCellClasses}>
+                    {row.team_name}
+                    {row.is_local && <span class={styling.badgeSpanClasses}>L</span>}
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm font-bold text-slate-100">
+                    {row.points}
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm text-slate-300">{row.games_played}</td>
+                  <td class="px-4 py-3 text-center text-sm text-slate-300 hidden sm:table-cell">
+                    {row.overall_goals_for}
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm text-slate-300 hidden sm:table-cell">
+                    {row.goals_against}
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm text-slate-300">
+                    {row.overall_goal_difference}
+                  </td>
+                  <td class="px-4 py-3 text-center text-sm text-slate-300 hidden md:table-cell">
+                    {row.fair_play_points}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      { totalTeamsInGroup > 2 && ( 
-        <div class="flex items-center">
-          <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-red-500 flex-shrink-0"></span>
-          No clasifica en esta fase de grupos.
-        </div>
-      )}
-      <div class="flex items-center">
-        <span class="inline-block py-0.5 px-1.5 mr-1.5 text-xs font-semibold bg-sky-600 text-sky-100 rounded-full flex-shrink-0">L</span>
-        Equipo Local.
-      </div>
-    </div>
-  )}
+    )
+  }
 
-  {!errorMessage && groupRanking.length === 0 && (
-    <p class="p-6 text-center text-slate-400">No hay datos de clasificación disponibles para {groupName} en el año {year}.</p>
-  )}
+  {
+    !errorMessage && groupRanking.length > 0 && (
+      <div class="mt-4 pt-4 px-4 md:px-6 text-xs text-slate-400 space-y-1.5 border-t border-slate-700">
+        <p class="font-semibold text-slate-300 mb-1.5">Leyenda:</p>
+        <div class="flex items-center">
+          <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-amber-400 flex-shrink-0" />
+          Clasifica a la siguiente ronda.
+        </div>
+        {totalTeamsInGroup > 2 && (
+          <div class="flex items-center">
+            <span class="inline-block w-2 h-4 mr-2.5 border-l-4 border-red-500 flex-shrink-0" />
+            No clasifica en esta fase de grupos.
+          </div>
+        )}
+        <div class="flex items-center">
+          <span class="inline-block py-0.5 px-1.5 mr-1.5 text-xs font-semibold bg-sky-600 text-sky-100 rounded-full flex-shrink-0">
+            L
+          </span>
+          Equipo Local.
+        </div>
+      </div>
+    )
+  }
+
+  {
+    !errorMessage && groupRanking.length === 0 && (
+      <p class="p-6 text-center text-slate-400">
+        No hay datos de clasificación disponibles para {groupName} en el año {year}.
+      </p>
+    )
+  }
 </div>

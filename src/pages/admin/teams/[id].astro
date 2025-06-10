@@ -31,24 +31,25 @@ interface RankingEntry {
   h2h_goals_for?: number | string;
   position_in_group: number;
   is_local?: boolean;
-  overall_goal_difference?: number; 
-  overall_goals_for?: number;     
-  sort_key?: number;              
-  team_name?: string; 
+  overall_goal_difference?: number;
+  overall_goals_for?: number;
+  sort_key?: number;
+  team_name?: string;
 }
 
-
 if (!teamIdParam) {
-  fetchError = "No se proporcionó ID de equipo en la URL.";
+  fetchError = 'No se proporcionó ID de equipo en la URL.';
 } else if (!yearParam) {
   fetchError = "No se proporcionó el parámetro 'year' en la URL.";
 } else {
   const { data: mainTeam, error: mainTeamError } = await supabase
     .from('tournament_team')
-    .select(`
+    .select(
+      `
       *,
       tournament_group ( id, name )
-    `)
+    `
+    )
     .eq('id', teamIdParam)
     .eq('year', yearParam)
     .single();
@@ -93,24 +94,32 @@ if (!teamIdParam) {
 
         if (viewRankingError) {
           console.error('Error fetching group standings from view:', viewRankingError.message);
-          groupStandingsData = allTeamsInGroup.map(team => ({
+          groupStandingsData = allTeamsInGroup.map((team) => ({
             team_id: team.id,
             id: team.id,
             name: team.name,
             year: team.year,
-            points: 0, games_played: 0, goals_for: 0, goals_against: 0, goal_difference: 0,
-            fair_play_points: 0, fouls_committed: 0, position_in_group: 99,
+            points: 0,
+            games_played: 0,
+            goals_for: 0,
+            goals_against: 0,
+            goal_difference: 0,
+            fair_play_points: 0,
+            fouls_committed: 0,
+            position_in_group: 99,
           }));
         } else {
-          const rankingMap = new Map(viewRankingEntries?.map(entry => [entry.team_id, entry as RankingEntry]));
+          const rankingMap = new Map(
+            viewRankingEntries?.map((entry) => [entry.team_id, entry as RankingEntry])
+          );
 
-          groupStandingsData = allTeamsInGroup.map(team => {
+          groupStandingsData = allTeamsInGroup.map((team) => {
             const rankingEntry = rankingMap.get(team.id);
             if (rankingEntry) {
               return {
                 ...rankingEntry,
-                id: rankingEntry.team_id, 
-                name: rankingEntry.team_name || team.name, 
+                id: rankingEntry.team_id,
+                name: rankingEntry.team_name || team.name,
               };
             } else {
               return {
@@ -135,23 +144,39 @@ if (!teamIdParam) {
 
           groupStandingsData.sort((a, b) => {
             if (a.points !== b.points) return (b.points || 0) - (a.points || 0);
-            const a_h2h_points = typeof a.h2h_points === 'string' ? parseInt(a.h2h_points, 10) : a.h2h_points || -1;
-            const b_h2h_points = typeof b.h2h_points === 'string' ? parseInt(b.h2h_points, 10) : b.h2h_points || -1;
+            const a_h2h_points =
+              typeof a.h2h_points === 'string' ? parseInt(a.h2h_points, 10) : a.h2h_points || -1;
+            const b_h2h_points =
+              typeof b.h2h_points === 'string' ? parseInt(b.h2h_points, 10) : b.h2h_points || -1;
             if (a_h2h_points !== b_h2h_points) return b_h2h_points - a_h2h_points;
-            const a_h2h_gd = typeof a.h2h_goal_difference === 'string' ? parseInt(a.h2h_goal_difference, 10) : a.h2h_goal_difference || -999;
-            const b_h2h_gd = typeof b.h2h_goal_difference === 'string' ? parseInt(b.h2h_goal_difference, 10) : b.h2h_goal_difference || -999;
+            const a_h2h_gd =
+              typeof a.h2h_goal_difference === 'string'
+                ? parseInt(a.h2h_goal_difference, 10)
+                : a.h2h_goal_difference || -999;
+            const b_h2h_gd =
+              typeof b.h2h_goal_difference === 'string'
+                ? parseInt(b.h2h_goal_difference, 10)
+                : b.h2h_goal_difference || -999;
             if (a_h2h_gd !== b_h2h_gd) return b_h2h_gd - a_h2h_gd;
-            const a_h2h_gf = typeof a.h2h_goals_for === 'string' ? parseInt(a.h2h_goals_for, 10) : a.h2h_goals_for || -1;
-            const b_h2h_gf = typeof b.h2h_goals_for === 'string' ? parseInt(b.h2h_goals_for, 10) : b.h2h_goals_for || -1;
+            const a_h2h_gf =
+              typeof a.h2h_goals_for === 'string'
+                ? parseInt(a.h2h_goals_for, 10)
+                : a.h2h_goals_for || -1;
+            const b_h2h_gf =
+              typeof b.h2h_goals_for === 'string'
+                ? parseInt(b.h2h_goals_for, 10)
+                : b.h2h_goals_for || -1;
             if (a_h2h_gf !== b_h2h_gf) return b_h2h_gf - a_h2h_gf;
-            const a_overall_gd = a.overall_goal_difference ?? (a.goals_for - a.goals_against);
-            const b_overall_gd = b.overall_goal_difference ?? (b.goals_for - b.goals_against);
+            const a_overall_gd = a.overall_goal_difference ?? a.goals_for - a.goals_against;
+            const b_overall_gd = b.overall_goal_difference ?? b.goals_for - b.goals_against;
             if (a_overall_gd !== b_overall_gd) return (b_overall_gd || 0) - (a_overall_gd || 0);
             const a_overall_gf = a.overall_goals_for ?? a.goals_for;
             const b_overall_gf = b.overall_goals_for ?? b.goals_for;
             if (a_overall_gf !== b_overall_gf) return (b_overall_gf || 0) - (a_overall_gf || 0);
-            if ((a.fair_play_points || 0) !== (b.fair_play_points || 0)) return (a.fair_play_points || 0) - (b.fair_play_points || 0);
-            if ((a.fouls_committed || 0) !== (b.fouls_committed || 0)) return (a.fouls_committed || 0) - (b.fouls_committed || 0);
+            if ((a.fair_play_points || 0) !== (b.fair_play_points || 0))
+              return (a.fair_play_points || 0) - (b.fair_play_points || 0);
+            if ((a.fouls_committed || 0) !== (b.fouls_committed || 0))
+              return (a.fouls_committed || 0) - (b.fouls_committed || 0);
             return (a.sort_key || Math.random()) - (b.sort_key || Math.random());
           });
 
@@ -168,11 +193,13 @@ if (!teamIdParam) {
 
     const { data: teamMatches, error: matchesError } = await supabase
       .from('tournament_match')
-      .select(`
+      .select(
+        `
         *,
         home_team_data:tournament_team!tournament_match_home_team_fkey(id, name),
         away_team_data:tournament_team!tournament_match_away_team_fkey(id, name)
-      `)
+      `
+      )
       .or(`home_team.eq.${teamData.id},away_team.eq.${teamData.id}`)
       .eq('year', teamData.year)
       .order('match_date', { ascending: true });
@@ -188,12 +215,26 @@ if (!teamIdParam) {
 function formatDateTime(dateString: string | null) {
   if (!dateString) return { formattedDate: 'Fecha N/A', formattedTime: 'Hora N/A' };
   const date = new Date(dateString);
-  if (isNaN(date.getTime())) return { formattedDate: 'Fecha Inválida', formattedTime: 'Hora Inválida' };
+  if (isNaN(date.getTime()))
+    return { formattedDate: 'Fecha Inválida', formattedTime: 'Hora Inválida' };
   const day = date.getDate();
   const monthIndex = date.getMonth();
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const monthNames = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
+  ];
   const monthName = monthNames[monthIndex];
   const formattedDate = `${day} ${monthName}`;
   const formattedTime = `${hours}:${minutes}`;
@@ -201,134 +242,166 @@ function formatDateTime(dateString: string | null) {
 }
 ---
 
-<LayoutAdmin title={teamData ? `Equipo: ${teamData.name}` : 'Detalle del Equipo'} description="Detalles y gestión de equipos">
+<LayoutAdmin
+  title={teamData ? `Equipo: ${teamData.name}` : 'Detalle del Equipo'}
+  description="Detalles y gestión de equipos"
+>
   <section class="px-4 md:px-8 py-2">
     <ButtonBack />
   </section>
 
-  {fetchError && (
-    <div class="container mx-auto mt-10 p-4">
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700" role="alert">
-        <p class="font-bold">Error</p>
-        <p>{fetchError}</p>
+  {
+    fetchError && (
+      <div class="container mx-auto mt-10 p-4">
+        <div
+          class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700"
+          role="alert"
+        >
+          <p class="font-bold">Error</p>
+          <p>{fetchError}</p>
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
-  {!fetchError && teamData && (
-    <div class="container mx-auto mt-2 md:mt-6 pt-2 p-4 grid grid-cols-1 md:grid-cols-3 gap-6 md:px-8">
-      <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-        <div class="text-center">
-          <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">{teamData.name}</h1>
-          <div class="space-y-3 mb-8 text-left">
-            <p class="text-gray-700 dark:text-gray-300 text-lg">
-              <strong class="text-gray-800 dark:text-gray-100">Localización:</strong> {teamData.location || 'N/A'}
-            </p>
-            <p class="text-gray-700 dark:text-gray-300 text-lg">
-              <strong class="text-gray-800 dark:text-gray-100">Grupo:</strong> {teamData.tournament_group?.name || 'N/A'}
-            </p>
-            <p class="text-gray-700 dark:text-gray-300 text-lg">
-              <strong class="text-gray-800 dark:text-gray-100">Puntos (Equipo):</strong> {teamData.points ?? 'N/A'}
-            </p>
-          </div>
-          <div class="mt-8">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Partidos del Equipo</h2>
-            <div class="flex flex-col items-center space-y-4">
-              {matchesData && matchesData.length > 0 ? (
-                matchesData.map((match) => {
-                  const { formattedDate, formattedTime } = formatDateTime(match.match_date);
-                  const homeTeamName = match.home_team_data?.name || 'Equipo Desc.';
-                  const awayTeamName = match.away_team_data?.name || 'Equipo Desc.';
-                  return (
-                    <div class="w-full max-w-md bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md p-4 my-2 border dark:border-gray-600">
-                      <div class="flex flex-col items-center text-center">
-                        <div class="text-base font-semibold text-gray-700 dark:text-gray-200">
-                          <span class="font-bold">{homeTeamName}</span> vs <span class="font-bold">{awayTeamName}</span>
-                        </div>
-                        <div class="mt-2 text-gray-600 dark:text-gray-300">
-                          {match.home_score != null && match.away_score != null ? (
-                            <span class="text-xl font-bold text-gray-800 dark:text-gray-100">
-                              {match.home_score} - {match.away_score}
-                            </span>
-                          ) : (
-                            <>
-                              <b class="text-lg text-gray-700 dark:text-gray-200">{formattedTime}</b>
-                              <br />
-                              <span class="text-sm text-gray-500 dark:text-gray-400">{formattedDate}</span>
-                            </>
-                          )}
-                        </div>
-                        <div class="mt-3">
-                           <a
-                            href={`/admin/matches?year=${match.year}&highlightMatchId=${match.id}`}
-                            class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                           >
-                             Ver / Gestionar en Lista de Partidos
-                           </a>
+  {
+    !fetchError && teamData && (
+      <div class="container mx-auto mt-2 md:mt-6 pt-2 p-4 grid grid-cols-1 md:grid-cols-3 gap-6 md:px-8">
+        <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <div class="text-center">
+            <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">{teamData.name}</h1>
+            <div class="space-y-3 mb-8 text-left">
+              <p class="text-gray-700 dark:text-gray-300 text-lg">
+                <strong class="text-gray-800 dark:text-gray-100">Localización:</strong>{' '}
+                {teamData.location || 'N/A'}
+              </p>
+              <p class="text-gray-700 dark:text-gray-300 text-lg">
+                <strong class="text-gray-800 dark:text-gray-100">Grupo:</strong>{' '}
+                {teamData.tournament_group?.name || 'N/A'}
+              </p>
+              <p class="text-gray-700 dark:text-gray-300 text-lg">
+                <strong class="text-gray-800 dark:text-gray-100">Puntos (Equipo):</strong>{' '}
+                {teamData.points ?? 'N/A'}
+              </p>
+            </div>
+            <div class="mt-8">
+              <h2 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                Partidos del Equipo
+              </h2>
+              <div class="flex flex-col items-center space-y-4">
+                {matchesData && matchesData.length > 0 ? (
+                  matchesData.map((match) => {
+                    const { formattedDate, formattedTime } = formatDateTime(match.match_date);
+                    const homeTeamName = match.home_team_data?.name || 'Equipo Desc.';
+                    const awayTeamName = match.away_team_data?.name || 'Equipo Desc.';
+                    return (
+                      <div class="w-full max-w-md bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md p-4 my-2 border dark:border-gray-600">
+                        <div class="flex flex-col items-center text-center">
+                          <div class="text-base font-semibold text-gray-700 dark:text-gray-200">
+                            <span class="font-bold">{homeTeamName}</span> vs{' '}
+                            <span class="font-bold">{awayTeamName}</span>
+                          </div>
+                          <div class="mt-2 text-gray-600 dark:text-gray-300">
+                            {match.home_score != null && match.away_score != null ? (
+                              <span class="text-xl font-bold text-gray-800 dark:text-gray-100">
+                                {match.home_score} - {match.away_score}
+                              </span>
+                            ) : (
+                              <>
+                                <b class="text-lg text-gray-700 dark:text-gray-200">
+                                  {formattedTime}
+                                </b>
+                                <br />
+                                <span class="text-sm text-gray-500 dark:text-gray-400">
+                                  {formattedDate}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div class="mt-3">
+                            <a
+                              href={`/admin/matches?year=${match.year}&highlightMatchId=${match.id}`}
+                              class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                              Ver / Gestionar en Lista de Partidos
+                            </a>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p class="text-gray-500 dark:text-gray-400">No hay partidos para este equipo.</p>
-              )}
+                    );
+                  })
+                ) : (
+                  <p class="text-gray-500 dark:text-gray-400">No hay partidos para este equipo.</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
-          Clasificación Grupo {teamData.tournament_group?.name || ''}
-        </h2>
-        {groupStandingsData && groupStandingsData.length > 0 ? (
-          <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-            {groupStandingsData.map((rankedTeam) => (
-              <li class={`flex justify-between items-center py-3 ${rankedTeam.team_id === teamData.id ? 'bg-indigo-50 dark:bg-indigo-900/50 rounded px-2 -mx-2' : ''}`}>
-                <div class="flex items-center">
-                  <span class="text-lg font-semibold text-gray-700 dark:text-gray-200 w-8 text-center">{rankedTeam.position_in_group}º</span>
-                  <a
-                    href={`/admin/teams/${rankedTeam.team_id}?year=${rankedTeam.year}`}
-                    class="ml-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
-                  >
-                    {rankedTeam.name}
-                  </a>
-                </div>
-                <span class="text-gray-600 dark:text-gray-300">{rankedTeam.points ?? 0} pts</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-           <p class="text-gray-500 dark:text-gray-400 text-center">No hay datos de clasificación disponibles para este grupo.</p>
-        )}
-      </div>
+        <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
+            Clasificación Grupo {teamData.tournament_group?.name || ''}
+          </h2>
+          {groupStandingsData && groupStandingsData.length > 0 ? (
+            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+              {groupStandingsData.map((rankedTeam) => (
+                <li
+                  class={`flex justify-between items-center py-3 ${rankedTeam.team_id === teamData.id ? 'bg-indigo-50 dark:bg-indigo-900/50 rounded px-2 -mx-2' : ''}`}
+                >
+                  <div class="flex items-center">
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-200 w-8 text-center">
+                      {rankedTeam.position_in_group}º
+                    </span>
+                    <a
+                      href={`/admin/teams/${rankedTeam.team_id}?year=${rankedTeam.year}`}
+                      class="ml-3 text-gray-800 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium"
+                    >
+                      {rankedTeam.name}
+                    </a>
+                  </div>
+                  <span class="text-gray-600 dark:text-gray-300">{rankedTeam.points ?? 0} pts</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-gray-500 dark:text-gray-400 text-center">
+              No hay datos de clasificación disponibles para este grupo.
+            </p>
+          )}
+        </div>
 
-      <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
-          Jugadores de {teamData.name}
-        </h2>
-        {playersData && playersData.length > 0 ? (
-          <div class="space-y-3">
-            {playersData.map((player) => (
-              <a
-                href={`/admin/players/${player.id}?year=${player.year}`}
-                class="block w-full bg-gray-50 dark:bg-gray-700 rounded-md shadow p-3 transition transform hover:scale-105 hover:shadow-md border dark:border-gray-600"
-              >
-                <h3 class="text-md font-medium text-gray-800 dark:text-gray-100">{player.name} {player.second_name || ''}</h3>
-              </a>
-            ))}
-          </div>
-        ) : (
-          <p class="text-gray-500 dark:text-gray-400 text-center">No hay jugadores registrados para este equipo.</p>
-        )}
+        <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
+            Jugadores de {teamData.name}
+          </h2>
+          {playersData && playersData.length > 0 ? (
+            <div class="space-y-3">
+              {playersData.map((player) => (
+                <a
+                  href={`/admin/players/${player.id}?year=${player.year}`}
+                  class="block w-full bg-gray-50 dark:bg-gray-700 rounded-md shadow p-3 transition transform hover:scale-105 hover:shadow-md border dark:border-gray-600"
+                >
+                  <h3 class="text-md font-medium text-gray-800 dark:text-gray-100">
+                    {player.name} {player.second_name || ''}
+                  </h3>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="text-gray-500 dark:text-gray-400 text-center">
+              No hay jugadores registrados para este equipo.
+            </p>
+          )}
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
-  {!fetchError && !teamData && (
-     <div class="container mx-auto mt-10 p-4 text-center">
+  {
+    !fetchError && !teamData && (
+      <div class="container mx-auto mt-10 p-4 text-center">
         <p class="text-gray-500 dark:text-gray-400">Cargando datos del equipo...</p>
-     </div>
-  )}
+      </div>
+    )
+  }
 </LayoutAdmin>

@@ -12,29 +12,29 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return new Response(
         JSON.stringify({
           error: 'No autenticado',
-          details: 'Por favor, inicie sesión nuevamente'
+          details: 'Por favor, inicie sesión nuevamente',
         }),
         {
           status: 401,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
 
     const data = await request.json();
     console.log('Datos recibidos:', data);
-    
+
     const { name, group_id, location, year } = data;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
       return new Response(
         JSON.stringify({
           error: 'Datos inválidos',
-          details: 'El nombre del equipo es requerido'
+          details: 'El nombre del equipo es requerido',
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -43,11 +43,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return new Response(
         JSON.stringify({
           error: 'Datos inválidos',
-          details: 'El ID del grupo es requerido y debe ser un número'
+          details: 'El ID del grupo es requerido y debe ser un número',
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -56,24 +56,24 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return new Response(
         JSON.stringify({
           error: 'Datos inválidos',
-          details: 'La localización es requerida'
+          details: 'La localización es requerida',
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
-    
+
     if (!year || isNaN(Number(year)) || year < 2000 || year > 2100) {
       return new Response(
         JSON.stringify({
           error: 'Datos inválidos',
-          details: 'El año debe ser un número válido entre 2000 y 2100'
+          details: 'El año debe ser un número válido entre 2000 y 2100',
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -89,11 +89,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return new Response(
         JSON.stringify({
           error: 'Grupo no encontrado',
-          details: 'El grupo especificado no existe'
+          details: 'El grupo especificado no existe',
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -114,11 +114,11 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       return new Response(
         JSON.stringify({
           error: 'Equipo duplicado',
-          details: 'Ya existe un equipo con ese nombre en este año'
+          details: 'Ya existe un equipo con ese nombre en este año',
         }),
         {
           status: 409,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -130,8 +130,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
           name: name.trim(),
           group_id,
           location,
-          year
-        }
+          year,
+        },
       ])
       .select()
       .single();
@@ -146,24 +146,23 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       JSON.stringify({
         success: true,
         message: 'Equipo añadido correctamente',
-        team
+        team,
       }),
       {
         status: 201,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
-
   } catch (error) {
     console.error('Error completo al añadir equipo:', error);
     return new Response(
       JSON.stringify({
         error: 'Error al añadir el equipo',
-        details: error instanceof Error ? error.message : 'Error desconocido'
+        details: error instanceof Error ? error.message : 'Error desconocido',
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }

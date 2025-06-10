@@ -1,9 +1,9 @@
 ---
 import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import ButtonBack from '../../../sections/ButtonBack.astro';
-import { supabase } from '../../../lib/supabase'; 
+import { supabase } from '../../../lib/supabase';
 
-export const prerender = false; 
+export const prerender = false;
 
 const url = new URL(Astro.request.url);
 const currentYearParam = url.searchParams.get('year');
@@ -33,12 +33,14 @@ try {
     .order('name', { ascending: true });
 
   if (teamsError) throw teamsError;
-  teamsForClient = (teamsData || []).map(t => ({ 
-    id: t.id, 
-    name: t.name, 
-    group_id: t.group_id 
-  } as TeamForClientData));
-
+  teamsForClient = (teamsData || []).map(
+    (t) =>
+      ({
+        id: t.id,
+        name: t.name,
+        group_id: t.group_id,
+      }) as TeamForClientData
+  );
 
   const { data: groupsData, error: groupsError } = await supabase
     .from('tournament_group')
@@ -48,11 +50,13 @@ try {
 
   if (groupsError) throw groupsError;
   // Aseguramos que el mapeo cumpla con la interfaz
-  groupsForClient = (groupsData || []).map(g => ({ 
-    id: g.id, 
-    name: g.name 
-  } as GroupForClientData));
-
+  groupsForClient = (groupsData || []).map(
+    (g) =>
+      ({
+        id: g.id,
+        name: g.name,
+      }) as GroupForClientData
+  );
 } catch (error: any) {
   fetchError = `Error al cargar datos: ${error.message}`;
 }
@@ -67,22 +71,33 @@ const allTeamsJson = JSON.stringify(teamsForClient);
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-lg shadow-xl">
-      <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Programar Partido ({currentYear})</h1>
+      <h1 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+        Programar Partido ({currentYear})
+      </h1>
 
-      {fetchError && (
-        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700" role="alert">
-          <p class="font-bold">Error:</p>
-          <p>{fetchError}</p>
-        </div>
-      )}
+      {
+        fetchError && (
+          <div
+            class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md dark:bg-red-900 dark:text-red-200 dark:border-red-700"
+            role="alert"
+          >
+            <p class="font-bold">Error:</p>
+            <p>{fetchError}</p>
+          </div>
+        )
+      }
 
       <form id="match-form" class="space-y-6">
         <input type="hidden" name="year" value={currentYear} />
-        
+
         <div>
-          <label for="match_stage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Etapa del Partido</label>
-          <select 
-            id="match_stage" 
+          <label
+            for="match_stage"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >Etapa del Partido</label
+          >
+          <select
+            id="match_stage"
             name="match_stage"
             required
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -96,14 +111,16 @@ const allTeamsJson = JSON.stringify(teamsForClient);
         </div>
 
         <div id="group-selection-container">
-          <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Grupo </label>
+          <label for="group_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Grupo
+          </label>
           <select
             id="group_id"
             name="group_id"
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="">Selecciona un grupo</option>
-            {groupsForClient.map(group => <option value={group.id}>{group.name}</option>)}
+            {groupsForClient.map((group) => <option value={group.id}>{group.name}</option>)}
           </select>
         </div>
 
@@ -136,42 +153,48 @@ const allTeamsJson = JSON.stringify(teamsForClient);
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-                <label for="match_date_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Fecha del Partido
-                </label>
-                <input
-                    type="date"
-                    id="match_date_input"
-                    name="match_date_input"
-                    required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-            </div>
-            <div>
-                <label for="match_time_input" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Hora del Partido
-                </label>
-                <input
-                    type="time"
-                    id="match_time_input"
-                    name="match_time_input"
-                    required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-            </div>
-        </div>
-        
-        <div class="flex items-center">
-            <input 
-              id="is_local_final" 
-              name="is_local_final"
-              type="checkbox" 
-              class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
-            />
-            <label for="is_local_final" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-              ¿Es Final Local?
+          <div>
+            <label
+              for="match_date_input"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Fecha del Partido
             </label>
+            <input
+              type="date"
+              id="match_date_input"
+              name="match_date_input"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+          <div>
+            <label
+              for="match_time_input"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Hora del Partido
+            </label>
+            <input
+              type="time"
+              id="match_time_input"
+              name="match_time_input"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center">
+          <input
+            id="is_local_final"
+            name="is_local_final"
+            type="checkbox"
+            class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+          />
+          <label for="is_local_final" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+            ¿Es Final Local?
+          </label>
         </div>
 
         <div class="flex justify-end pt-2">
@@ -182,7 +205,7 @@ const allTeamsJson = JSON.stringify(teamsForClient);
             Programar Partido
           </button>
         </div>
-         <p id="form-feedback" class="text-sm mt-2"></p>
+        <p id="form-feedback" class="text-sm mt-2"></p>
       </form>
     </div>
   </main>
@@ -203,23 +226,29 @@ const allTeamsJson = JSON.stringify(teamsForClient);
     if (!selectElement) return;
     const currentValue = selectElement.value;
     selectElement.innerHTML = '<option value="">Selecciona un equipo</option>';
-    teamsToPopulate.forEach(team => {
+    teamsToPopulate.forEach((team) => {
       const option = document.createElement('option');
       option.value = team.id.toString();
       option.textContent = team.name;
       selectElement.appendChild(option);
     });
-    
-    const currentOptionExists = teamsToPopulate.some(t => t.id.toString() === currentValue);
+
+    const currentOptionExists = teamsToPopulate.some((t) => t.id.toString() === currentValue);
     if (currentValue && currentOptionExists) {
-        selectElement.value = currentValue;
+      selectElement.value = currentValue;
     } else {
-        selectElement.value = ""; 
+      selectElement.value = '';
     }
   }
 
   function handleStageOrGroupChange() {
-    if (!matchStageSelect || !groupSelectContainer || !groupSelect || !homeTeamSelect || !awayTeamSelect) {
+    if (
+      !matchStageSelect ||
+      !groupSelectContainer ||
+      !groupSelect ||
+      !homeTeamSelect ||
+      !awayTeamSelect
+    ) {
       return;
     }
 
@@ -230,22 +259,22 @@ const allTeamsJson = JSON.stringify(teamsForClient);
       groupSelectContainer.style.display = 'block';
       groupSelect.required = true;
       if (selectedGroupId) {
-        const teamsInSelectedGroup = allTeams.filter(team => team.group_id === selectedGroupId);
+        const teamsInSelectedGroup = allTeams.filter((team) => team.group_id === selectedGroupId);
         populateTeamOptions(homeTeamSelect, teamsInSelectedGroup);
         populateTeamOptions(awayTeamSelect, teamsInSelectedGroup);
       } else {
-        populateTeamOptions(homeTeamSelect, []); 
+        populateTeamOptions(homeTeamSelect, []);
         populateTeamOptions(awayTeamSelect, []);
       }
-    } else { 
+    } else {
       groupSelectContainer.style.display = 'none';
       groupSelect.required = false;
-      groupSelect.value = ''; 
+      groupSelect.value = '';
       populateTeamOptions(homeTeamSelect, allTeams);
       populateTeamOptions(awayTeamSelect, allTeams);
     }
   }
-  
+
   if (matchStageSelect) {
     matchStageSelect.addEventListener('change', handleStageOrGroupChange);
   }
@@ -254,8 +283,16 @@ const allTeamsJson = JSON.stringify(teamsForClient);
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    if(matchStageSelect && groupSelectContainer && groupSelect && homeTeamSelect && awayTeamSelect && form && feedbackElement) {
-        handleStageOrGroupChange(); 
+    if (
+      matchStageSelect &&
+      groupSelectContainer &&
+      groupSelect &&
+      homeTeamSelect &&
+      awayTeamSelect &&
+      form &&
+      feedbackElement
+    ) {
+      handleStageOrGroupChange();
     }
   });
 
@@ -263,7 +300,7 @@ const allTeamsJson = JSON.stringify(teamsForClient);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       feedbackElement.textContent = '';
-      feedbackElement.className = 'text-sm mt-2'; 
+      feedbackElement.className = 'text-sm mt-2';
 
       const submitButton = form.querySelector('button[type="submit"]');
       if (!submitButton) return;
@@ -286,8 +323,8 @@ const allTeamsJson = JSON.stringify(teamsForClient);
         submitButton.textContent = originalButtonText;
         return;
       }
-      
-      if (!homeTeamId || !awayTeamId ) {
+
+      if (!homeTeamId || !awayTeamId) {
         feedbackElement.textContent = 'Debes seleccionar ambos equipos.';
         feedbackElement.classList.add('text-red-600');
         submitButton.disabled = false;
@@ -308,7 +345,8 @@ const allTeamsJson = JSON.stringify(teamsForClient);
       const dataToSubmit = {
         home_team: parseInt(homeTeamId, 10),
         away_team: parseInt(awayTeamId, 10),
-        group_id: selectedStage === 'Fase de Grupos' && groupIdValue ? parseInt(groupIdValue, 10) : null,
+        group_id:
+          selectedStage === 'Fase de Grupos' && groupIdValue ? parseInt(groupIdValue, 10) : null,
         match_date: matchDateTimeISO,
         year: parseInt(formData.get('year'), 10),
         match_stage: selectedStage,
@@ -327,24 +365,23 @@ const allTeamsJson = JSON.stringify(teamsForClient);
         if (!response.ok) {
           throw new Error(result.error || result.details || 'Error al programar el partido.');
         }
-        
+
         feedbackElement.textContent = '¡Partido programado exitosamente!';
         feedbackElement.classList.add('text-green-600');
         form.reset();
-        if(groupSelect) groupSelect.value = '';
-        handleStageOrGroupChange(); 
+        if (groupSelect) groupSelect.value = '';
+        handleStageOrGroupChange();
         setTimeout(() => {
-            if (window.location.href.includes('/admin/matches/addMatch')) {
-                window.location.href = `/admin/matches?year=${dataToSubmit.year}`;
-            }
+          if (window.location.href.includes('/admin/matches/addMatch')) {
+            window.location.href = `/admin/matches?year=${dataToSubmit.year}`;
+          }
         }, 1500);
-
       } catch (error) {
         feedbackElement.textContent = error.message || 'Error desconocido.';
         feedbackElement.classList.add('text-red-600');
       } finally {
-         submitButton.disabled = false;
-         submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
       }
     });
   }

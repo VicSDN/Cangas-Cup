@@ -1,28 +1,31 @@
 ---
-import { SPONSORS } from '../../../consts/2025/sponsors'
-import SectionTitle from './SectionTitle.astro'
+import { SPONSORS } from '../../../consts/2025/sponsors';
+import SectionTitle from './SectionTitle.astro';
 
-const firstRow = SPONSORS.slice(0, 5)
-const secondRow = SPONSORS.slice(5)
+const firstRow = SPONSORS.slice(0, 5);
+const secondRow = SPONSORS.slice(5);
 ---
 
 <section id="sponsors" class="mx-auto max-w-xl py-32">
   <SectionTitle title="Patrocinadores 2025" />
 
-<div class="overflow-hidden whitespace-nowrap py-10 relative">
-  <div class="animate-marquee inline-flex gap-12">
-    {SPONSORS.concat(SPONSORS).map(({ url, image: { logo: Logo, width }, name, label }, index) => (
-      <a
-  href={url}
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label={label ?? name}
-  class="flex items-center justify-center h-48 w-48 p-2 transition hover:scale-110"
->
-  <Logo class="max-h-full max-w-full object-contain grayscale hover:grayscale-0" />
-</a>
-    ))}
+  <div class="overflow-hidden whitespace-nowrap py-10 relative">
+    <div class="animate-marquee inline-flex gap-12">
+      {
+        SPONSORS.concat(SPONSORS).map(
+          ({ url, image: { logo: Logo, width }, name, label }, index) => (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label ?? name}
+              class="flex items-center justify-center h-48 w-48 p-2 transition hover:scale-110"
+            >
+              <Logo class="max-h-full max-w-full object-contain grayscale hover:grayscale-0" />
+            </a>
+          )
+        )
+      }
+    </div>
   </div>
-</div>
-
 </section>

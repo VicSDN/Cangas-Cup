@@ -1,4 +1,4 @@
-import {useEffect , useState } from "react";
+import { useEffect, useState } from 'react';
 
 interface Team {
   id: string;
@@ -24,14 +24,14 @@ export default function EditButton({ data }: EditButtonProps) {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: name === "points" ? parseInt(value) || 0 : value,
+      [name]: name === 'points' ? parseInt(value) || 0 : value,
     }));
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) return "El nombre es obligatorio";
-    if (!String(formData.group_id).trim()) return "El grupo es obligatorio";
-    if (!formData.location.trim()) return "La localización es obligatoria";
+    if (!formData.name.trim()) return 'El nombre es obligatorio';
+    if (!String(formData.group_id).trim()) return 'El grupo es obligatorio';
+    if (!formData.location.trim()) return 'La localización es obligatoria';
     return null;
   };
 
@@ -44,11 +44,11 @@ export default function EditButton({ data }: EditButtonProps) {
 
     try {
       const response = await fetch(`/api/team/${formData.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           group_id: String(formData.group_id),
@@ -56,16 +56,16 @@ export default function EditButton({ data }: EditButtonProps) {
       });
 
       if (!response.ok) {
-        const contentType = response.headers.get("content-type");
-        let errorMessage = "Error al actualizar el equipo";
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Error al actualizar el equipo';
 
-        if (contentType && contentType.includes("application/json")) {
+        if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } else {
           const text = await response.text();
           if (response.status === 404) {
-            errorMessage = "API endpoint no encontrado";
+            errorMessage = 'API endpoint no encontrado';
           } else {
             errorMessage = `Error ${response.status}: ${text.slice(0, 100)}...`;
           }
@@ -78,7 +78,7 @@ export default function EditButton({ data }: EditButtonProps) {
       setError(null);
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     }
   };
 
@@ -87,7 +87,6 @@ export default function EditButton({ data }: EditButtonProps) {
       location.reload();
     }
   }, [open, shouldReload]);
-
 
   return (
     <>
@@ -106,36 +105,30 @@ export default function EditButton({ data }: EditButtonProps) {
             {error && <div className="text-red-500 text-sm">{error}</div>}
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Nombre
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Nombre</label>
               <input
                 name="name"
-                value={formData.name ?? ""}
+                value={formData.name ?? ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Grupo
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Grupo</label>
               <input
                 name="group_id"
-                value={formData.group_id ?? ""}
+                value={formData.group_id ?? ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Localización
-              </label>
+              <label className="block text-sm font-medium text-gray-700">Localización</label>
               <input
                 name="location"
-                value={formData.location ?? ""}
+                value={formData.location ?? ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
               />

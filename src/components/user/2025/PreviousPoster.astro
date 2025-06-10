@@ -1,6 +1,6 @@
 ---
 interface Props {
-  buttonLabel?: string; 
+  buttonLabel?: string;
   subscriptionIntroText?: string;
   subscriptionUrlText?: string;
   copiedText?: string;
@@ -13,10 +13,10 @@ interface Props {
 }
 
 const {
-  buttonLabel = "Descargar Calendario (.ics)",
-  subscriptionIntroText = "Para mantener tu calendario actualizado automáticamente, copia la siguiente URL y añádela como un nuevo calendario por suscripción en tu aplicación de calendario (Google Calendar, Outlook, Apple Calendar, etc.):",
-  subscriptionUrlText = "Copiar URL del Calendario",
-  copiedText = "¡URL Copiada!",
+  buttonLabel = 'Descargar Calendario (.ics)',
+  subscriptionIntroText = 'Para mantener tu calendario actualizado automáticamente, copia la siguiente URL y añádela como un nuevo calendario por suscripción en tu aplicación de calendario (Google Calendar, Outlook, Apple Calendar, etc.):',
+  subscriptionUrlText = 'Copiar URL del Calendario',
+  copiedText = '¡URL Copiada!',
   filename = 'cangascup2025.ics',
   anchorClass,
   wrapperClass,
@@ -26,7 +26,7 @@ const {
 
 const relativeCalendarUrl = '/calendar.ics';
 
-const siteUrl = (Astro.site?.toString() || 'https://cangascup.es').replace(/\/$/, ''); 
+const siteUrl = (Astro.site?.toString() || 'https://cangascup.es').replace(/\/$/, '');
 const fullCalendarUrl = `${siteUrl}${relativeCalendarUrl}`;
 
 const defaultAriaLabel = `Descargar archivo de calendario ${filename}`;
@@ -38,30 +38,30 @@ const copyButtonId = `copy-cal-url-btn-${uniqueIdSuffix}`;
 const urlDisplayId = `cal-url-display-${uniqueIdSuffix}`;
 ---
 
-<div class:list={["space-y-3 flex items-center flex-col p-2", wrapperClass]}>
+<div class:list={['space-y-3 flex items-center flex-col p-2', wrapperClass]}>
   <a
     href={relativeCalendarUrl}
     download={filename}
     class:list={[
-      "inline-block group focus:outline-none",
-      "rounded-lg transition-all duration-200 ease-in-out",
-      "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900",
+      'inline-block group focus:outline-none',
+      'rounded-lg transition-all duration-200 ease-in-out',
+      'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-slate-900',
       anchorClass,
     ]}
     aria-label={ariaLabel}
-    {...(id ? { id } : {})}
+    {...id ? { id } : {}}
     {...rest}
   >
     <div
       class:list={[
-        "flex items-center gap-x-3",
-        "bg-slate-700 text-slate-100",
-        "group-hover:bg-slate-600 group-focus-visible:bg-slate-600",
-        "px-4 py-3",
-        "rounded-lg",
-        "shadow-md group-hover:shadow-lg",
-        "font-sans text-sm md:text-base",
-        "transition-all duration-200 ease-in-out",
+        'flex items-center gap-x-3',
+        'bg-slate-700 text-slate-100',
+        'group-hover:bg-slate-600 group-focus-visible:bg-slate-600',
+        'px-4 py-3',
+        'rounded-lg',
+        'shadow-md group-hover:shadow-lg',
+        'font-sans text-sm md:text-base',
+        'transition-all duration-200 ease-in-out',
       ]}
     >
       <svg
@@ -100,7 +100,14 @@ const urlDisplayId = `cal-url-display-${uniqueIdSuffix}`;
   </div>
 </div>
 
-<script define:vars={{ copyButtonId, urlToCopy: fullCalendarUrl, originalButtonText: subscriptionUrlText, copiedText }}>
+<script
+  define:vars={{
+    copyButtonId,
+    urlToCopy: fullCalendarUrl,
+    originalButtonText: subscriptionUrlText,
+    copiedText,
+  }}
+>
   const copyButton = document.getElementById(copyButtonId);
 
   if (copyButton) {
@@ -108,11 +115,11 @@ const urlDisplayId = `cal-url-display-${uniqueIdSuffix}`;
       try {
         await navigator.clipboard.writeText(urlToCopy);
         copyButton.textContent = copiedText;
-        copyButton.disabled = true; 
+        copyButton.disabled = true;
         setTimeout(() => {
           copyButton.textContent = originalButtonText;
           copyButton.disabled = false;
-        }, 2000); 
+        }, 2000);
       } catch (err) {
         console.error('Error al copiar la URL: ', err);
         alert('No se pudo copiar la URL. Por favor, cópiela manualmente.');

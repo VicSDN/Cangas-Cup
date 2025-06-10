@@ -5,18 +5,23 @@ import TeamsList from '../../../components/admin/TeamsList.astro';
 import AddTeamButton from '../../../components/admin/AddTeamButton.astro';
 
 const url = new URL(Astro.request.url);
-const currentYear = url.searchParams.get('year') || '2025'; 
+const currentYear = url.searchParams.get('year') || '2025';
 
-const availableYears = ['2024', '2025', '2026', '2027']; 
+const availableYears = ['2024', '2025', '2026', '2027'];
 ---
 
 <LayoutAdmin title="Equipos" description="Gestiona los equipos de la Cangas Cup">
   <ButtonBack />
   <main class="container mx-auto px-4 py-8">
     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Equipos del Año: {currentYear}</h1>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-white">
+        Equipos del Año: {currentYear}
+      </h1>
       <div class="flex items-center gap-2">
-        <label for="year-selector" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+        <label
+          for="year-selector"
+          class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap"
+        >
           Ver año:
         </label>
         <select
@@ -24,68 +29,51 @@ const availableYears = ['2024', '2025', '2026', '2027'];
           name="year"
           class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
         >
-          {availableYears.map(year => (
-            <option value={year} selected={year === currentYear}>{year}</option>
-          ))}
+          {
+            availableYears.map((year) => (
+              <option value={year} selected={year === currentYear}>
+                {year}
+              </option>
+            ))
+          }
         </select>
       </div>
     </div>
-    <div class="flex flex-center g-4 flex-col ">
-    <TeamsList currentYear={currentYear} availableYears={availableYears} />
-    <AddTeamButton currentYear={currentYear} isPrimary={true} />
+    <div class="flex flex-center g-4 flex-col">
+      <TeamsList currentYear={currentYear} availableYears={availableYears} />
+      <AddTeamButton currentYear={currentYear} isPrimary={true} />
     </div>
   </main>
 </LayoutAdmin>
 
 <script>
-  const token = localStorage.getItem('sb-access-token');
-
-  if (!token) {
-    console.warn('Token de autenticación no encontrado, redirigiendo a login.');
-    if (window.location.pathname !== '/admin/signin') {
-        window.location.href = '/admin/signin';
-    }
-  }
+  // Auth is now handled by server-side middleware using httpOnly cookies
 
   async function logout() {
     try {
-      const currentToken = localStorage.getItem('sb-access-token');
-      if (!currentToken) {
-          console.error('No hay token para cerrar sesión.');
-          window.location.href = '/admin/signin'; 
-          return;
-      }
-
-      localStorage.removeItem('sb-access-token');
-      localStorage.removeItem('sb-refresh-token');
-      localStorage.removeItem('sb-user');
-
-
-      const response = await fetch('/api/logout', { 
+      const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
-      if (response.ok || response.status === 401) { 
-        console.log('Sesión cerrada correctamente o token ya inválido.');
+      if (response.ok) {
         window.location.href = '/admin/signin';
       } else {
-        const errorData = await response.json().catch(() => ({ message: 'Error desconocido al cerrar sesión desde el servidor.' }));
-        throw new Error(errorData.message || 'Error al cerrar sesión en el servidor');
+        throw new Error('Error al cerrar sesión');
       }
     } catch (error) {
-      console.error('Error en la función logout:', error);
+      console.error('Error al cerrar sesión:', error);
       window.location.href = '/admin/signin';
     }
   }
 
-  const logoutButton = document.getElementById('logout-button'); 
+  const logoutButton = document.getElementById('logout-button');
   if (logoutButton) {
     logoutButton.addEventListener('click', (e) => {
-        e.preventDefault(); 
-        logout();
+      e.preventDefault();
+      logout();
     });
   }
 
@@ -95,7 +83,7 @@ const availableYears = ['2024', '2025', '2026', '2027'];
       const selectedYear = (event.target as HTMLSelectElement).value;
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.set('year', selectedYear);
-      window.location.href = currentUrl.toString(); 
+      window.location.href = currentUrl.toString();
     });
   }
 </script>

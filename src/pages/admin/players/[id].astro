@@ -3,17 +3,19 @@ import LayoutAdmin from '../../../layouts/LayoutAdmin.astro';
 import PlayerEditForm from '../../../components/admin/PlayerEditForm.astro';
 import { supabase } from '../../../lib/supabase';
 import ButtonBack from '../../../sections/ButtonBack.astro';
-import type { Player, Team } from '../../../types/tournament'; 
+import type { Player, Team } from '../../../types/tournament';
 
 interface RawPlayerDataForFetch {
-    id: number;
-    name: string;
-    second_name: string | null;
-    year: number;
-    team_id: number; 
-    team: { id: number; name: string; year?: number } | { id: number; name: string; year?: number }[] | null; // El equipo relacionado podría tener 'year'
+  id: number;
+  name: string;
+  second_name: string | null;
+  year: number;
+  team_id: number;
+  team:
+    | { id: number; name: string; year?: number }
+    | { id: number; name: string; year?: number }[]
+    | null; // El equipo relacionado podría tener 'year'
 }
-
 
 const { id } = Astro.params;
 const currentYearParam = new URL(Astro.request.url).searchParams.get('year');
@@ -29,8 +31,8 @@ if (currentYearParam && !isNaN(parseInt(currentYearParam))) {
     .single();
 
   if (tempPlayerError && !tempPlayerYearData) {
-     console.error('Error fetching player year for fallback:', tempPlayerError.message);
-     currentYearNumber = new Date().getFullYear();
+    console.error('Error fetching player year for fallback:', tempPlayerError.message);
+    currentYearNumber = new Date().getFullYear();
   } else {
     currentYearNumber = tempPlayerYearData?.year || new Date().getFullYear();
   }
@@ -38,23 +40,28 @@ if (currentYearParam && !isNaN(parseInt(currentYearParam))) {
 
 const { data: playerData, error: playerError } = await supabase
   .from('tournament_player')
-  .select(`
+  .select(
+    `
     id,
     name,
     second_name,
     year,
     team_id,
     team:tournament_team ( id, name, year ) 
-  `) 
+  `
+  )
   .eq('id', id)
   .single();
 
 if (playerError || !playerData) {
   console.error('Error fetching player:', playerError?.message);
-  return new Response(`Jugador no encontrado con ID ${id}. Error: ${playerError?.message || 'Desconocido'}`, { status: 404 });
+  return new Response(
+    `Jugador no encontrado con ID ${id}. Error: ${playerError?.message || 'Desconocido'}`,
+    { status: 404 }
+  );
 }
 
-const rawPlayer = playerData as RawPlayerDataForFetch; 
+const rawPlayer = playerData as RawPlayerDataForFetch;
 let teamName: string | undefined = undefined;
 let relatedTeamObject: { id: number; name: string; year?: number } | null = null;
 
@@ -67,10 +74,12 @@ if (rawPlayer.team) {
   teamName = relatedTeamObject?.name;
 }
 
-
 if (rawPlayer.team_id === null || rawPlayer.team_id === undefined) {
-    console.error(`Player ID ${rawPlayer.id} no tiene team_id.`);
-    return new Response(`Datos del jugador incompletos: falta team_id para el jugador ${rawPlayer.id}.`, { status: 500 });
+  console.error(`Player ID ${rawPlayer.id} no tiene team_id.`);
+  return new Response(
+    `Datos del jugador incompletos: falta team_id para el jugador ${rawPlayer.id}.`,
+    { status: 500 }
+  );
 }
 
 const player: Player = {
@@ -80,14 +89,19 @@ const player: Player = {
   year: rawPlayer.year,
   team_id: rawPlayer.team_id,
   team_name: teamName,
-  team: relatedTeamObject ? { id: relatedTeamObject.id, name: relatedTeamObject.name, year: relatedTeamObject.year || rawPlayer.year } : null,
+  team: relatedTeamObject
+    ? {
+        id: relatedTeamObject.id,
+        name: relatedTeamObject.name,
+        year: relatedTeamObject.year || rawPlayer.year,
+      }
+    : null,
 };
-
 
 const { data: teamsData, error: teamsError } = await supabase
   .from('tournament_team')
-  .select('id, name, year') 
-  .eq('year', player.year) 
+  .select('id, name, year')
+  .eq('year', player.year)
   .order('name');
 
 if (teamsError) {
@@ -95,15 +109,21 @@ if (teamsError) {
 }
 
 const availableTeams: Team[] = (teamsData as Team[]) || [];
-
 ---
 
-<LayoutAdmin title={`Editar Jugador: ${player.name} ${player.second_name || ''}`} description="Editar detalles del jugador">
+<LayoutAdmin
+  title={`Editar Jugador: ${player.name} ${player.second_name || ''}`}
+  description="Editar detalles del jugador"
+>
   <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
       <ButtonBack href={`/admin/players?year=${player.year}`} />
     </div>
-    <PlayerEditForm player={player} availableTeams={availableTeams} currentYear={player.year.toString()} />
+    <PlayerEditForm
+      player={player}
+      availableTeams={availableTeams}
+      currentYear={player.year.toString()}
+    />
   </div>
 </LayoutAdmin>
 

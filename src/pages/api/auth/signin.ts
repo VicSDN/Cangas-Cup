@@ -57,10 +57,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
     console.log('Autenticación exitosa');
 
+    const isProduction = import.meta.env.PROD;
+
     if (data.session?.access_token) {
       cookies.set('sb-access-token', data.session.access_token, {
         path: '/',
-        secure: true,
+        secure: isProduction,
         httpOnly: true,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7,
@@ -70,13 +72,12 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     if (data.session?.refresh_token) {
       cookies.set('sb-refresh-token', data.session.refresh_token, {
         path: '/',
-        secure: true,
+        secure: isProduction,
         httpOnly: true,
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7,
       });
     }
-
     return redirect('/admin/dashboard');
   } catch (error) {
     console.error('Error completo en signin:', error);

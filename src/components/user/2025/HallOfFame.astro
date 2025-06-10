@@ -1,19 +1,24 @@
 ---
-import { supabase } from '../../../lib/supabase'; 
+import { supabase } from '../../../lib/supabase';
 
 export interface Props {
   year: number;
 }
 const { year } = Astro.props;
 
-interface TeamInfo { name: string; }
-interface PlayerInfo { name: string; second_name: string | null; }
-interface AwardDbRow { 
+interface TeamInfo {
+  name: string;
+}
+interface PlayerInfo {
+  name: string;
+  second_name: string | null;
+}
+interface AwardDbRow {
   award_type: string;
   team: TeamInfo | null;
   player: PlayerInfo | null;
 }
-interface FormattedAward { 
+interface FormattedAward {
   award_type: string;
   display_name: string;
   winner_name: string;
@@ -26,13 +31,15 @@ let errorMessage: string | null = null;
 let isLoading: boolean = true;
 
 try {
-  const { data: rawDataFromSupabase, error: dbError } = await supabase 
+  const { data: rawDataFromSupabase, error: dbError } = await supabase
     .from('tournament_awards')
-    .select(`
+    .select(
+      `
       award_type,
       team:team_id ( name ),
       player:player_id ( name, second_name )
-    `)
+    `
+    )
     .eq('year', year)
     .order('id');
 
@@ -42,102 +49,133 @@ try {
 
   const typedData: AwardDbRow[] | null = rawDataFromSupabase as unknown as AwardDbRow[] | null;
 
-  if (typedData) { 
+  if (typedData) {
     const awardDetails: Record<string, { displayName: string; order: number; icon?: string }> = {
-      'CampeonTorneo': { displayName: 'Campeón del Torneo', order: 1, icon: '🏆' },
-      'SubcampeonTorneo': { displayName: 'Subcampeón del Torneo', order: 2, icon: '🥈' },
-      'MejorJugador': { displayName: 'Mejor Jugador', order: 3, icon: '🌟' },
-      'MejorPortero': { displayName: 'Mejor Portero', order: 4, icon: '🧤' },
-      'CampeonLocal': { displayName: 'Campeón Local', order: 5, icon: '🏠' },
-      'MVPFinalAsturtoner': { displayName: 'MVP Final Asturtoner', order: 6, icon: '🔥' },
-      'MVPFinalLocalTrikigol': { displayName: 'MVP Final Local Trikigol', order: 7, icon: '💥' },
+      CampeonTorneo: { displayName: 'Campeón del Torneo', order: 1, icon: '🏆' },
+      SubcampeonTorneo: { displayName: 'Subcampeón del Torneo', order: 2, icon: '🥈' },
+      MejorJugador: { displayName: 'Mejor Jugador', order: 3, icon: '🌟' },
+      MejorPortero: { displayName: 'Mejor Portero', order: 4, icon: '🧤' },
+      CampeonLocal: { displayName: 'Campeón Local', order: 5, icon: '🏠' },
+      MVPFinalAsturtoner: { displayName: 'MVP Final Asturtoner', order: 6, icon: '🔥' },
+      MVPFinalLocalTrikigol: { displayName: 'MVP Final Local Trikigol', order: 7, icon: '💥' },
     };
 
-    awards = typedData.map((d: AwardDbRow): FormattedAward => {
-      let winner = 'No asignado';
-      if (d.team && d.team.name) {
-        winner = d.team.name;
-      } else if (d.player && (d.player.name || d.player.second_name)) {
-        winner = `${d.player.name || ''} ${d.player.second_name || ''}`.trim();
-      }
-      return {
-        award_type: d.award_type,
-        display_name: awardDetails[d.award_type]?.displayName || d.award_type.replace(/([A-Z])/g, ' $1').trim(),
-        winner_name: winner,
-        _order: awardDetails[d.award_type]?.order || 99,
-        icon: awardDetails[d.award_type]?.icon
-      };
-    }).sort((a, b) => a._order - b._order);
+    awards = typedData
+      .map((d: AwardDbRow): FormattedAward => {
+        let winner = 'No asignado';
+        if (d.team && d.team.name) {
+          winner = d.team.name;
+        } else if (d.player && (d.player.name || d.player.second_name)) {
+          winner = `${d.player.name || ''} ${d.player.second_name || ''}`.trim();
+        }
+        return {
+          award_type: d.award_type,
+          display_name:
+            awardDetails[d.award_type]?.displayName ||
+            d.award_type.replace(/([A-Z])/g, ' $1').trim(),
+          winner_name: winner,
+          _order: awardDetails[d.award_type]?.order || 99,
+          icon: awardDetails[d.award_type]?.icon,
+        };
+      })
+      .sort((a, b) => a._order - b._order);
   }
   isLoading = false;
 } catch (e: any) {
   errorMessage = e.message || `No se pudo cargar el Salón de los Elegidos para el año ${year}.`;
   isLoading = false;
-  console.error("Error fetching/processing HallOfFame awards:", e);
+  console.error('Error fetching/processing HallOfFame awards:', e);
 }
 ---
 
-<div class="mt-6 p-4 md:p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-2xl text-slate-100 animate-fadeIn">
+<div
+  class="mt-6 p-4 md:p-6 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-2xl text-slate-100 animate-fadeIn"
+>
   <div class="p-5 md:p-6 mb-8">
-    <h2 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-300 mb-2 text-center tracking-wider uppercase">
+    <h2
+      class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-300 mb-2 text-center tracking-wider uppercase"
+    >
       El Salón de los Elegidos
     </h2>
     <p class="text-center text-slate-400 text-lg">Año {year}</p>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
 
-  {!errorMessage && isLoading && (
-    <p class="p-6 text-center text-slate-400">Cargando datos...</p>
-  )}
+  {!errorMessage && isLoading && <p class="p-6 text-center text-slate-400">Cargando datos...</p>}
 
-  {!errorMessage && !isLoading && awards.length === 0 && (
-    <p class="p-6 text-center text-slate-400">Aún no hay premios registrados en el Salón de los Elegidos para el año {year}.</p>
-  )}
+  {
+    !errorMessage && !isLoading && awards.length === 0 && (
+      <p class="p-6 text-center text-slate-400">
+        Aún no hay premios registrados en el Salón de los Elegidos para el año {year}.
+      </p>
+    )
+  }
 
-  {!errorMessage && !isLoading && awards.length > 0 && (
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 md:gap-8 p-4 md:p-6"> {/* Ajustado xl:grid-cols-3 o 4 según preferencia */}
-      {awards.map((award) => (
-        <div class:list={[
-          "relative group bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700 hover:border-sky-500/50 transition-all duration-300 ease-in-out transform hover:-translate-y-2 overflow-hidden",
-          (award.award_type === 'CampeonTorneo' || award.award_type === 'MejorJugador') && 'border-2 border-amber-400 shadow-amber-500/20 hover:shadow-amber-500/40',
-          award.award_type === 'CampeonLocal' && 'border-sky-400'
-        ]}>
-          {award.icon && (
-            <div class="absolute -top-4 -right-4 text-6xl md:text-7xl text-slate-700/50 group-hover:text-sky-500/30 transition-colors duration-300 transform group-hover:scale-110 -z-0" style="user-select: none;">
-              {award.icon}
-            </div>
-          )}
-          <div class="relative z-10 flex flex-col items-center text-center min-h-[160px] justify-between">
-            <div>
-              <h3 class="text-sm font-medium text-slate-400 group-hover:text-sky-400 transition-colors duration-300 uppercase tracking-wider mb-2">
-                {award.display_name.replace(/🏆|🥈|🌟|🧤|🏠|🔥|💥\s*/g, '')}
-              </h3>
-              <p class="text-2xl md:text-3xl font-extrabold text-white truncate max-w-full" title={award.winner_name}>
-                {award.winner_name}
-              </p>
-            </div>
+  {
+    !errorMessage && !isLoading && awards.length > 0 && (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 md:gap-8 p-4 md:p-6">
+        {' '}
+        {/* Ajustado xl:grid-cols-3 o 4 según preferencia */}
+        {awards.map((award) => (
+          <div
+            class:list={[
+              'relative group bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700 hover:border-sky-500/50 transition-all duration-300 ease-in-out transform hover:-translate-y-2 overflow-hidden',
+              (award.award_type === 'CampeonTorneo' || award.award_type === 'MejorJugador') &&
+                'border-2 border-amber-400 shadow-amber-500/20 hover:shadow-amber-500/40',
+              award.award_type === 'CampeonLocal' && 'border-sky-400',
+            ]}
+          >
             {award.icon && (
-              <div class="mt-3 text-3xl text-sky-400 group-hover:text-amber-400 transition-colors duration-300">
+              <div
+                class="absolute -top-4 -right-4 text-6xl md:text-7xl text-slate-700/50 group-hover:text-sky-500/30 transition-colors duration-300 transform group-hover:scale-110 -z-0"
+                style="user-select: none;"
+              >
                 {award.icon}
               </div>
             )}
+            <div class="relative z-10 flex flex-col items-center text-center min-h-[160px] justify-between">
+              <div>
+                <h3 class="text-sm font-medium text-slate-400 group-hover:text-sky-400 transition-colors duration-300 uppercase tracking-wider mb-2">
+                  {award.display_name.replace(/🏆|🥈|🌟|🧤|🏠|🔥|💥\s*/g, '')}
+                </h3>
+                <p
+                  class="text-2xl md:text-3xl font-extrabold text-white truncate max-w-full"
+                  title={award.winner_name}
+                >
+                  {award.winner_name}
+                </p>
+              </div>
+              {award.icon && (
+                <div class="mt-3 text-3xl text-sky-400 group-hover:text-amber-400 transition-colors duration-300">
+                  {award.icon}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  )}
+        ))}
+      </div>
+    )
+  }
 </div>
 
 <style is:global>
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out forwards;

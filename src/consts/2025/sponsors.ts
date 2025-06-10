@@ -1,28 +1,28 @@
-import type { Sponsors } from '../../types/Sponsors2025'
+import type { Sponsors } from '../../types/Sponsors2025';
 
-import Ayuntamiento from '../../components/user/2025/SponsorsLogos/Ayuntamiento.astro'
-import Baccara from '../../components/user/2025/SponsorsLogos/Baccara.astro'
-import Asturtoner from '../../components/user/2025/SponsorsLogos/Asturtoner.astro'
-import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astro'
-import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro'
-import Refierta from '../../components/user/2025/SponsorsLogos/Refierta.astro'
-import Lozano from '../../components/user/2025/SponsorsLogos/Lozano.astro'
-import Javita from '../../components/user/2025/SponsorsLogos/Javita.astro'
-import Manin from '../../components/user/2025/SponsorsLogos/Manin.astro'
-import Goblet from '../../components/user/2025/SponsorsLogos/Goblet.astro'
-import Obrador from '../../components/user/2025/SponsorsLogos/Obrador.astro'
-import Casilla from '../../components/user/2025/SponsorsLogos/Casilla.astro'
-import Energy from '../../components/user/2025/SponsorsLogos/Energy.astro'
-import Planb from '../../components/user/2025/SponsorsLogos/Planb.astro'
-import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro'
-import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro'
-import Bosque from '../../components/user/2025/SponsorsLogos/Bosque.astro'
-import Sidreria from '../../components/user/2025/SponsorsLogos/Sidreria.astro'
-import Excalex from '../../components/user/2025/SponsorsLogos/Excalex.astro'
-import Farruco from '../../components/user/2025/SponsorsLogos/Farruco.astro'
-import Parla from '../../components/user/2025/SponsorsLogos/Parla.astro'
-import Ingenegreen from '../../components/user/2025/SponsorsLogos/Ingenegreen.astro'
-import Zaira from '../../components/user/2025/SponsorsLogos/Zaira.astro'
+import Ayuntamiento from '../../components/user/2025/SponsorsLogos/Ayuntamiento.astro';
+import Baccara from '../../components/user/2025/SponsorsLogos/Baccara.astro';
+import Asturtoner from '../../components/user/2025/SponsorsLogos/Asturtoner.astro';
+import PuntoYComa from '../../components/user/2025/SponsorsLogos/PuntoYComa.astro';
+import LaAbadia from '../../components/user/2025/SponsorsLogos/LaAbadia.astro';
+import Refierta from '../../components/user/2025/SponsorsLogos/Refierta.astro';
+import Lozano from '../../components/user/2025/SponsorsLogos/Lozano.astro';
+import Javita from '../../components/user/2025/SponsorsLogos/Javita.astro';
+import Manin from '../../components/user/2025/SponsorsLogos/Manin.astro';
+import Goblet from '../../components/user/2025/SponsorsLogos/Goblet.astro';
+import Obrador from '../../components/user/2025/SponsorsLogos/Obrador.astro';
+import Casilla from '../../components/user/2025/SponsorsLogos/Casilla.astro';
+import Energy from '../../components/user/2025/SponsorsLogos/Energy.astro';
+import Planb from '../../components/user/2025/SponsorsLogos/Planb.astro';
+import Azul from '../../components/user/2025/SponsorsLogos/Azul.astro';
+import StreetFood from '../../components/user/2025/SponsorsLogos/StreetFood.astro';
+import Bosque from '../../components/user/2025/SponsorsLogos/Bosque.astro';
+import Sidreria from '../../components/user/2025/SponsorsLogos/Sidreria.astro';
+import Excalex from '../../components/user/2025/SponsorsLogos/Excalex.astro';
+import Farruco from '../../components/user/2025/SponsorsLogos/Farruco.astro';
+import Parla from '../../components/user/2025/SponsorsLogos/Parla.astro';
+import Ingenegreen from '../../components/user/2025/SponsorsLogos/Ingenegreen.astro';
+import Zaira from '../../components/user/2025/SponsorsLogos/Zaira.astro';
 
 export const SPONSORS: Sponsors[] = [
   {
@@ -58,7 +58,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
- 
+
   {
     id: 'puntoycoma',
     name: 'Punto y Coma',
@@ -92,7 +92,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   
+
   {
     id: 'lozano',
     name: 'Transportes Lozano',
@@ -137,7 +137,6 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-  
 
   {
     id: 'obradorflory',
@@ -183,7 +182,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   {
+  {
     id: 'barazul',
     name: 'Bar Azul',
     url: 'https://g.co/kgs/WkT1x7H',
@@ -206,7 +205,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-{
+  {
     id: 'bosque',
     name: 'Bosque',
     url: 'https://www.facebook.com/elbosqueoviedo/?locale=es_ES',
@@ -217,7 +216,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   {
+  {
     id: 'sidrerianarcea',
     name: 'Sidreria Narcea',
     url: 'https://sidrerianarcea.es/',
@@ -228,7 +227,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-    {
+  {
     id: 'casafarruco',
     name: 'Casa Farruco',
     url: 'https://www.facebook.com/people/Casa-Farruco/61559431012064/',
@@ -250,7 +249,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-   {
+  {
     id: 'parla',
     name: 'Parla',
     url: 'https://casaparla.com/',
@@ -261,7 +260,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-    {
+  {
     id: 'ingenegreen',
     name: 'Ingenegreen',
     url: '',
@@ -272,7 +271,7 @@ export const SPONSORS: Sponsors[] = [
       height: 200,
     },
   },
-    {
+  {
     id: 'zaira',
     name: 'Zaira',
     url: '',
@@ -284,4 +283,3 @@ export const SPONSORS: Sponsors[] = [
     },
   },
 ] as const;
- 

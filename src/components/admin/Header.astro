@@ -50,7 +50,7 @@ const pages = [
             stroke-linejoin="round"
             stroke-width="2"
             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
+          ></path>
         </svg>
       </button>
     </div>
@@ -114,7 +114,7 @@ const pages = [
               stroke-linejoin="round"
               stroke-width="2"
               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
+            ></path>
           </svg>
         </button>
       </nav>
@@ -125,7 +125,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-l-[30%] border-t-0"
         style="background:linear-gradient(to right, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
       <div class="focus-within-ring -mt-6 -mb-5 -ml-[8px] -mr-[4px]">
         <a href={`/admin/dashboard`} class="focus-visible:!ring-0">
           <img src="/cangasCupLogo.webp" alt="Logo" class="h-auto w-[100%] z-2 mb-4" />
@@ -134,7 +135,8 @@ const pages = [
       <div
         class="h-[2px] w-full rounded-r-[30%] border-t-0 bg-white"
         style="background:linear-gradient(to left, transparent 3%, white 35%, white 100%)"
-      />
+      >
+      </div>
     </div>
   </div>
 </header>
@@ -241,10 +243,18 @@ const pages = [
 
   async function logout() {
     try {
-      localStorage.removeItem('sb-access-token');
-      localStorage.removeItem('sb-refresh-token');
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      window.location.href = '/admin/signin';
+      if (response.ok) {
+        window.location.href = '/admin/signin';
+      } else {
+        throw new Error('Error en la respuesta del servidor');
+      }
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       alert('Error al cerrar sesión. Por favor, intenta de nuevo.');

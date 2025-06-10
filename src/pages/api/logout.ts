@@ -2,12 +2,14 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ cookies }) => {
   try {
+    const isProduction = import.meta.env.PROD;
+
     cookies.delete('sb-access-token', {
       path: '/',
       domain: undefined,
       httpOnly: true,
       sameSite: 'lax',
-      secure: true,
+      secure: isProduction,
     });
 
     cookies.delete('sb-refresh-token', {
@@ -15,7 +17,7 @@ export const POST: APIRoute = async ({ cookies }) => {
       domain: undefined,
       httpOnly: true,
       sameSite: 'lax',
-      secure: true,
+      secure: isProduction,
     });
 
     return new Response(JSON.stringify({ message: 'Logout successful' }), {

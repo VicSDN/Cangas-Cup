@@ -9,9 +9,15 @@ export const GET: APIRoute = async ({ request }) => {
   const year = url.searchParams.get('year');
 
   if (!homeTeamId || !awayTeamId || !year) {
-    return new Response(JSON.stringify({ error: "Faltan parámetros: homeTeamId, awayTeamId o year" } as ApiErrorResponse), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Faltan parámetros: homeTeamId, awayTeamId o year',
+      } as ApiErrorResponse),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   try {
@@ -20,10 +26,12 @@ export const GET: APIRoute = async ({ request }) => {
 
     const { data: playersData, error: playersError } = await supabase
       .from('tournament_player')
-      .select<string, Player>(`
+      .select<string, Player>(
+        `
         id, name, second_name, team_id, year,
         team:tournament_team!inner (name)
-      `)
+      `
+      )
       .in('team_id', teamIds)
       .eq('year', currentYear)
       .order('team_id')
@@ -32,16 +40,24 @@ export const GET: APIRoute = async ({ request }) => {
     if (playersError) throw playersError;
 
     const formattedPlayers = (playersData || []).map((p: Player) => ({
-        ...p,
-        team_name: p.team?.name
+      ...p,
+      team_name: p.team?.name,
     }));
 
     return new Response(JSON.stringify(formattedPlayers), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: "Error interno al cargar jugadores", message: error.message } as ApiErrorResponse), {
-      status: 500, headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Error interno al cargar jugadores',
+        message: error.message,
+      } as ApiErrorResponse),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 };

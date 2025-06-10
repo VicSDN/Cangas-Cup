@@ -24,7 +24,8 @@ let errorMessage: string | null = null;
 try {
   const { data: rawMatches, error } = await supabase
     .from('tournament_match')
-    .select(`
+    .select(
+      `
       id,
       home_team_data:tournament_team!tournament_match_home_team_fkey(id, name),
       away_team_data:tournament_team!tournament_match_away_team_fkey(id, name),
@@ -37,81 +38,103 @@ try {
       home_team_source_match_id,
       away_team_placeholder_type,
       away_team_source_match_id
-    `)
+    `
+    )
     .eq('year', year)
     .eq('is_local_final', true)
     .order('match_date', { ascending: true });
 
   if (error) throw new Error(`Error al cargar final local: ${error.message}`);
-  
+
   if (rawMatches && rawMatches.length > 0) {
-    localFinalMatches = rawMatches.map(match => {
-        const date = new Date(match.match_date);
+    localFinalMatches = rawMatches.map((match) => {
+      const date = new Date(match.match_date);
 
-        let home_team_name: string;
-        const homeTeamDataObject = match.home_team_data as unknown as ({ id: number; name: string } | null);
-        if (homeTeamDataObject?.name) {
-          home_team_name = homeTeamDataObject.name;
-        } else {
-          switch (match.home_team_placeholder_type) {
-            case 'WINNER_MATCH':
-              home_team_name = match.home_team_source_match_id ? `Ganador P.${match.home_team_source_match_id}` : 'Ganador Partido Anterior';
-              break;
-            case 'LOSER_MATCH':
-              home_team_name = match.home_team_source_match_id ? `Perdedor P.${match.home_team_source_match_id}` : 'Perdedor Partido Anterior';
-              break;
-            case 'GROUP_POSITION':
-              home_team_name = 'Clasificado por Grupo';
-              break;
-            default:
-              if (homeTeamDataObject?.id) {
-                home_team_name = homeTeamDataObject.name || `Equipo ${homeTeamDataObject.id}`;
-              } else {
-                home_team_name = 'Equipo pendiente';
-              }
-          }
+      let home_team_name: string;
+      const homeTeamDataObject = match.home_team_data as unknown as {
+        id: number;
+        name: string;
+      } | null;
+      if (homeTeamDataObject?.name) {
+        home_team_name = homeTeamDataObject.name;
+      } else {
+        switch (match.home_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            home_team_name = match.home_team_source_match_id
+              ? `Ganador P.${match.home_team_source_match_id}`
+              : 'Ganador Partido Anterior';
+            break;
+          case 'LOSER_MATCH':
+            home_team_name = match.home_team_source_match_id
+              ? `Perdedor P.${match.home_team_source_match_id}`
+              : 'Perdedor Partido Anterior';
+            break;
+          case 'GROUP_POSITION':
+            home_team_name = 'Clasificado por Grupo';
+            break;
+          default:
+            if (homeTeamDataObject?.id) {
+              home_team_name = homeTeamDataObject.name || `Equipo ${homeTeamDataObject.id}`;
+            } else {
+              home_team_name = 'Equipo pendiente';
+            }
         }
+      }
 
-        let away_team_name: string;
-        const awayTeamDataObject = match.away_team_data as unknown as ({ id: number; name: string } | null);
-        if (awayTeamDataObject?.name) {
-          away_team_name = awayTeamDataObject.name;
-        } else {
-          switch (match.away_team_placeholder_type) {
-            case 'WINNER_MATCH':
-              away_team_name = match.away_team_source_match_id ? `Ganador P.${match.away_team_source_match_id}` : 'Ganador Partido Anterior';
-              break;
-            case 'LOSER_MATCH':
-              away_team_name = match.away_team_source_match_id ? `Perdedor P.${match.away_team_source_match_id}` : 'Perdedor Partido Anterior';
-              break;
-            case 'GROUP_POSITION':
-              away_team_name = 'Clasificado por Grupo';
-              break;
-            default:
-              if (awayTeamDataObject?.id) {
-                away_team_name = awayTeamDataObject.name || `Equipo ${awayTeamDataObject.id}`;
-              } else {
-                away_team_name = 'Equipo pendiente';
-              }
-          }
+      let away_team_name: string;
+      const awayTeamDataObject = match.away_team_data as unknown as {
+        id: number;
+        name: string;
+      } | null;
+      if (awayTeamDataObject?.name) {
+        away_team_name = awayTeamDataObject.name;
+      } else {
+        switch (match.away_team_placeholder_type) {
+          case 'WINNER_MATCH':
+            away_team_name = match.away_team_source_match_id
+              ? `Ganador P.${match.away_team_source_match_id}`
+              : 'Ganador Partido Anterior';
+            break;
+          case 'LOSER_MATCH':
+            away_team_name = match.away_team_source_match_id
+              ? `Perdedor P.${match.away_team_source_match_id}`
+              : 'Perdedor Partido Anterior';
+            break;
+          case 'GROUP_POSITION':
+            away_team_name = 'Clasificado por Grupo';
+            break;
+          default:
+            if (awayTeamDataObject?.id) {
+              away_team_name = awayTeamDataObject.name || `Equipo ${awayTeamDataObject.id}`;
+            } else {
+              away_team_name = 'Equipo pendiente';
+            }
         }
-        
-        return {
-            id: match.id,
-            home_team_name: home_team_name,
-            away_team_name: away_team_name,
-            home_score: match.home_score,
-            away_score: match.away_score,
-            match_date_formatted: date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }),
-            match_time_formatted: date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }),
-            round_name: match.round_name,
-            match_stage: match.match_stage,
-        };
+      }
+
+      return {
+        id: match.id,
+        home_team_name: home_team_name,
+        away_team_name: away_team_name,
+        home_score: match.home_score,
+        away_score: match.away_score,
+        match_date_formatted: date.toLocaleDateString('es-ES', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+        match_time_formatted: date.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }),
+        round_name: match.round_name,
+        match_stage: match.match_stage,
+      };
     });
   }
-
 } catch (e: any) {
-  errorMessage = e.message || "No se pudo cargar la final local.";
+  errorMessage = e.message || 'No se pudo cargar la final local.';
 }
 ---
 
@@ -120,35 +143,58 @@ try {
     <h2 class="text-xl md:text-2xl font-bold text-white text-center">Final Local ({year})</h2>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
 
-  {!errorMessage && localFinalMatches.length > 0 && (
-    <div class="p-4 md:p-6 space-y-6">
-      {localFinalMatches.map(match => (
-        <article class="p-6 bg-slate-700 rounded-xl shadow-lg border-2 border-amber-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
-          <h3 class="text-xl font-semibold text-amber-400 mb-1.5">{match.match_stage}{match.round_name ? ` - ${match.round_name}` : ''}</h3>
-          <p class="text-sm text-amber-500 mb-5">{match.match_date_formatted} • {match.match_time_formatted} hs</p>
-          <div class="flex items-center justify-around mb-2">
-            <span class="text-lg md:text-xl font-bold text-slate-100 w-2/5 truncate" title={match.home_team_name}>{match.home_team_name}</span>
-            {match.home_score !== null && match.away_score !== null ? (
-              <span class="text-3xl md:text-4xl font-extrabold text-amber-300 px-4 py-2 bg-amber-800/50 border-2 border-amber-600 rounded-lg shadow-md">
-                {match.home_score} - {match.away_score}
+  {
+    !errorMessage && localFinalMatches.length > 0 && (
+      <div class="p-4 md:p-6 space-y-6">
+        {localFinalMatches.map((match) => (
+          <article class="p-6 bg-slate-700 rounded-xl shadow-lg border-2 border-amber-700 text-center transform hover:scale-[1.02] transition-transform duration-300">
+            <h3 class="text-xl font-semibold text-amber-400 mb-1.5">
+              {match.match_stage}
+              {match.round_name ? ` - ${match.round_name}` : ''}
+            </h3>
+            <p class="text-sm text-amber-500 mb-5">
+              {match.match_date_formatted} • {match.match_time_formatted} hs
+            </p>
+            <div class="flex items-center justify-around mb-2">
+              <span
+                class="text-lg md:text-xl font-bold text-slate-100 w-2/5 truncate"
+                title={match.home_team_name}
+              >
+                {match.home_team_name}
               </span>
-            ) : (
-              <span class="text-2xl md:text-3xl font-bold text-slate-500 px-3">vs</span>
-            )}
-            <span class="text-lg md:text-xl font-bold text-slate-100 w-2/5 truncate" title={match.away_team_name}>{match.away_team_name}</span>
-          </div>
-        </article>
-      ))}
-    </div>
-  )}
-  {!errorMessage && localFinalMatches.length === 0 && (
-    <p class="p-6 text-center text-slate-500">No hay información sobre la final local programada para el año {year}.</p>
-  )}
+              {match.home_score !== null && match.away_score !== null ? (
+                <span class="text-3xl md:text-4xl font-extrabold text-amber-300 px-4 py-2 bg-amber-800/50 border-2 border-amber-600 rounded-lg shadow-md">
+                  {match.home_score} - {match.away_score}
+                </span>
+              ) : (
+                <span class="text-2xl md:text-3xl font-bold text-slate-500 px-3">vs</span>
+              )}
+              <span
+                class="text-lg md:text-xl font-bold text-slate-100 w-2/5 truncate"
+                title={match.away_team_name}
+              >
+                {match.away_team_name}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+    )
+  }
+  {
+    !errorMessage && localFinalMatches.length === 0 && (
+      <p class="p-6 text-center text-slate-500">
+        No hay información sobre la final local programada para el año {year}.
+      </p>
+    )
+  }
 </div>

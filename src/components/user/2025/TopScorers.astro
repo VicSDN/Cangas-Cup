@@ -19,90 +19,110 @@ let errorMessage: string | null = null;
 try {
   const { data: goals, error: goalsError } = await supabase
     .from('tournament_goal')
-    .select('player_id') 
+    .select('player_id')
     .eq('year', year);
 
   if (goalsError) throw new Error(`Error al cargar goles: ${goalsError.message}`);
-  
+
   if (!goals || goals.length === 0) {
     topScorers = [];
   } else {
     const goalCounts = goals.reduce<Record<number, { count: number }>>((acc, goal) => {
-      if (goal.player_id === null) return acc; 
+      if (goal.player_id === null) return acc;
       acc[goal.player_id] = acc[goal.player_id] || { count: 0 };
       acc[goal.player_id].count += 1;
       return acc;
     }, {});
 
-    const playerIds = Object.keys(goalCounts).map(id => parseInt(id)).filter(id => !isNaN(id));
-    
+    const playerIds = Object.keys(goalCounts)
+      .map((id) => parseInt(id))
+      .filter((id) => !isNaN(id));
+
     if (playerIds.length > 0) {
-        const { data: playersWithTeam, error: playerError } = await supabase
+      const { data: playersWithTeam, error: playerError } = await supabase
         .from('tournament_player')
-        .select(`
+        .select(
+          `
             id, 
             name, 
             team:tournament_team ( name ) 
-        `) 
+        `
+        )
         .in('id', playerIds)
         .eq('year', year);
 
-        if (playerError) throw new Error(`Error al cargar jugadores y equipos: ${playerError.message}`);
-        
-        if (playersWithTeam) {
-            topScorers = playersWithTeam.map(player => {
-               
-                const teamName = player.team ? (player.team as unknown as { name: string }).name : 'Equipo Desconocido';
-                
-                return {
-                    id: player.id,
-                    name: player.name,
-                    team: teamName,
-                    count: goalCounts[player.id]?.count || 0
-                };
-            }).filter(s => s.count > 0)
-            .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-        }
+      if (playerError)
+        throw new Error(`Error al cargar jugadores y equipos: ${playerError.message}`);
+
+      if (playersWithTeam) {
+        topScorers = playersWithTeam
+          .map((player) => {
+            const teamName = player.team
+              ? (player.team as unknown as { name: string }).name
+              : 'Equipo Desconocido';
+
+            return {
+              id: player.id,
+              name: player.name,
+              team: teamName,
+              count: goalCounts[player.id]?.count || 0,
+            };
+          })
+          .filter((s) => s.count > 0)
+          .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+      }
     } else {
-        topScorers = []; 
+      topScorers = [];
     }
   }
 } catch (e: any) {
-  errorMessage = e.message || "No se pudieron cargar los goleadores.";
+  errorMessage = e.message || 'No se pudieron cargar los goleadores.';
 }
 ---
 
 <div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden">
   <div class="p-5 md:p-6 bg-gradient-to-r from-teal-700 to-teal-600">
-    <h2 class="text-xl md:text-2xl font-bold text-white text-center">Máximos Goleadores ({year})</h2>
+    <h2 class="text-xl md:text-2xl font-bold text-white text-center">
+      Máximos Goleadores ({year})
+    </h2>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
 
-  {!errorMessage && topScorers.length > 0 && (
-    <ul class="divide-y divide-slate-700">
-      {topScorers.map((scorer, index) => (
-        <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-700/70">
-          <div class="flex items-center">
-            <span class="text-sm text-slate-500 font-medium w-6 text-right mr-3">{index + 1}.</span>
-            <div>
-              <span class="text-sm md:text-base font-semibold text-slate-100">{scorer.name}</span>
-              <span class="block md:inline text-xs text-slate-400 md:ml-2">({scorer.team})</span>
+  {
+    !errorMessage && topScorers.length > 0 && (
+      <ul class="divide-y divide-slate-700">
+        {topScorers.map((scorer, index) => (
+          <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-700/70">
+            <div class="flex items-center">
+              <span class="text-sm text-slate-500 font-medium w-6 text-right mr-3">
+                {index + 1}.
+              </span>
+              <div>
+                <span class="text-sm md:text-base font-semibold text-slate-100">{scorer.name}</span>
+                <span class="block md:inline text-xs text-slate-400 md:ml-2">({scorer.team})</span>
+              </div>
             </div>
-          </div>
-          <span class="px-3 py-1 bg-teal-700/40 text-teal-300 text-xs md:text-sm font-bold rounded-full">
-            {scorer.count} {scorer.count === 1 ? 'gol' : 'goles'}
-          </span>
-        </li>
-      ))}
-    </ul>
-  )}
-  {!errorMessage && topScorers.length === 0 && (
-    <p class="p-6 text-center text-slate-500">No hay datos de goleadores disponibles para el año {year}.</p>
-  )}
+            <span class="px-3 py-1 bg-teal-700/40 text-teal-300 text-xs md:text-sm font-bold rounded-full">
+              {scorer.count} {scorer.count === 1 ? 'gol' : 'goles'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    !errorMessage && topScorers.length === 0 && (
+      <p class="p-6 text-center text-slate-500">
+        No hay datos de goleadores disponibles para el año {year}.
+      </p>
+    )
+  }
 </div>

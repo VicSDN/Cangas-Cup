@@ -11,7 +11,7 @@ interface MVPData {
   id: number;
   name: string;
   team: string;
-  mvpCount: number; 
+  mvpCount: number;
 }
 
 interface PlayerRecord {
@@ -38,13 +38,16 @@ try {
 
   const allMvpPlayerIds: number[] = [];
   if (matchMvpData && matchMvpData.length > 0) {
-    matchMvpData.forEach(match => {
+    matchMvpData.forEach((match) => {
       if (match.home_team_mvp_player_id) {
         allMvpPlayerIds.push(match.home_team_mvp_player_id);
       }
-      if (match.away_team_mvp_player_id && match.away_team_mvp_player_id !== match.home_team_mvp_player_id) {
+      if (
+        match.away_team_mvp_player_id &&
+        match.away_team_mvp_player_id !== match.home_team_mvp_player_id
+      ) {
         allMvpPlayerIds.push(match.away_team_mvp_player_id);
-      } else if (match.away_team_mvp_player_id && !match.home_team_mvp_player_id) { 
+      } else if (match.away_team_mvp_player_id && !match.home_team_mvp_player_id) {
         allMvpPlayerIds.push(match.away_team_mvp_player_id);
       }
     });
@@ -63,61 +66,77 @@ try {
     }
 
     if (playersData) {
-      mvps = playersData.map(p => {
-        let playerName = p.name;
-        if (p.second_name) {
-          playerName += ` ${p.second_name}`;
-        }
-        const count = allMvpPlayerIds.filter(id => id === p.id).length;
+      mvps = playersData
+        .map((p) => {
+          let playerName = p.name;
+          if (p.second_name) {
+            playerName += ` ${p.second_name}`;
+          }
+          const count = allMvpPlayerIds.filter((id) => id === p.id).length;
 
-        return {
-          id: p.id,
-          name: playerName.trim(),
-          team: p.team?.name || 'Equipo Desconocido',
-          mvpCount: count, 
-        };
-      }).sort((a, b) => b.mvpCount - a.mvpCount); 
+          return {
+            id: p.id,
+            name: playerName.trim(),
+            team: p.team?.name || 'Equipo Desconocido',
+            mvpCount: count,
+          };
+        })
+        .sort((a, b) => b.mvpCount - a.mvpCount);
     }
   }
 } catch (e: any) {
-  const currentFileName = "MVP.astro"; 
+  const currentFileName = 'MVP.astro';
   console.error(`[${currentFileName}] Error fetching MVPs:`, e);
-  errorMessage = e.message || `Un error inesperado ocurrió al obtener los MVPs desde ${currentFileName}.`;
+  errorMessage =
+    e.message || `Un error inesperado ocurrió al obtener los MVPs desde ${currentFileName}.`;
   mvps = [];
 }
 ---
 
 <div class="bg-slate-800 rounded-xl shadow-xl overflow-hidden">
   <div class="p-5 md:p-6 bg-gradient-to-r from-purple-700 to-purple-600">
-    <h2 class="text-xl md:text-2xl font-bold text-white text-center">Jugadores MVP del Partido ({year})</h2>
+    <h2 class="text-xl md:text-2xl font-bold text-white text-center">
+      Jugadores MVP del Partido ({year})
+    </h2>
   </div>
 
-  {errorMessage && (
-    <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
-      <p class="font-semibold">Error:</p>
-      <p>{errorMessage}</p>
-    </div>
-  )}
+  {
+    errorMessage && (
+      <div class="m-4 p-4 bg-red-900/80 border border-red-700 text-red-300 rounded-lg">
+        <p class="font-semibold">Error:</p>
+        <p>{errorMessage}</p>
+      </div>
+    )
+  }
 
-  {!errorMessage && mvps.length > 0 && (
-    <ul class="divide-y divide-slate-700">
-      {mvps.map((mvp) => (
-        <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-700/70">
-          <div>
-            <p class="font-semibold text-white">{mvp.name}</p>
-            <p class="text-sm text-slate-400">
-              {mvp.team} - <span class="font-medium">{mvp.mvpCount} {mvp.mvpCount === 1 ? 'vez' : 'veces'} MVP</span>
-            </p>
-          </div>
-          <span class="text-purple-400 font-bold text-lg">🏆 {mvp.mvpCount > 1 ? `x${mvp.mvpCount}` : ''}</span>
-        </li>
-      ))}
-    </ul>
-  )}
+  {
+    !errorMessage && mvps.length > 0 && (
+      <ul class="divide-y divide-slate-700">
+        {mvps.map((mvp) => (
+          <li class="px-4 py-3 md:px-6 md:py-4 flex justify-between items-center transition-colors hover:bg-slate-700/70">
+            <div>
+              <p class="font-semibold text-white">{mvp.name}</p>
+              <p class="text-sm text-slate-400">
+                {mvp.team} -{' '}
+                <span class="font-medium">
+                  {mvp.mvpCount} {mvp.mvpCount === 1 ? 'vez' : 'veces'} MVP
+                </span>
+              </p>
+            </div>
+            <span class="text-purple-400 font-bold text-lg">
+              🏆 {mvp.mvpCount > 1 ? `x${mvp.mvpCount}` : ''}
+            </span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 
-  {!errorMessage && mvps.length === 0 && (
-    <div class="p-6 text-center text-slate-300">
-      <p>No se han registrado MVPs de partidos para el año {year}.</p>
-    </div>
-  )}
+  {
+    !errorMessage && mvps.length === 0 && (
+      <div class="p-6 text-center text-slate-300">
+        <p>No se han registrado MVPs de partidos para el año {year}.</p>
+      </div>
+    )
+  }
 </div>

@@ -31,7 +31,9 @@ export async function refreshSession() {
     if (error) throw error;
     if (!session || !session.refresh_token) return null;
 
-    const { data, error: refreshError } = await supabase.auth.refreshSession({ refresh_token: session.refresh_token });
+    const { data, error: refreshError } = await supabase.auth.refreshSession({
+      refresh_token: session.refresh_token,
+    });
 
     if (refreshError) throw refreshError;
 
@@ -44,7 +46,10 @@ export async function refreshSession() {
 
 export async function getSession() {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) throw error;
     return session;
   } catch (error) {

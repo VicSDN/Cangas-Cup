@@ -1,43 +1,45 @@
 ---
 import { supabase } from '../../lib/supabase';
-import YearFilter from './YearFilter.astro'; 
+import YearFilter from './YearFilter.astro';
 import AddPlayerButton from './AddPlayerButton.astro';
-import type { Player } from '../../types/tournament'; 
+import type { Player } from '../../types/tournament';
 
 interface Props {
-  currentYear: string; 
-  availableYears: string[]; 
+  currentYear: string;
+  availableYears: string[];
 }
 
 const { currentYear, availableYears } = Astro.props;
 
 interface RawPlayerData {
-    id: number;
-    name: string;
-    second_name: string | null;
-    year: number;
-    team_id: number;
-    team: { name: string } | { name: string }[] | null; 
+  id: number;
+  name: string;
+  second_name: string | null;
+  year: number;
+  team_id: number;
+  team: { name: string } | { name: string }[] | null;
 }
 
 const { data: playersData, error } = await supabase
   .from('tournament_player')
-  .select(`
+  .select(
+    `
     id,
     name,
     second_name,
     year,
     team_id,
     team:tournament_team!inner ( id, name )
-  `)
+  `
+  )
   .eq('year', currentYear)
   .order('name');
 
 const players: Player[] | null = playersData
-  ? (playersData as RawPlayerData[]).map(rawPlayer => {
+  ? (playersData as RawPlayerData[]).map((rawPlayer) => {
       let teamName: string | undefined = undefined;
       if (rawPlayer.team) {
-        if (Array.isArray(rawPlayer.team)) { 
+        if (Array.isArray(rawPlayer.team)) {
           teamName = rawPlayer.team[0]?.name;
         } else {
           teamName = rawPlayer.team.name;
@@ -47,7 +49,7 @@ const players: Player[] | null = playersData
         id: rawPlayer.id,
         name: rawPlayer.name,
         second_name: rawPlayer.second_name,
-        year: rawPlayer.year, 
+        year: rawPlayer.year,
         team_id: rawPlayer.team_id,
         team_name: teamName || 'N/A',
       };
@@ -78,8 +80,18 @@ if (error) {
   <div class="mt-6 md:flex md:items-center md:justify-between">
     <div class="relative flex items-center mt-4 md:mt-0">
       <span class="absolute">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
         </svg>
       </span>
       <input
@@ -93,46 +105,81 @@ if (error) {
 
   {
     error ? (
-      <div class="mt-6 text-red-500 text-center dark:text-red-400">Error al cargar los jugadores.</div>
+      <div class="mt-6 text-red-500 text-center dark:text-red-400">
+        Error al cargar los jugadores.
+      </div>
     ) : players && players.length > 0 ? (
       <>
-        <div id="playersGrid" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
+        <div
+          id="playersGrid"
+          class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+        >
           {players.map((player) => (
-            <div class="player-card-container bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out border border-transparent hover:border-green-500 dark:hover:border-green-400 flex flex-col"
-                data-id={player.id.toString()}
-                data-name={`${player.name.toLowerCase()} ${player.second_name?.toLowerCase() || ''}`.trim()}
-                data-team_name={player.team_name?.toLowerCase() || ''}
-                data-team_id={player.team_id.toString()}
-                data-year={player.year.toString()}
+            <div
+              class="player-card-container bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out border border-transparent hover:border-green-500 dark:hover:border-green-400 flex flex-col"
+              data-id={player.id.toString()}
+              data-name={`${player.name.toLowerCase()} ${player.second_name?.toLowerCase() || ''}`.trim()}
+              data-team_name={player.team_name?.toLowerCase() || ''}
+              data-team_id={player.team_id.toString()}
+              data-year={player.year.toString()}
             >
-              <a href={`/admin/players/${player.id}?year=${currentYear}`} class="block p-4 flex-grow no-underline">
+              <a
+                href={`/admin/players/${player.id}?year=${currentYear}`}
+                class="block p-4 flex-grow no-underline"
+              >
                 <div>
-                  <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate" title={`${player.name} ${player.second_name || ''}`}>{player.name} {player.second_name || ''}</h3>
+                  <h3
+                    class="text-lg font-semibold text-gray-800 dark:text-white mb-1 truncate"
+                    title={`${player.name} ${player.second_name || ''}`}
+                  >
+                    {player.name} {player.second_name || ''}
+                  </h3>
                   <p class="text-sm text-gray-600 dark:text-gray-300">
                     Equipo: <span class="font-medium">{player.team_name || 'N/A'}</span>
                   </p>
                 </div>
               </a>
               <div class="px-4 pb-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                 <span class="text-xs text-gray-500 dark:text-gray-400">Año: {player.year}</span>
-                 <button 
-                    type="button" 
-                    class="delete-player-btn text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium p-1 rounded hover:bg-red-100 dark:hover:bg-red-700/50"
-                    data-player-id={player.id.toString()}
-                    data-player-name={`${player.name} ${player.second_name || ''}`.trim()}
-                    title={`Eliminar jugador ${player.name} ${player.second_name || ''}`}
+                <span class="text-xs text-gray-500 dark:text-gray-400">Año: {player.year}</span>
+                <button
+                  type="button"
+                  class="delete-player-btn text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-xs font-medium p-1 rounded hover:bg-red-100 dark:hover:bg-red-700/50"
+                  data-player-id={player.id.toString()}
+                  data-player-name={`${player.name} ${player.second_name || ''}`.trim()}
+                  title={`Eliminar jugador ${player.name} ${player.second_name || ''}`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
+                    <path
+                      fill-rule="evenodd"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           ))}
         </div>
         <div id="noPlayersResults" class="hidden mt-6 text-center py-10">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <svg
+            class="mx-auto h-12 w-12 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              vector-effect="non-scaling-stroke"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+            />
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Sin resultados</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -142,47 +189,97 @@ if (error) {
       </>
     ) : (
       <div class="mt-6 text-center py-10 text-gray-500 dark:text-gray-400">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        <svg
+          class="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            vector-effect="non-scaling-stroke"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+          />
         </svg>
         <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay jugadores</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Aún no hay jugadores registrados para el año {currentYear}.
         </p>
-         <div class="mt-6">
+        <div class="mt-6">
           <AddPlayerButton currentYear={currentYear} isPrimary={true} />
         </div>
       </div>
     )
   }
 
-  <div id="delete-player-confirm-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50" aria-labelledby="modal-title-delete-player" role="dialog" aria-modal="true">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all">
+  <div
+    id="delete-player-confirm-modal"
+    class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center p-4 z-50"
+    aria-labelledby="modal-title-delete-player"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all"
+    >
       <div class="sm:flex sm:items-start">
-        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
-           <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <div
+          class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10"
+        >
+          <svg
+            class="h-6 w-6 text-red-600 dark:text-red-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+            ><path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            ></path></svg
+          >
         </div>
         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-          <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title-delete-player">
+          <h3
+            class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
+            id="modal-title-delete-player"
+          >
             Eliminar Jugador
           </h3>
           <div class="mt-2">
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              ¿Estás seguro de que quieres eliminar a <strong id="delete-player-modal-name" class="font-semibold"></strong>?<br/>
-              Esta acción eliminará también sus estadísticas asociadas (tarjetas, goles, etc.). No se puede deshacer.
+              ¿Estás seguro de que quieres eliminar a <strong
+                id="delete-player-modal-name"
+                class="font-semibold"></strong>?<br />
+              Esta acción eliminará también sus estadísticas asociadas (tarjetas, goles, etc.). No se
+              puede deshacer.
             </p>
           </div>
         </div>
       </div>
       <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-        <button type="button" id="confirm-delete-player-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+        <button
+          type="button"
+          id="confirm-delete-player-btn"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+        >
           Eliminar Jugador
         </button>
-        <button type="button" id="cancel-delete-player-btn" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+        <button
+          type="button"
+          id="cancel-delete-player-btn"
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-500 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+        >
           Cancelar
         </button>
       </div>
-      <p id="delete-player-modal-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
+      <p id="delete-player-modal-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden">
+      </p>
     </div>
   </div>
 </section>
@@ -194,7 +291,10 @@ if (error) {
 
   if (searchPlayerInput && playersGrid && noPlayersResultsMessage) {
     searchPlayerInput.addEventListener('input', function () {
-      const query = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const query = this.value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       let visiblePlayersCount = 0;
       const playerCardContainers = playersGrid.querySelectorAll('.player-card-container');
 
@@ -206,8 +306,12 @@ if (error) {
         const id = cardElement.dataset.id || '';
         const teamName = (cardElement.dataset.team_name || '').toLowerCase();
         const teamId = cardElement.dataset.team_id || '';
-        
-        const matchesQuery = name.includes(query) || id.includes(query) || teamName.includes(query) || teamId.includes(query);
+
+        const matchesQuery =
+          name.includes(query) ||
+          id.includes(query) ||
+          teamName.includes(query) ||
+          teamId.includes(query);
 
         if (matchesQuery) {
           cardElement.classList.remove('hidden');
@@ -228,17 +332,32 @@ if (error) {
   }
 
   class DeletePlayerConfirmModal {
-    private modalElement = document.getElementById('delete-player-confirm-modal') as HTMLElement | null;
-    private playerNameElement = document.getElementById('delete-player-modal-name') as HTMLElement | null;
-    private confirmButton = document.getElementById('confirm-delete-player-btn') as HTMLButtonElement | null;
-    private errorElement = document.getElementById('delete-player-modal-error') as HTMLElement | null;
+    private modalElement = document.getElementById(
+      'delete-player-confirm-modal'
+    ) as HTMLElement | null;
+    private playerNameElement = document.getElementById(
+      'delete-player-modal-name'
+    ) as HTMLElement | null;
+    private confirmButton = document.getElementById(
+      'confirm-delete-player-btn'
+    ) as HTMLButtonElement | null;
+    private errorElement = document.getElementById(
+      'delete-player-modal-error'
+    ) as HTMLElement | null;
     private currentPlayerId: string | null = null;
 
     constructor() {
-      if (!this.modalElement || !this.confirmButton || !this.playerNameElement || !this.errorElement) {
-          return;
+      if (
+        !this.modalElement ||
+        !this.confirmButton ||
+        !this.playerNameElement ||
+        !this.errorElement
+      ) {
+        return;
       }
-      document.getElementById('cancel-delete-player-btn')?.addEventListener('click', () => this.hide());
+      document
+        .getElementById('cancel-delete-player-btn')
+        ?.addEventListener('click', () => this.hide());
       this.confirmButton.addEventListener('click', () => this.handleConfirmDelete());
     }
 
@@ -282,31 +401,38 @@ if (error) {
       this.confirmButton.textContent = 'Eliminando...';
       try {
         const response = await fetch(`/api/players/deletePlayer`, {
-          method: 'POST', 
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ player_id: this.currentPlayerId }),
         });
         const responseData = await response.json();
         if (!response.ok) {
-            throw new Error(responseData.error || responseData.message || `Error del servidor (${response.status})`);
+          throw new Error(
+            responseData.error || responseData.message || `Error del servidor (${response.status})`
+          );
         }
-        const playerCardContainer = document.querySelector(`.player-card-container[data-id="${this.currentPlayerId}"]`);
+        const playerCardContainer = document.querySelector(
+          `.player-card-container[data-id="${this.currentPlayerId}"]`
+        );
         playerCardContainer?.remove();
-        
+
         const playerCountElement = document.querySelector('.player-count-display');
         if (playerCountElement) {
-            const currentCount = parseInt(playerCountElement.textContent?.match(/\d+/)?.[0] || '0', 10);
-            if (currentCount > 0) {
-                playerCountElement.textContent = `${currentCount - 1} jugadores`;
-            }
+          const currentCount = parseInt(
+            playerCountElement.textContent?.match(/\d+/)?.[0] || '0',
+            10
+          );
+          if (currentCount > 0) {
+            playerCountElement.textContent = `${currentCount - 1} jugadores`;
+          }
         }
         this.hide();
       } catch (error: any) {
         this.displayError(error.message || 'Ocurrió un error desconocido al eliminar el jugador.');
       } finally {
-        if(this.confirmButton){
-            this.confirmButton.disabled = false;
-            this.confirmButton.textContent = originalButtonText;
+        if (this.confirmButton) {
+          this.confirmButton.disabled = false;
+          this.confirmButton.textContent = originalButtonText;
         }
       }
     }
@@ -314,7 +440,7 @@ if (error) {
 
   document.addEventListener('DOMContentLoaded', () => {
     const deletePlayerModal = new DeletePlayerConfirmModal();
-    document.querySelectorAll('.delete-player-btn').forEach(button => {
+    document.querySelectorAll('.delete-player-btn').forEach((button) => {
       button.addEventListener('click', (event) => {
         const target = event.currentTarget as HTMLButtonElement;
         const playerId = target.dataset.playerId;

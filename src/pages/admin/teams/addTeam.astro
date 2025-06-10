@@ -12,8 +12,11 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
     <h2>Añadir nuevo equipo</h2>
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 w-80"></div>
- 
-    <div id="error-panel" class="hidden mb-4 p-4 rounded-md bg-red-100 border border-red-400 text-red-700">
+
+    <div
+      id="error-panel"
+      class="hidden mb-4 p-4 rounded-md bg-red-100 border border-red-400 text-red-700"
+    >
       <h3 class="font-bold">Error</h3>
       <p id="error-message" class="mt-1"></p>
     </div>
@@ -41,7 +44,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           id="group_letter"
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           placeholder="Ej: A"
-          maxlength="1" 
+          maxlength="1"
           pattern="[A-Za-z]"
           title="Introduce una única letra para el grupo (A-Z)."
           required
@@ -74,7 +77,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
           value="2025"
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           placeholder="Año"
-          min="2000" 
+          min="2000"
           max="2100"
           required
         />
@@ -93,24 +96,24 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
   function showToast(message: string, type: 'error' | 'success' = 'error', details: string = '') {
     const toastContainer = document.getElementById('toast-container');
     if (!toastContainer) return;
-    
+
     const toast = document.createElement('div');
     toast.className = `p-4 rounded-md shadow-md max-w-xs ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
-    
+
     const messageEl = document.createElement('div');
     messageEl.className = 'font-bold';
     messageEl.textContent = message;
     toast.appendChild(messageEl);
-    
+
     if (details) {
       const detailsEl = document.createElement('div');
       detailsEl.className = 'text-sm mt-1';
       detailsEl.textContent = details;
       toast.appendChild(detailsEl);
     }
-    
+
     const closeBtn = document.createElement('button');
-    closeBtn.className = 'absolute top-1 right-1 text-white hover:text-gray-200'; 
+    closeBtn.className = 'absolute top-1 right-1 text-white hover:text-gray-200';
     closeBtn.innerHTML = '×';
     closeBtn.style.background = 'none';
     closeBtn.style.border = 'none';
@@ -119,15 +122,15 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
     closeBtn.onclick = () => toast.remove();
     toast.appendChild(closeBtn);
 
-    toast.style.position = 'relative'; 
-    
+    toast.style.position = 'relative';
+
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
-      if (toast.parentElement) { 
+      if (toast.parentElement) {
         toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
         setTimeout(() => {
-            if (toast.parentElement) toast.remove();
+          if (toast.parentElement) toast.remove();
         }, 500);
       }
     }, 5000);
@@ -135,7 +138,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
 
   const form = document.getElementById('add-team-form') as HTMLFormElement;
   const errorPanel = document.getElementById('error-panel');
-  const errorMessageElement = document.getElementById('error-message'); 
+  const errorMessageElement = document.getElementById('error-message');
 
   function displayError(message: string) {
     if (errorPanel && errorMessageElement) {
@@ -168,7 +171,7 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
         displayError(msg);
         return;
       } else {
-        groupIdNumeric = groupLetterInput.charCodeAt(0) - 'A'.charCodeAt(0) + 1; 
+        groupIdNumeric = groupLetterInput.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
       }
       const year = parseInt(yearString || '0', 10);
       if (isNaN(year) || year < 2000 || year > 2100) {
@@ -178,13 +181,13 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
         return;
       }
 
-      if (!name || groupIdNumeric <= 0 || !location || location === "") {
+      if (!name || groupIdNumeric <= 0 || !location || location === '') {
         const msg = 'Por favor, rellene todos los campos correctamente.';
         showToast('Validación fallida', 'error', msg);
         displayError(msg);
         return;
       }
-      
+
       const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
       const originalButtonText = submitButton.textContent;
 
@@ -198,28 +201,31 @@ import ButtonBack from '../../../sections/ButtonBack.astro';
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ name, group_id: groupIdNumeric, year, location }),
-          credentials: 'include' 
+          credentials: 'include',
         });
 
         const result = await response.json();
-        
+
         if (!response.ok) {
           const errorMsg = result.details || result.error || 'Error al añadir el equipo';
           displayError(errorMsg);
-          showToast('Error', 'error', errorMsg); 
+          showToast('Error', 'error', errorMsg);
         } else {
           showToast('¡Éxito!', 'success', 'Equipo añadido correctamente');
           form.reset();
           const yearInput = document.getElementById('year') as HTMLInputElement;
           if (yearInput) {
-            yearInput.value = '2025'; 
+            yearInput.value = '2025';
           }
           const locationSelect = document.getElementById('location') as HTMLSelectElement;
-          if(locationSelect) locationSelect.value = "";
+          if (locationSelect) locationSelect.value = '';
         }
       } catch (error) {
         console.error('Error al insertar equipo:', error);
-        const errorMsg = error instanceof Error ? error.message : 'Error desconocido al añadir el equipo. Revisa la consola.';
+        const errorMsg =
+          error instanceof Error
+            ? error.message
+            : 'Error desconocido al añadir el equipo. Revisa la consola.';
         showToast('Error crítico', 'error', errorMsg);
         displayError(errorMsg);
       } finally {
