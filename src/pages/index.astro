@@ -1,0 +1,178 @@
+---
+import '../styles/tailwind.css';
+import Layout from '../layouts/Layout2025.astro';
+import Video from '../components/user/2025/Video.astro';
+import PreviousPoster from '../components/user/2025/PreviousPoster.astro';
+import Intro from '../components/user/2025/Intro.astro';
+import Sponsors from '../components/user/2025/Sponsors.astro';
+export const prerender = true;
+
+const currentYear = new Date().getFullYear();
+const seoTitle = `Cangas Cup Futsal ${currentYear} - Torneo de Fútbol Sala en Cangas del Narcea, Asturias`;
+const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútbol sala de Asturias. Equipos, resultados, ranking y toda la información del campeonato en Cangas del Narcea. ¡Solo los mejores dejan huella!`;
+---
+
+<Layout description={seoDescription} title={seoTitle}>
+  <main>
+    <!-- JSON-LD Structured Data for SEO -->
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SportsEvent',
+        name: `Cangas Cup Futsal ${currentYear}`,
+        description: seoDescription,
+        startDate: `${currentYear}-06-01`,
+        endDate: `${currentYear}-09-30`,
+        location: {
+          '@type': 'Place',
+          name: 'Cangas del Narcea',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Cangas del Narcea',
+            addressRegion: 'Asturias',
+            addressCountry: 'ES',
+          },
+        },
+        organizer: {
+          '@type': 'Organization',
+          name: 'Cangas Cup',
+          url: 'https://www.cangascup.es',
+        },
+        sport: 'Futsal',
+        eventStatus: 'https://schema.org/EventScheduled',
+        url: 'https://www.cangascup.es',
+        image: 'https://www.cangascup.es/cangasCupLogo.webp',
+      })}
+    />
+
+    <!-- SEO optimized content -->
+    <header class="sr-only">
+      <h1>Cangas Cup Futsal {currentYear} - Torneo de Fútbol Sala Asturias</h1>
+      <p>
+        El torneo de fútbol sala más prestigioso de Cangas del Narcea, Asturias. Equipos,
+        resultados, clasificaciones y toda la información del campeonato.
+      </p>
+    </header>
+
+    <!-- Redirect message (hidden by default) -->
+    <div
+      id="redirect-message"
+      class="fixed inset-0 bg-gray-900 bg-opacity-90 flex items-center justify-center z-50 hidden"
+    >
+      <div class="text-center text-white">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p class="text-xl">Redirigiendo a Cangas Cup 2025...</p>
+      </div>
+    </div>
+
+    <Video class="no-select" />
+    <div class="flex justify-center">
+      <PreviousPoster anchorClass="mt-8" />
+    </div>
+    <Intro />
+    <Sponsors />
+
+    <!-- Additional SEO content -->
+    <section class="container mx-auto px-4 py-8 text-center" aria-label="Información del torneo">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-white mb-4">Torneo de Fútbol Sala en Asturias</h2>
+
+        <!-- Navigation links for direct access -->
+        <div class="mb-6">
+          <a
+            href="/user/2025"
+            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2 transition duration-300"
+            >Ver Edición 2025</a
+          >
+          <a
+            href="/user/2024"
+            class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            >Ver Edición 2024</a
+          >
+        </div>
+        <p class="text-gray-300 mb-6">
+          La <strong>Cangas Cup</strong> es el torneo de <strong>fútbol sala</strong> más importante
+          de
+          <strong>Cangas del Narcea</strong> y una referencia en <strong>Asturias</strong>. Cada año
+          reúne a los mejores equipos de la región para disputar un campeonato lleno de emoción,
+          técnica y fair play.
+        </p>
+        <div class="grid md:grid-cols-3 gap-6 mt-8">
+          <div class="bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-2">🏆 Competición</h3>
+            <p class="text-sm text-gray-300">
+              Torneo oficial de fútbol sala con equipos de toda Asturias
+            </p>
+          </div>
+          <div class="bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-2">📍 Ubicación</h3>
+            <p class="text-sm text-gray-300">Cangas del Narcea, Asturias, España</p>
+          </div>
+          <div class="bg-gray-800 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-white mb-2">⚽ Modalidad</h3>
+            <p class="text-sm text-gray-300">Fútbol Sala (Futsal) - Competición profesional</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  body {
+    background-color: #2c3e50;
+  }
+
+  /* Hide content during redirect for better UX */
+  .redirecting {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  // Client-side redirect after page loads (SEO-friendly)
+  document.addEventListener('DOMContentLoaded', function () {
+    // Track user interactions to prevent unwanted redirects
+    let userInteracted = false;
+
+    // Detect any user interaction
+    ['click', 'scroll', 'keydown', 'touchstart'].forEach((event) => {
+      document.addEventListener(
+        event,
+        function () {
+          userInteracted = true;
+          sessionStorage.setItem('user-interacted', 'true');
+        },
+        { once: true }
+      );
+    });
+
+    // Small delay to ensure Google can read the content
+    setTimeout(() => {
+      // Check if we're on the homepage and not already redirected
+      // Also check if user hasn't interacted with the page
+      if (
+        window.location.pathname === '/' &&
+        !window.location.search.includes('no-redirect') &&
+        !userInteracted &&
+        !sessionStorage.getItem('user-interacted')
+      ) {
+        // Show loading message
+        const redirectMessage = document.getElementById('redirect-message');
+        if (redirectMessage) {
+          redirectMessage.classList.remove('hidden');
+        }
+
+        // Add a subtle transition effect
+        document.body.classList.add('redirecting');
+
+        // Redirect to current year
+        setTimeout(() => {
+          window.location.href = '/user/2025';
+        }, 1500);
+      }
+    }, 2000); // 2 second delay for SEO crawlers
+  });
+</script>

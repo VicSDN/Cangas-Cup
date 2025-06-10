@@ -2,43 +2,66 @@
 interface Props {
   title: string;
   description: string;
+  keywords?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, keywords, ogImage, canonicalUrl } = Astro.props;
 import Header from '../components/user/2025/Header.astro';
 import Footer from '../components/user/2024/Footer.astro';
 import '@fontsource-variable/onest';
 import ButtonUp from '../sections/ButtonUp.astro';
 import { ClientRouter } from 'astro:transitions';
+
+const defaultKeywords =
+  'cangas cup, futsal, fútbol sala, asturias, cangas del narcea, torneo, competición, equipos, resultados, ranking';
+const finalKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
+const finalOgImage = ogImage || 'https://www.cangascup.es/cangasCupLogo.webp';
+const finalCanonicalUrl = canonicalUrl || Astro.url.href;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta
-      name="description"
-      content="Solo los mejores dejan huella. Cangas Cup, mucho más que un torneo."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="keywords" content={finalKeywords} />
+    <meta name="author" content="Cangas Cup" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={finalCanonicalUrl} />
+
     <title>{title}</title>
     <link rel="icon" href="/cangasCupLogo.webp" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Google Search Console verification -->
     <meta name="google-site-verification" content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI" />
-    <meta property="og:title" content="Maratón Cangas Cup" />
-    <meta
-      property="og:description"
-      content="Solo los mejores dejan huella. Cangas Cup, mucho más que un torneo."
-    />
-    <meta property="og:image" content="https://cangascup.es/cangasCupLogo.webp" />
-    <meta property="og:url" content="https://cangascup.es/" />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={finalCanonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={finalOgImage} />
     <meta property="og:site_name" content="Cangas Cup" />
+    <meta property="og:locale" content="es_ES" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Maratón Cangas Cup" />
-    <meta
-      name="twitter:description"
-      content="Solo los mejores dejan huella. Cangas Cup, mucho más que un torneo."
-    />
-    <meta name="twitter:image" content="https://cangascup.es/cangasCupLogo.webp" />
+    <meta name="twitter:url" content={finalCanonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={finalOgImage} />
+
+    <!-- Additional SEO meta tags -->
+    <meta name="theme-color" content="#2c3e50" />
+    <meta name="msapplication-TileColor" content="#2c3e50" />
+
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://qxrwahceimnnfklzwhrt.supabase.co" />
+
     <ClientRouter />
   </head>
 

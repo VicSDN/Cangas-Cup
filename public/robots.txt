@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+User-agent: *
+Disallow: /admin/
+
+# Allow access to static resources
+User-agent: *
+Allow: /cangasCupLogo.webp
+Allow: /*.css
+Allow: /*.js
+
+# Sitemap location
+Sitemap: https://www.cangascup.es/sitemap.xml
+
+# Crawl-delay for better server performance
+Crawl-delay: 1
+

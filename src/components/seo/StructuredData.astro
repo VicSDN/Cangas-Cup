@@ -1,0 +1,16 @@
+---
+interface Props {
+  type: 'SportsEvent' | 'Organization' | 'LocalBusiness' | 'WebSite';
+  data: Record<string, any>;
+}
+
+const { type, data } = Astro.props;
+
+const baseData = {
+  '@context': 'https://schema.org',
+  '@type': type,
+  ...data,
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(baseData)} />
