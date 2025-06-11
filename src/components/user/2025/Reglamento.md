@@ -12,8 +12,12 @@ Los equipos clasificados en primer y segundo lugar de cada grupo pasarán de ron
 
 - Cada partido ganado supone la obtención de 3 PUNTOS.
 - Si el resultado es un empate cada equipo sumará 1 PUNTO.
+-En el caso de que se produzca un empate en el primer partido de cada grupo, cada 
+ equipo recibirá de igual forma 1 PUNTO, pero se hará una tanda de penaltis (muerte 
+ súbita) únicamente para ver qué equipo juega como ganador y cuál como perdedor. En 
+ ningún momento se tendrá en cuenta dicha tanda de penaltis para posibles desempates. 
+ Si una vez terminada la fase de grupos existe un empate entre dos o más equipos, seguiremos los siguientes criterios: 
 
-Si una vez terminada la fase de grupos existe un empate entre dos o más equipos, seguiremos los siguientes criterios:
 
 1.  Enfrentamiento directo entre los equipos.
 2.  Diferencia de goles a favor y en contra en la suma de los encuentros jugados entre ellos.
