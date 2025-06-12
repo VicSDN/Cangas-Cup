@@ -26,6 +26,10 @@ export interface Match extends DatabaseBase {
   away_team_match_fouls?: number | null;
   home_team_mvp_player_id?: number | null;
   away_team_mvp_player_id?: number | null;
+  // Campos para penales en eliminatorias
+  has_penalties?: boolean;
+  home_penalties?: number | null;
+  away_penalties?: number | null;
 }
 
 export interface TransformedMatchBase {

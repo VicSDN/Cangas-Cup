@@ -24,6 +24,9 @@ type MatchDisplay = {
   match_time_formatted: string;
   round_name: string | null;
   match_stage: string;
+  has_penalties?: boolean;
+  home_penalties?: number | null;
+  away_penalties?: number | null;
 };
 
 let matchesByStage: Record<string, MatchDisplay[]> = {};
@@ -43,6 +46,9 @@ try {
       match_date,
       round_name,
       match_stage,
+      has_penalties,
+      home_penalties,
+      away_penalties,
       home_team_placeholder_type,
       home_team_source_match_id,
       home_team_source_group_id,
@@ -215,6 +221,9 @@ try {
         }),
         round_name: match.round_name,
         match_stage: match.match_stage,
+        has_penalties: match.has_penalties,
+        home_penalties: match.home_penalties,
+        away_penalties: match.away_penalties,
       });
     });
     orderedStagesWithMatches = KNOCKOUT_STAGES_ORDER.filter(
@@ -264,9 +273,16 @@ try {
                       {match.home_team_name}
                     </span>
                     {match.home_score !== null && match.away_score !== null ? (
-                      <span class="text-lg font-bold text-indigo-300 px-2.5 py-1 bg-indigo-700/50 rounded-md shadow-sm">
-                        {match.home_score} - {match.away_score}
-                      </span>
+                      <div class="text-center">
+                        <span class="text-lg font-bold text-indigo-300 px-2.5 py-1 bg-indigo-700/50 rounded-md shadow-sm">
+                          {match.home_score} - {match.away_score}
+                        </span>
+                        {match.has_penalties && match.home_penalties !== null && match.away_penalties !== null && (
+                          <div class="text-xs text-amber-400 mt-1 font-medium">
+                            {match.home_penalties} - {match.away_penalties} (pen.)
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span class="text-md font-bold text-slate-500 px-2">vs</span>
                     )}

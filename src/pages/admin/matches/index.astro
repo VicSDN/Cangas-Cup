@@ -466,6 +466,14 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
               role="tab">MVP</button
             >
           </li>
+          <li id="penalties-tab-li" class="mr-2 hidden" role="presentation">
+            <button
+              class="modal-tab-button inline-block px-4 py-3 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+              data-tab-target="penalties-content"
+              type="button"
+              role="tab">Penales</button
+            >
+          </li>
         </ul>
       </div>
 
@@ -873,6 +881,86 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
             <p id="mvp-form-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
           </form>
         </div>
+
+        {/* Penalties Content - New Tab for Knockout Matches */}
+        <div class="modal-tab-pane hidden p-1" id="penalties-content" role="tabpanel">
+          <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
+            Gestión de Penales (Solo Eliminatorias)
+          </h3>
+          <form id="update-penalties-form" class="space-y-4">
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-md p-3 mb-4">
+              <p class="text-sm text-amber-700 dark:text-amber-200">
+                <strong>Nota:</strong> Los penales se usan cuando un partido de eliminatoria termina en empate después del tiempo reglamentario.
+              </p>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="has-penalties"
+                name="hasPenalties"
+                class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label for="has-penalties" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Este partido se resolvió por penales
+              </label>
+            </div>
+            
+            <div id="penalties-inputs" class="hidden space-y-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Ingresa el resultado de la tanda de penales (el resultado del tiempo reglamentario se mantiene separado):
+              </p>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label for="home-penalties" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <span id="penalties-home-team-name" class="font-semibold"></span> (penales)
+                  </label>
+                  <input
+                    type="number"
+                    id="home-penalties"
+                    name="homePenalties"
+                    min="0"
+                    max="20"
+                    class="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="0"
+                  />
+                </div>
+                
+                <div>
+                  <label for="away-penalties" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <span id="penalties-away-team-name" class="font-semibold"></span> (penales)
+                  </label>
+                  <input
+                    type="number"
+                    id="away-penalties"
+                    name="awayPenalties"
+                    min="0"
+                    max="20"
+                    class="mt-1 form-input block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              
+              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3">
+                <p class="text-xs text-blue-700 dark:text-blue-200">
+                  <strong>Importante:</strong> Los penales no pueden terminar en empate. Uno de los equipos debe ganar la tanda de penales.
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex justify-end pt-2">
+              <button
+                type="submit"
+                id="submit-update-penalties-btn"
+                class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                >Guardar Penales</button
+              >
+            </div>
+            <p id="penalties-form-error" class="text-xs text-red-600 dark:text-red-400 mt-2 hidden"></p>
+          </form>
+        </div>
       </div>
 
       <div class="mt-auto pt-4 flex justify-end">
@@ -1025,6 +1113,18 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
     mvpFormErrorEl: HTMLElement | null;
     submitMvpButton: HTMLButtonElement | null;
 
+    // Penalties form elements
+    penaltiesForm: HTMLFormElement | null;
+    hasPenaltiesCheckbox: HTMLInputElement | null;
+    penaltiesInputsDiv: HTMLElement | null;
+    homePenaltiesInput: HTMLInputElement | null;
+    awayPenaltiesInput: HTMLInputElement | null;
+    penaltiesHomeTeamNameEl: HTMLElement | null;
+    penaltiesAwayTeamNameEl: HTMLElement | null;
+    penaltiesFormErrorEl: HTMLElement | null;
+    submitPenaltiesButton: HTMLButtonElement | null;
+    penaltiesTabLi: HTMLElement | null;
+
     // Edit form elements
     editForm: HTMLFormElement | null;
     editHomeTeamSelect: HTMLSelectElement | null;
@@ -1149,6 +1249,18 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         'submit-update-mvp-btn'
       ) as HTMLButtonElement | null;
 
+      // Penalties form elements initialization
+      this.penaltiesForm = document.getElementById('update-penalties-form') as HTMLFormElement | null;
+      this.hasPenaltiesCheckbox = document.getElementById('has-penalties') as HTMLInputElement | null;
+      this.penaltiesInputsDiv = document.getElementById('penalties-inputs') as HTMLElement | null;
+      this.homePenaltiesInput = document.getElementById('home-penalties') as HTMLInputElement | null;
+      this.awayPenaltiesInput = document.getElementById('away-penalties') as HTMLInputElement | null;
+      this.penaltiesHomeTeamNameEl = document.getElementById('penalties-home-team-name') as HTMLElement | null;
+      this.penaltiesAwayTeamNameEl = document.getElementById('penalties-away-team-name') as HTMLElement | null;
+      this.penaltiesFormErrorEl = document.getElementById('penalties-form-error') as HTMLElement | null;
+      this.submitPenaltiesButton = document.getElementById('submit-update-penalties-btn') as HTMLButtonElement | null;
+      this.penaltiesTabLi = document.getElementById('penalties-tab-li') as HTMLElement | null;
+
       this.currentMatchData = {
         matchId: null,
         year: null,
@@ -1191,6 +1303,10 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 
       // MVP Form Event Listener
       this.mvpForm?.addEventListener('submit', (e: SubmitEvent) => this.handleMvpSubmit(e));
+
+      // Penalties form event listeners
+      this.penaltiesForm?.addEventListener('submit', (e: SubmitEvent) => this.handlePenaltiesSubmit(e));
+      this.hasPenaltiesCheckbox?.addEventListener('change', () => this.togglePenaltiesInputs());
 
       // Edit form event listener
       this.editForm?.addEventListener('submit', (e: SubmitEvent) => this.handleEditSubmit(e));
@@ -1299,12 +1415,15 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       if (this.foulsAwayTeamNameEl) this.foulsAwayTeamNameEl.textContent = matchData.awayTeamName;
       if (this.mvpHomeTeamNameEl) this.mvpHomeTeamNameEl.textContent = matchData.homeTeamName;
       if (this.mvpAwayTeamNameEl) this.mvpAwayTeamNameEl.textContent = matchData.awayTeamName;
+      if (this.penaltiesHomeTeamNameEl) this.penaltiesHomeTeamNameEl.textContent = matchData.homeTeamName;
+      if (this.penaltiesAwayTeamNameEl) this.penaltiesAwayTeamNameEl.textContent = matchData.awayTeamName;
 
       this.clearError(this.scoreFormErrorEl);
       this.clearError(this.cardFormErrorEl);
       this.clearError(this.foulsFormErrorEl);
       this.clearError(this.goalFormErrorEl);
       this.clearError(this.mvpFormErrorEl);
+      this.clearError(this.penaltiesFormErrorEl);
 
       this.scoreForm?.reset();
       this.addCardForm?.reset();
@@ -1349,6 +1468,8 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       this.loadMatchGoals();
       this.updateGoalTeamInfo();
       this.populateMvpSelects();
+      this.showPenaltiesTabForKnockout();
+      this.loadMatchPenalties();
     }
 
     hide() {
@@ -2179,6 +2300,194 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
           this.submitEditButton.textContent = 'Guardar Cambios';
         }
       }
+    }
+
+    // Penalties-specific methods
+    showPenaltiesTabForKnockout() {
+      if (!this.penaltiesTabLi) return;
+      
+      // Check if current match is a knockout match
+      const eliminatoryStages = ['Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Tercer Puesto', 'Final'];
+      
+      // Get current match data to check stage
+      this.getCurrentMatchStage().then(matchStage => {
+        if (eliminatoryStages.includes(matchStage)) {
+          this.penaltiesTabLi!.classList.remove('hidden');
+        } else {
+          this.penaltiesTabLi!.classList.add('hidden');
+        }
+      });
+    }
+
+    async getCurrentMatchStage(): Promise<string> {
+      if (!this.currentMatchData.matchId) return '';
+      
+      try {
+        const response = await fetch(`/api/matches/${this.currentMatchData.matchId}`);
+        if (!response.ok) return '';
+        const matchData = await response.json();
+        return matchData.match_stage || '';
+      } catch (error) {
+        console.error('Error getting match stage:', error);
+        return '';
+      }
+    }
+
+    togglePenaltiesInputs() {
+      if (!this.hasPenaltiesCheckbox || !this.penaltiesInputsDiv) return;
+      
+      if (this.hasPenaltiesCheckbox.checked) {
+        this.penaltiesInputsDiv.classList.remove('hidden');
+        if (this.homePenaltiesInput) this.homePenaltiesInput.required = true;
+        if (this.awayPenaltiesInput) this.awayPenaltiesInput.required = true;
+      } else {
+        this.penaltiesInputsDiv.classList.add('hidden');
+        if (this.homePenaltiesInput) {
+          this.homePenaltiesInput.required = false;
+          this.homePenaltiesInput.value = '';
+        }
+        if (this.awayPenaltiesInput) {
+          this.awayPenaltiesInput.required = false;
+          this.awayPenaltiesInput.value = '';
+        }
+      }
+    }
+
+    async loadMatchPenalties() {
+      if (!this.currentMatchData.matchId || !this.hasPenaltiesCheckbox) return;
+      
+      this.clearError(this.penaltiesFormErrorEl);
+      
+      try {
+        const response = await fetch(`/api/matches/penalties?matchId=${this.currentMatchData.matchId}`);
+        if (!response.ok) {
+          throw new Error('Error al cargar datos de penales');
+        }
+        
+        const penaltiesData = await response.json();
+        
+        this.hasPenaltiesCheckbox.checked = penaltiesData.has_penalties || false;
+        
+        if (penaltiesData.has_penalties) {
+          this.penaltiesInputsDiv?.classList.remove('hidden');
+          if (this.homePenaltiesInput) {
+            this.homePenaltiesInput.value = penaltiesData.home_penalties?.toString() || '';
+            this.homePenaltiesInput.required = true;
+          }
+          if (this.awayPenaltiesInput) {
+            this.awayPenaltiesInput.value = penaltiesData.away_penalties?.toString() || '';
+            this.awayPenaltiesInput.required = true;
+          }
+        } else {
+          this.penaltiesInputsDiv?.classList.add('hidden');
+          if (this.homePenaltiesInput) {
+            this.homePenaltiesInput.value = '';
+            this.homePenaltiesInput.required = false;
+          }
+          if (this.awayPenaltiesInput) {
+            this.awayPenaltiesInput.value = '';
+            this.awayPenaltiesInput.required = false;
+          }
+        }
+      } catch (error: any) {
+        this.displayError(
+          this.penaltiesFormErrorEl,
+          'Error al cargar datos de penales: ' + error.message
+        );
+      }
+    }
+
+    async handlePenaltiesSubmit(event: SubmitEvent) {
+      event.preventDefault();
+      
+      if (
+        !this.penaltiesForm ||
+        !this.hasPenaltiesCheckbox ||
+        !this.submitPenaltiesButton ||
+        !this.currentMatchData.matchId
+      ) return;
+      
+      this.clearError(this.penaltiesFormErrorEl);
+      
+      const hasPenalties = this.hasPenaltiesCheckbox.checked;
+      let homePenalties: number | null = null;
+      let awayPenalties: number | null = null;
+      
+      if (hasPenalties) {
+        if (!this.homePenaltiesInput || !this.awayPenaltiesInput) {
+          this.displayError(this.penaltiesFormErrorEl, 'Error interno: campos de penales no encontrados.');
+          return;
+        }
+        
+        const homePenaltiesValue = this.homePenaltiesInput.value;
+        const awayPenaltiesValue = this.awayPenaltiesInput.value;
+        
+        if (!homePenaltiesValue || !awayPenaltiesValue) {
+          this.displayError(this.penaltiesFormErrorEl, 'Si hay penales, debe especificar el resultado de ambos equipos.');
+          return;
+        }
+        
+        homePenalties = parseInt(homePenaltiesValue, 10);
+        awayPenalties = parseInt(awayPenaltiesValue, 10);
+        
+        if (isNaN(homePenalties) || isNaN(awayPenalties) || homePenalties < 0 || awayPenalties < 0) {
+          this.displayError(this.penaltiesFormErrorEl, 'Los penales deben ser números enteros no negativos.');
+          return;
+        }
+        
+        if (homePenalties === awayPenalties) {
+          this.displayError(this.penaltiesFormErrorEl, 'Los penales no pueden terminar en empate.');
+          return;
+        }
+      }
+      
+      this.submitPenaltiesButton.disabled = true;
+      this.submitPenaltiesButton.textContent = 'Guardando...';
+      
+      const payload = {
+        match_id: parseInt(this.currentMatchData.matchId, 10),
+        has_penalties: hasPenalties,
+        home_penalties: homePenalties,
+        away_penalties: awayPenalties,
+      };
+      
+      try {
+        const response = await fetch('/api/matches/penalties', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        
+        const responseData = await response.json();
+        if (!response.ok) {
+          throw new Error(responseData.error || responseData.message || 'Error al guardar penales');
+        }
+        
+        // Show success message
+        if (this.penaltiesFormErrorEl) {
+          this.penaltiesFormErrorEl.textContent = 'Penales guardados correctamente.';
+          this.penaltiesFormErrorEl.className = 'text-xs text-green-600 dark:text-green-400 mt-2';
+          this.penaltiesFormErrorEl.classList.remove('hidden');
+          setTimeout(() => this.clearError(this.penaltiesFormErrorEl), 3000);
+        }
+        
+        // Update the UI to show penalties in results
+        this.updateMatchResultDisplay();
+        
+      } catch (error: any) {
+        this.displayError(this.penaltiesFormErrorEl, error.message);
+      } finally {
+        if (this.submitPenaltiesButton) {
+          this.submitPenaltiesButton.disabled = false;
+          this.submitPenaltiesButton.textContent = 'Guardar Penales';
+        }
+      }
+    }
+
+    async updateMatchResultDisplay() {
+      // This method could be enhanced to update the main table display to show penalties
+      // For now, we'll just reload the penalties data to ensure consistency
+      await this.loadMatchPenalties();
     }
   }
 

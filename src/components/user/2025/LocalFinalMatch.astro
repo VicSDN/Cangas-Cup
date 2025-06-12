@@ -16,6 +16,9 @@ type MatchDisplay = {
   match_time_formatted: string;
   round_name: string | null;
   match_stage: string;
+  has_penalties?: boolean;
+  home_penalties?: number | null;
+  away_penalties?: number | null;
 };
 
 let localFinalMatches: MatchDisplay[] = [];
@@ -34,6 +37,9 @@ try {
       match_date,
       round_name,
       match_stage,
+      has_penalties,
+      home_penalties,
+      away_penalties,
       home_team_placeholder_type,
       home_team_source_match_id,
       away_team_placeholder_type,
@@ -130,6 +136,9 @@ try {
         }),
         round_name: match.round_name,
         match_stage: match.match_stage,
+        has_penalties: match.has_penalties,
+        home_penalties: match.home_penalties,
+        away_penalties: match.away_penalties,
       };
     });
   }
@@ -172,9 +181,16 @@ try {
                 {match.home_team_name}
               </span>
               {match.home_score !== null && match.away_score !== null ? (
-                <span class="text-3xl md:text-4xl font-extrabold text-amber-300 px-4 py-2 bg-amber-800/50 border-2 border-amber-600 rounded-lg shadow-md">
-                  {match.home_score} - {match.away_score}
-                </span>
+                <div class="text-center">
+                  <span class="text-3xl md:text-4xl font-extrabold text-amber-300 px-4 py-2 bg-amber-800/50 border-2 border-amber-600 rounded-lg shadow-md">
+                    {match.home_score} - {match.away_score}
+                  </span>
+                  {match.has_penalties && match.home_penalties !== null && match.away_penalties !== null && (
+                    <div class="text-sm text-amber-400 mt-2 font-bold">
+                      {match.home_penalties} - {match.away_penalties} (penales)
+                    </div>
+                  )}
+                </div>
               ) : (
                 <span class="text-2xl md:text-3xl font-bold text-slate-500 px-3">vs</span>
               )}
