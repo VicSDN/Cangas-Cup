@@ -11,7 +11,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,astro,css,md}\""
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
