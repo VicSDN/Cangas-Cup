@@ -6,12 +6,23 @@ import svgr from 'vite-plugin-svgr';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
+  site: 'https://www.cangascup.es',
+  integrations: [
+    tailwind(), 
+    react(), 
+    sitemap({
+      filter: (page) => !page.includes('/admin/'),
+      customPages: [
+        'https://www.cangascup.es/',
+        'https://www.cangascup.es/user/2025',
+        'https://www.cangascup.es/user/2024'
+      ]
+    })
+  ],
   redirects: {
     '/': '/user/2025',
     '/admin': '/admin/signin'
   },
-   site: 'https://www.cangascup.es',
-  integrations: [tailwind(), react(), sitemap()],
   prefetch: true,
   output: 'server',
   adapter: vercel({

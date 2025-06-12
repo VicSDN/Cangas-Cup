@@ -65,6 +65,12 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
       <h2>Torneo de Fútbol Sala en Asturias</h2>
       <p>La <strong>Cangas Cup</strong> es el torneo de <strong>fútbol sala</strong> más importante de <strong>Cangas del Narcea</strong> y una referencia en <strong>Asturias</strong>. Cada año reúne a los mejores equipos de la región para disputar un campeonato lleno de emoción, técnica y fair play.</p>
       
+      <h3>Historia del Torneo</h3>
+      <p>Desde sus inicios, la <strong>Cangas Cup</strong> se ha consolidado como el evento deportivo más esperado del año en <strong>Cangas del Narcea</strong>. Los mejores equipos de fútbol sala de <strong>Asturias</strong> compiten por el prestigioso trofeo en instalaciones de primer nivel.</p>
+      
+      <h3>Equipos Participantes</h3>
+      <p>El torneo cuenta con la participación de equipos de toda la geografía asturiana, desde clubs históricos hasta prometedores equipos emergentes, todos unidos por la pasión del <strong>futsal</strong>.</p>
+      
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
         <div style="background: #34495e; padding: 20px; border-radius: 8px;">
           <h3>🏆 Competición</h3>
@@ -80,10 +86,20 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
         </div>
       </div>
       
-      <div style="text-align: center; margin: 40px 0;">
-        <a href="/user/2025" style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2025</a>
-        <a href="/user/2024" style="display: inline-block; background: #7f8c8d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2024</a>
-      </div>
+  <div style="text-align: center; margin: 40px 0;">
+    <a href="/user/2025" style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2025</a>
+    <a href="/user/2024" style="display: inline-block; background: #7f8c8d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2024</a>
+  </div>
+  
+  <!-- Auto-redirect to current year for users, not bots -->
+  <script>
+    // Only redirect if not a bot
+    if (!navigator.userAgent.match(/bot|crawl|slurp|spider/i)) {
+      setTimeout(() => {
+        window.location.href = '/user/2025';
+      }, 2000);
+    }
+  </script>
     </section>
   </main>
 </body>
