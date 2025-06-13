@@ -59,16 +59,88 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const payload = (await request.json()) as CreateCardPayload;
 
-    if (
-      !payload.match_id ||
-      !payload.player_id ||
-      !payload.team_id ||
-      !payload.type ||
-      payload.minute == null ||
-      !payload.year
-    ) {
+    // Validaciones más específicas
+    if (!payload.match_id || typeof payload.match_id !== 'number' || payload.match_id <= 0) {
       return new Response(
-        JSON.stringify({ error: 'Datos incompletos para crear tarjeta' } as ApiErrorResponse),
+        JSON.stringify({ error: 'ID del partido requerido y debe ser un número válido' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    if (!payload.player_id || typeof payload.player_id !== 'number' || payload.player_id <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'ID del jugador requerido y debe ser un número válido' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    if (!payload.team_id || typeof payload.team_id !== 'number' || payload.team_id <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'ID del equipo requerido y debe ser un número válido' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    if (!payload.type || (payload.type !== 'Amarilla' && payload.type !== 'Roja')) {
+      return new Response(
+        JSON.stringify({ error: 'Tipo de tarjeta debe ser "Amarilla" o "Roja"' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    if (payload.minute == null || typeof payload.minute !== 'number' || payload.minute < 0 || payload.minute > 120) {
+      return new Response(
+        JSON.stringify({ error: 'El minuto debe ser un número entre 0 y 120' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    if (!payload.year || typeof payload.year !== 'number' || payload.year <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Año requerido y debe ser un número válido' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Verificar que el jugador pertenece al equipo especificado
+    const { data: playerCheck, error: playerError } = await supabase
+      .from('tournament_player')
+      .select('team_id')
+      .eq('id', payload.player_id)
+      .eq('year', payload.year)
+      .single();
+
+    if (playerError || !playerCheck) {
+      return new Response(
+        JSON.stringify({ error: 'Jugador no encontrado' } as ApiErrorResponse),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (playerCheck.team_id !== payload.team_id) {
+      return new Response(
+        JSON.stringify({ error: 'El jugador no pertenece al equipo especificado' } as ApiErrorResponse),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json' },

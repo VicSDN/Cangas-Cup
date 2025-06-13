@@ -1712,8 +1712,56 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       const selectedOption = this.cardPlayerSelect.options[this.cardPlayerSelect.selectedIndex];
       const teamId = selectedOption?.dataset.teamId;
 
-      if (!playerId || !cardType || !minuteValue || !teamId) {
-        this.displayError(this.cardFormErrorEl, 'Todos los campos son requeridos.');
+      // Validaciones más específicas
+      if (!playerId || playerId === '') {
+        this.displayError(this.cardFormErrorEl, 'Debe seleccionar un jugador.');
+        return;
+      }
+      
+      if (!cardType || (cardType !== 'Amarilla' && cardType !== 'Roja')) {
+        this.displayError(this.cardFormErrorEl, 'Debe seleccionar un tipo de tarjeta válido.');
+        return;
+      }
+      
+      if (!minuteValue || minuteValue === '') {
+        this.displayError(this.cardFormErrorEl, 'Debe ingresar el minuto de la tarjeta.');
+        return;
+      }
+      
+      if (!teamId || teamId === '') {
+        this.displayError(this.cardFormErrorEl, 'Error: No se pudo obtener el equipo del jugador seleccionado.');
+        return;
+      }
+      
+      // Validar que los números sean válidos
+      const playerIdNum = parseInt(playerId, 10);
+      const teamIdNum = parseInt(teamId, 10);
+      const minuteNum = parseInt(minuteValue, 10);
+      const matchIdNum = parseInt(this.currentMatchData.matchId, 10);
+      const yearNum = parseInt(this.currentMatchData.year, 10);
+      
+      if (isNaN(playerIdNum) || playerIdNum <= 0) {
+        this.displayError(this.cardFormErrorEl, 'ID del jugador no válido.');
+        return;
+      }
+      
+      if (isNaN(teamIdNum) || teamIdNum <= 0) {
+        this.displayError(this.cardFormErrorEl, 'ID del equipo no válido.');
+        return;
+      }
+      
+      if (isNaN(minuteNum) || minuteNum < 0 || minuteNum > 120) {
+        this.displayError(this.cardFormErrorEl, 'El minuto debe ser un número entre 0 y 120.');
+        return;
+      }
+      
+      if (isNaN(matchIdNum) || matchIdNum <= 0) {
+        this.displayError(this.cardFormErrorEl, 'ID del partido no válido.');
+        return;
+      }
+      
+      if (isNaN(yearNum) || yearNum <= 0) {
+        this.displayError(this.cardFormErrorEl, 'Año no válido.');
         return;
       }
 
@@ -1726,12 +1774,12 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       }
 
       const payload: CreateCardPayload = {
-        match_id: parseInt(this.currentMatchData.matchId, 10),
-        player_id: parseInt(playerId, 10),
-        team_id: parseInt(teamId, 10),
+        match_id: matchIdNum,
+        player_id: playerIdNum,
+        team_id: teamIdNum,
         type: cardType,
-        minute: parseInt(minuteValue, 10),
-        year: parseInt(this.currentMatchData.year, 10),
+        minute: minuteNum,
+        year: yearNum,
       };
 
       try {

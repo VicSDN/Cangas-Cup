@@ -9,6 +9,69 @@ interface UpdatePenaltiesPayload {
   away_penalties?: number | null;
 }
 
+// Helper function to update teams that advance based on match result including penalties
+async function updateAdvancingTeamsWithPenalties(matchId: number, homeTeam: number, awayTeam: number, homeScore: number, awayScore: number, hasPenalties: boolean = false, homePenalties: number | null = null, awayPenalties: number | null = null) {
+  // Determine winner and loser
+  let winnerId: number;
+  let loserId: number;
+  
+  if (hasPenalties && homePenalties !== null && awayPenalties !== null) {
+    // Winner determined by penalties
+    winnerId = homePenalties > awayPenalties ? homeTeam : awayTeam;
+    loserId = homePenalties > awayPenalties ? awayTeam : homeTeam;
+  } else {
+    // Winner determined by regular time
+    if (homeScore === awayScore) {
+      // It's a draw, no automatic advancement in this case
+      return;
+    }
+    winnerId = homeScore > awayScore ? homeTeam : awayTeam;
+    loserId = homeScore > awayScore ? awayTeam : homeTeam;
+  }
+
+  // Find matches where this match's winner should advance
+  const { data: matchesToUpdateWinner, error: winnerError } = await supabase
+    .from('tournament_match')
+    .select('id, home_team_source_match_id, away_team_source_match_id, home_team_placeholder_type, away_team_placeholder_type')
+    .or(`home_team_source_match_id.eq.${matchId},away_team_source_match_id.eq.${matchId}`);
+
+  if (winnerError) {
+    console.error('Error finding matches to update with winner:', winnerError);
+    return;
+  }
+
+  // Update matches where winner advances
+  for (const match of matchesToUpdateWinner || []) {
+    const updates: any = {};
+    
+    if (match.home_team_source_match_id === matchId && match.home_team_placeholder_type === 'WINNER_MATCH') {
+      updates.home_team = winnerId;
+    }
+    if (match.away_team_source_match_id === matchId && match.away_team_placeholder_type === 'WINNER_MATCH') {
+      updates.away_team = winnerId;
+    }
+    if (match.home_team_source_match_id === matchId && match.home_team_placeholder_type === 'LOSER_MATCH') {
+      updates.home_team = loserId;
+    }
+    if (match.away_team_source_match_id === matchId && match.away_team_placeholder_type === 'LOSER_MATCH') {
+      updates.away_team = loserId;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      const { error: updateError } = await supabase
+        .from('tournament_match')
+        .update(updates)
+        .eq('id', match.id);
+      
+      if (updateError) {
+        console.error(`Error updating advancing team for match ${match.id}:`, updateError);
+      } else {
+        console.log(`Updated match ${match.id} with advancing team(s) from penalties:`, updates);
+      }
+    }
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   try {
     const payload = (await request.json()) as UpdatePenaltiesPayload;
@@ -101,12 +164,36 @@ export const POST: APIRoute = async ({ request }) => {
       .from('tournament_match')
       .update(updateData)
       .eq('id', payload.match_id)
-      .select('id, has_penalties, home_penalties, away_penalties')
+      .select('id, has_penalties, home_penalties, away_penalties, home_team, away_team, home_score, away_score')
       .single();
 
     if (error) throw error;
 
-    return new Response(JSON.stringify(data), {
+    // Update advancing teams automatically when penalties are updated
+    if (payload.has_penalties && data) {
+      try {
+        await updateAdvancingTeamsWithPenalties(
+          payload.match_id, 
+          data.home_team, 
+          data.away_team, 
+          data.home_score || 0, 
+          data.away_score || 0,
+          data.has_penalties || false,
+          data.home_penalties,
+          data.away_penalties
+        );
+      } catch (advanceError: any) {
+        console.error(`Error updating advancing teams for match ${payload.match_id} with penalties:`, advanceError);
+        // Don't fail the whole request if advancing teams update fails
+      }
+    }
+
+    return new Response(JSON.stringify({
+      id: data.id,
+      has_penalties: data.has_penalties,
+      home_penalties: data.home_penalties,
+      away_penalties: data.away_penalties
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

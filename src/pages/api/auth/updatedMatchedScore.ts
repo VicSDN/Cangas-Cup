@@ -2,6 +2,69 @@ import type { APIRoute } from 'astro';
 import { supabase } from '../../../lib/supabase';
 import type { Match } from '../../../types/tournament';
 
+// Helper function to update teams that advance based on match result
+async function updateAdvancingTeams(matchId: number, homeTeam: number, awayTeam: number, homeScore: number, awayScore: number, hasPenalties: boolean = false, homePenalties: number | null = null, awayPenalties: number | null = null) {
+  // Determine winner and loser
+  let winnerId: number;
+  let loserId: number;
+  
+  if (hasPenalties && homePenalties !== null && awayPenalties !== null) {
+    // Winner determined by penalties
+    winnerId = homePenalties > awayPenalties ? homeTeam : awayTeam;
+    loserId = homePenalties > awayPenalties ? awayTeam : homeTeam;
+  } else {
+    // Winner determined by regular time
+    if (homeScore === awayScore) {
+      // It's a draw, no automatic advancement in this case
+      return;
+    }
+    winnerId = homeScore > awayScore ? homeTeam : awayTeam;
+    loserId = homeScore > awayScore ? awayTeam : homeTeam;
+  }
+
+  // Find matches where this match's winner should advance
+  const { data: matchesToUpdateWinner, error: winnerError } = await supabase
+    .from('tournament_match')
+    .select('id, home_team_source_match_id, away_team_source_match_id, home_team_placeholder_type, away_team_placeholder_type')
+    .or(`home_team_source_match_id.eq.${matchId},away_team_source_match_id.eq.${matchId}`);
+
+  if (winnerError) {
+    console.error('Error finding matches to update with winner:', winnerError);
+    return;
+  }
+
+  // Update matches where winner advances
+  for (const match of matchesToUpdateWinner || []) {
+    const updates: any = {};
+    
+    if (match.home_team_source_match_id === matchId && match.home_team_placeholder_type === 'WINNER_MATCH') {
+      updates.home_team = winnerId;
+    }
+    if (match.away_team_source_match_id === matchId && match.away_team_placeholder_type === 'WINNER_MATCH') {
+      updates.away_team = winnerId;
+    }
+    if (match.home_team_source_match_id === matchId && match.home_team_placeholder_type === 'LOSER_MATCH') {
+      updates.home_team = loserId;
+    }
+    if (match.away_team_source_match_id === matchId && match.away_team_placeholder_type === 'LOSER_MATCH') {
+      updates.away_team = loserId;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      const { error: updateError } = await supabase
+        .from('tournament_match')
+        .update(updates)
+        .eq('id', match.id);
+      
+      if (updateError) {
+        console.error(`Error updating advancing team for match ${match.id}:`, updateError);
+      } else {
+        console.log(`Updated match ${match.id} with advancing team(s):`, updates);
+      }
+    }
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const timestamp = new Date().toISOString();
 
@@ -63,6 +126,23 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({ error: `No se encontró el partido con ID ${match_id}.` }),
         { status: 404 }
       );
+    }
+
+    // Update advancing teams automatically
+    try {
+      await updateAdvancingTeams(
+        match_id, 
+        data.home_team, 
+        data.away_team, 
+        numHomeScore, 
+        numAwayScore,
+        data.has_penalties || false,
+        data.home_penalties,
+        data.away_penalties
+      );
+    } catch (advanceError: any) {
+      console.error(`[API][${timestamp}] Error updating advancing teams for match ${match_id}:`, advanceError);
+      // Don't fail the whole request if advancing teams update fails
     }
 
     return new Response(
