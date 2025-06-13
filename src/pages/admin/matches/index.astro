@@ -1310,6 +1310,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
 
       // Edit form event listener
       this.editForm?.addEventListener('submit', (e: SubmitEvent) => this.handleEditSubmit(e));
+      
+      // Handle match stage change to show/hide group field
+      this.editMatchStageSelect?.addEventListener('change', () => this.handleEditStageChange());
     }
 
     handleTabClick(clickedTab: HTMLElement) {
@@ -2141,6 +2144,29 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
       }
     }
 
+    // Handle edit form stage change
+    handleEditStageChange() {
+      if (!this.editMatchStageSelect || !this.editGroupSelect) return;
+      
+      const selectedStage = this.editMatchStageSelect.value;
+      const groupField = this.editGroupSelect.closest('div');
+      
+      if (selectedStage === 'Fase de Grupos') {
+        // Show group field
+        if (groupField) {
+          groupField.style.display = 'block';
+        }
+        this.editGroupSelect.required = true;
+      } else {
+        // Hide group field and clear value
+        if (groupField) {
+          groupField.style.display = 'none';
+        }
+        this.editGroupSelect.required = false;
+        this.editGroupSelect.value = '';
+      }
+    }
+
     // Edit form methods
     async loadTeamsAndGroups() {
       try {
@@ -2234,6 +2260,9 @@ const displayMatches: TransformedMatch[] = matchesFromDb.map((match: Match): Tra
         if (this.editIsLocalFinalCheckbox) {
           this.editIsLocalFinalCheckbox.checked = matchData.is_local_final || false;
         }
+        
+        // Update visibility of group field based on match stage
+        this.handleEditStageChange();
       } catch (error: any) {
         this.displayError(
           this.editFormErrorEl,
