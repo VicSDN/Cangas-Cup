@@ -55,9 +55,10 @@ try {
       SubcampeonTorneo: { displayName: 'Subcampeón del Torneo', order: 2, icon: '🥈' },
       MejorJugador: { displayName: 'Mejor Jugador', order: 3, icon: '🌟' },
       MejorPortero: { displayName: 'Mejor Portero', order: 4, icon: '🧤' },
-      CampeonLocal: { displayName: 'Campeón Local', order: 5, icon: '🏠' },
-      MVPFinalAsturtoner: { displayName: 'MVP Final Asturtoner', order: 6, icon: '🔥' },
-      MVPFinalLocalTrikigol: { displayName: 'MVP Final Local Trikigol', order: 7, icon: '💥' },
+      MaximoGoleador: { displayName: 'Máximo Goleador', order: 5, icon: '⚽' },
+      CampeonLocal: { displayName: 'Campeón Local', order: 6, icon: '🏠' },
+      MVPFinalAsturtoner: { displayName: 'MVP Final Asturtoner', order: 7, icon: '🔥' },
+      MVPFinalLocalTrikigol: { displayName: 'MVP Final Local Trikigol', order: 8, icon: '💥' },
     };
 
     awards = typedData
@@ -147,8 +148,9 @@ try {
                   {award.display_name.replace(/🏆|🥈|🌟|🧤|🏠|🔥|💥\s*/g, '')}
                 </h3>
                 <p
-                  class="text-2xl md:text-2xl font-extrabold text-white truncate max-w-full"
+                  class="text-xl md:text-2xl font-extrabold text-white break-words text-center leading-tight px-1"
                   title={award.winner_name}
+                  style="word-wrap: break-word; overflow-wrap: break-word; hyphens: auto;"
                 >
                   {award.winner_name}
                 </p>
