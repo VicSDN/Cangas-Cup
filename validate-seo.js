@@ -1,9 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * SEO Validation Tool for Cangas Cup
- * Run with: node validate-seo.js
- */
 
 const https = require('https');
 const http = require('http');
