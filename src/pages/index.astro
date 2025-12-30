@@ -89,13 +89,9 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
     <a href="/user/2024" style="display: inline-block; background: #7f8c8d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2024</a>
   </div>
 
-  <script>
-    if (!navigator.userAgent.match(/bot|crawl|slurp|spider/i)) {
-      setTimeout(() => {
-        window.location.href = '/user/2026';
-      }, 2000);
-    }
-  </script>
+  <!-- Removed automatic client-side redirect to /user/2026 to avoid unintended redirects
+       for users and search engines. If you want a server-side redirect, implement it in
+       your hosting platform or middleware with proper HTTP status codes (301/302). -->
     </section>
   </main>
 </body>
