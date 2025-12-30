@@ -2,9 +2,13 @@ export const prerender = true;
 
 const SITE_URL = 'https://www.cangascup.es';
 
-// Define your main pages
+
 const staticPages = [
   '',
+  '/user/2026',
+  '/user/2026/rankings',
+  '/user/2026/regulations',
+  '/user/2026/directo',
   '/user/2025',
   '/user/2025/rankings',
   '/user/2025/regulations',
@@ -35,7 +39,7 @@ ${staticPages
   return new Response(sitemap, {
     headers: {
       'Content-Type': 'application/xml',
-      'Cache-Control': 'max-age=86400', // 24 hours
+      'Cache-Control': 'max-age=86400', 
     },
   });
 }

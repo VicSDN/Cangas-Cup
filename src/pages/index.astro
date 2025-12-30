@@ -17,14 +17,12 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.cangascup.es/">
   
-  <!-- Open Graph -->
   <meta property="og:title" content={seoTitle}>
   <meta property="og:description" content={seoDescription}>
   <meta property="og:url" content="https://www.cangascup.es/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.cangascup.es/cangasCupLogo.webp">
   
-  <!-- JSON-LD Structured Data -->
   <script type="application/ld+json" set:html={JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'SportsEvent',
@@ -54,7 +52,6 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
   })} />
 </head>
 <body style="background: #2c3e50; color: white; font-family: system-ui, sans-serif; margin: 0; padding: 20px;">
-  <!-- SEO Content for Bots -->
   <header>
     <h1>Cangas Cup Futsal {currentYear} - Torneo de Fútbol Sala en Cangas del Narcea, Asturias</h1>
     <p>El torneo de fútbol sala más prestigioso de Cangas del Narcea, Asturias. Equipos, resultados, clasificaciones y toda la información del campeonato.</p>
@@ -87,16 +84,15 @@ const seoDescription = `🏆 Cangas Cup ${currentYear}: El mejor torneo de fútb
       </div>
       
   <div style="text-align: center; margin: 40px 0;">
+    <a href="/user/2026" style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2026</a>
     <a href="/user/2025" style="display: inline-block; background: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2025</a>
     <a href="/user/2024" style="display: inline-block; background: #7f8c8d; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px;">Ver Edición 2024</a>
   </div>
-  
-  <!-- Auto-redirect to current year for users, not bots -->
+
   <script>
-    // Only redirect if not a bot
     if (!navigator.userAgent.match(/bot|crawl|slurp|spider/i)) {
       setTimeout(() => {
-        window.location.href = '/user/2025';
+        window.location.href = '/user/2026';
       }, 2000);
     }
   </script>

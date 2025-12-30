@@ -1,0 +1,84 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  keywords?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+}
+const { title, description, keywords, ogImage, canonicalUrl } = Astro.props;
+import Header from '../components/user/2026/Header.astro';
+import Footer from '../components/user/2026/Footer.astro';
+import '@fontsource-variable/onest';
+import ButtonUp from '../sections/ButtonUp.astro';
+import { ClientRouter } from 'astro:transitions';
+
+const defaultKeywords =
+  'cangas cup, futsal, fútbol sala, asturias, cangas del narcea, cangas de narcea, maratón,futsal, torneo, competición, equipos, resultados, ranking';
+const finalKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
+const finalOgImage = ogImage || 'https://www.cangascup.es/cangasCupLogo.webp';
+const finalCanonicalUrl = canonicalUrl || Astro.url.href;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="keywords" content={finalKeywords} />
+    <meta name="author" content="Cangas Cup" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={finalCanonicalUrl} />
+    <title>{title}</title>
+    <link rel="icon" href="/cangasCupLogo.webp" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="google-site-verification" content="AetL81-l7UsM4ebliZMB-ToHBXsmjGtvkqahgho87gI" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={finalCanonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={finalOgImage} />
+    <meta property="og:site_name" content="Cangas Cup" />
+    <meta property="og:locale" content="es_ES" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={finalCanonicalUrl} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={finalOgImage} />
+    <meta name="theme-color" content="#2c3e50" />
+    <meta name="msapplication-TileColor" content="#2c3e50" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://qxrwahceimnnfklzwhrt.supabase.co" />
+
+    <ClientRouter />
+  </head>
+
+  <body>
+    <Header class="mb-4" />
+    <slot />
+    <Footer />
+    <ButtonUp />
+    <style is:global>
+      :root {
+        color-scheme: dark;
+      }
+      html {
+        font-family: 'Onest Variable', system-ui, sans-serif;
+        background: #2ECC71;
+      }
+      p {
+        color: rgb(255, 255, 255, 0.9);
+        line-height: 1.4;
+        margin-bottom: 1em;
+        font-weight: 100;
+        font-size: 0.9em;
+        letter-spacing: 0.5px;
+      }
+      p strong {
+        color: white;
+        font-weight: 700;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+---
+import Layout from '../../../layouts/Layout2026.astro';
+import ButtonBack from '../../../sections/ButtonBack.astro'; 
+---
+
+<Layout
+  description="Ver los partidos en directo, aquí puedes hacerlo"
+  title="Partidos en directo - Próximamente | III Cangas Cup 2026"
+>
+  
+  <div class="mt-8 px-4 md:px-4 animate-fade-in-down relative z-50">
+    <a href="/" class="inline-block transition-transform hover:-translate-x-1">
+      <ButtonBack />
+    </a>
+  </div>
+
+  <section class="mx-auto max-w-4xl px-4 mt-4 mb-12 min-h-[50vh]">
+    
+    <div class="flex flex-col items-center justify-center text-center animate-fade-in-up relative z-0">
+      
+      <div class="w-full max-w-3xl bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-10 md:p-16 relative overflow-hidden group">
+        
+        <div class="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+        <div class="relative bg-white p-4 rounded-full mb-6 inline-block shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.866v6.268a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3l18 18" /> <!-- Línea tachada -->
+          </svg>
+        </div>
+
+        <h1 class="relative text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+          Emisión no disponible
+        </h1>
+        
+        <p class="relative text-gray-600 text-lg max-w-lg mx-auto mb-8">
+          Estamos calentando motores. La retransmisión en directo comenzará el:
+        </p>
+        
+        <div class="relative inline-block">
+            <div class="text-2xl md:text-3xl font-black text-green-700 bg-white px-8 py-3 rounded-xl border border-green-100 shadow-sm transform -rotate-2">
+            12 · JUNIO · 2026
+            </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+</Layout>
+
+<style>
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in-down { animation: fadeInDown 0.6s ease-out forwards; }
+  .animate-fade-in-up { animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
+</style>

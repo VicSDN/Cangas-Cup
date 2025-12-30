@@ -5,7 +5,7 @@ import SocialButtons from '../../../sections/SocialButtons.astro';
 import { MOBILE_MENU_CONTENT_ID } from '../../../consts/mobile-menu';
 import YearSelector from '../../../sections/YearSelector.astro';
 
-const years = ['2024', '2025'];
+const years = ['2024', '2025', '2026'];
 const urlParts = Astro.url.pathname.split('/');
 const selectedYear = urlParts.includes('user') ? urlParts[urlParts.indexOf('user') + 1] : years[0];
 

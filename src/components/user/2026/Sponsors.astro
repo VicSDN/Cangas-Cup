@@ -1,0 +1,45 @@
+---
+import SectionTitle from './SectionTitle.astro';
+---
+
+<section id="sponsors" class="mx-auto max-w-4xl py-24 px-4 text-center">
+  <SectionTitle title="Patrocinadores 2026" />
+
+  <div class="mt-16 relative group cursor-default">
+    <div class="absolute inset-0 bg-green-500/10 blur-3xl rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-700"></div>
+    <h2 class="text-3d-modern text-5xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter leading-tight relative z-10 transition-transform duration-300 hover:scale-105">
+      <span class="block text-transparent bg-clip-text bg-gradient-to-b from-green-600 to-green-800" style="-webkit-text-stroke: 1px white;">
+        ABIERTO PLAZO
+      </span>
+      <span class="text-white" style="-webkit-text-stroke: 2px #166534;">
+        DE COLABORACIÓN
+      </span>
+    </h2>
+
+    <p class="mt-8 text-xl md:text-2xl text-gray-600 font-medium max-w-2xl mx-auto">
+      ¿Quieres que tu marca sea protagonista en el evento deportivo del año?
+    </p>
+
+    <div class="mt-8">
+      <a href="mailto:cangascupfutbol7@gmail.com" class="inline-block bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-600 hover:shadow-green-500/50 transition-all transform hover:-translate-y-1">
+        CONTACTAR AHORA
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .text-3d-modern span:last-child {
+    text-shadow: 
+      1px 1px 0 #166534,
+      2px 2px 0 #166534,
+      3px 3px 0 #166534,
+      4px 4px 0 #166534,
+      5px 5px 0 #166534,
+      6px 6px 0 #166534,
+      7px 7px 10px rgba(0,0,0,0.3);
+  }
+  .text-3d-modern span:first-child {
+    filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.1));
+  }
+</style>

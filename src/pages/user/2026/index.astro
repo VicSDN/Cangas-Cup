@@ -1,0 +1,29 @@
+---
+import '../../../styles/tailwind.css';
+import Layout from '../../../layouts/Layout2026.astro';
+import PreviousPoster from '../../../components/user/2025/PreviousPoster.astro';
+import Intro from '../../../components/user/2026/Intro.astro';
+import Sponsors from '../../../components/user/2026/Sponsors.astro';
+import Cartel from '../../../components/user/2026/Cartel.astro';
+export const prerender = true;
+---
+
+<Layout
+  description="Bienvenido a la Cangas Cup 2026, prometemos que no te arrepentirás"
+  title="Cangas Cup Futsal 2026"
+>
+  <main>
+    <Cartel class="no-select" />
+    <Intro />
+    <Sponsors />
+    <div class="flex justify-center">
+      <PreviousPoster anchorClass="mt-8" />
+    </div>
+  </main>
+</Layout>
+
+<style>
+  body {
+    background-color: #2ECC71;
+  }
+</style>

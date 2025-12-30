@@ -14,13 +14,14 @@ export default defineConfig({
       filter: (page) => !page.includes('/admin/'),
       customPages: [
         'https://www.cangascup.es/',
+        'https://www.cangascup.es/user/2026',
         'https://www.cangascup.es/user/2025',
         'https://www.cangascup.es/user/2024'
       ]
     })
   ],
   redirects: {
-    '/': '/user/2025',
+    '/': '/user/2026',
     '/admin': '/admin/signin'
   },
   prefetch: true,

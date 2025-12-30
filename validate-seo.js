@@ -9,7 +9,10 @@ const PAGES_TO_CHECK = [
   '/user/2025/rankings',
   '/user/2025/regulations',
   '/sitemap.xml',
-  '/robots.txt'
+  '/robots.txt',
+  '/user/2026',
+  '/user/2026/rankings',
+  '/user/2026/regulations'
 ];
 
 function checkUrl(url) {
