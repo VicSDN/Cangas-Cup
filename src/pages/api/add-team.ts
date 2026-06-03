@@ -5,7 +5,6 @@ import { supabase, getSession } from '../../lib/supabase';
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   try {
-    console.log('Iniciando proceso de añadir equipo');
     const session = await getSession();
     if (!session) {
       console.error('No hay sesión activa');
@@ -22,8 +21,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
 
     const data = await request.json();
-    console.log('Datos recibidos:', data);
-
     const { name, group_id, location, year } = data;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
@@ -141,7 +138,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       throw insertError;
     }
 
-    console.log('Equipo añadido exitosamente:', team);
     return new Response(
       JSON.stringify({
         success: true,

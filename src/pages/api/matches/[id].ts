@@ -4,8 +4,7 @@ import { supabase } from '../../../lib/supabase';
 export const GET: APIRoute = async ({ params }) => {
   try {
     const matchId = params.id;
-    console.log('Getting match data for ID:', matchId);
-    
+
     if (!matchId) {
       return new Response(JSON.stringify({ error: 'Match ID is required' }), {
         status: 400,
@@ -37,8 +36,6 @@ export const GET: APIRoute = async ({ params }) => {
       }
       throw new Error(error.message);
     }
-
-    console.log('Match data retrieved:', match);
 
     return new Response(JSON.stringify(match), {
       status: 200,

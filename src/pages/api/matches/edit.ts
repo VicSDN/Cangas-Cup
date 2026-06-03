@@ -16,8 +16,6 @@ export const POST: APIRoute = async ({ request }) => {
       year,
     } = body;
 
-    console.log('Edit match request data:', { match_id, year, match_stage, group_id, home_team, away_team });
-
     if (!match_id || !year) {
       return new Response(JSON.stringify({ error: 'Match ID and year are required' }), {
         status: 400,
@@ -80,8 +78,6 @@ export const POST: APIRoute = async ({ request }) => {
     if (round_name !== null && round_name !== undefined) updateData.round_name = round_name;
     if (group_id !== null && group_id !== undefined) updateData.group_id = group_id;
 
-    console.log('Update data:', updateData);
-
     const { data, error } = await supabase
       .from('tournament_match')
       .update(updateData)
@@ -100,8 +96,6 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-
-    console.log('Match updated successfully:', data[0]);
 
     return new Response(JSON.stringify({ success: true, data: data[0] }), {
       status: 200,

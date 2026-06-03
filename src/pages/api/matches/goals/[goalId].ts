@@ -3,14 +3,7 @@ import { supabase } from '../../../../lib/supabase';
 import type { ApiErrorResponse } from '../../../../types/tournament';
 
 export const DELETE: APIRoute = async ({ params, request }) => {
-  console.log('--- EXECUTING GOAL DELETE HANDLER (Backend) ---');
-  console.log(`[BACKEND GOALS DELETE] Request URL from Astro: ${request.url}`);
-  console.log(`[BACKEND GOALS DELETE] Params object from Astro: ${JSON.stringify(params)}`);
   const goalIdFromParams = params.goalId;
-
-  console.log(
-    `[BACKEND GOALS DELETE] Extracted goalId: '${goalIdFromParams}', Type: ${typeof goalIdFromParams}`
-  );
 
   if (!goalIdFromParams || goalIdFromParams === 'undefined' || goalIdFromParams.trim() === '') {
     console.error(
@@ -40,8 +33,6 @@ export const DELETE: APIRoute = async ({ params, request }) => {
     );
   }
 
-  console.log(`[BACKEND GOALS DELETE] Attempting to delete goal with numeric ID: ${numericGoalId}`);
-
   try {
     const { error, count } = await supabase
       .from('tournament_goal')
@@ -61,15 +52,6 @@ export const DELETE: APIRoute = async ({ params, request }) => {
           status: 500,
           headers: { 'Content-Type': 'application/json' },
         }
-      );
-    }
-
-    console.log(
-      `[BACKEND GOALS DELETE] Supabase delete successful. Rows affected (count): ${count}`
-    );
-    if (count === 0) {
-      console.warn(
-        `[BACKEND GOALS DELETE] No goal found with ID ${numericGoalId} to delete (count was 0).`
       );
     }
 

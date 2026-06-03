@@ -44,17 +44,13 @@ async function updateAdvancingTeamsFromGroup(groupId: number, year: number) {
   // Only update if all group matches are completed
   const allCompleted = await areAllGroupMatchesCompleted(groupId, year);
   if (!allCompleted) {
-    console.log(`Group ${groupId} matches not all completed yet, skipping group advancement update`);
     return;
   }
 
-  console.log(`All matches completed for group ${groupId}, updating group position advancements`);
-
   // Get the current rankings for this group
   const rankings = await getGroupRankings(groupId, year);
-  
+
   if (rankings.length === 0) {
-    console.log(`No rankings found for group ${groupId}`);
     return;
   }
 
@@ -80,7 +76,6 @@ async function updateAdvancingTeamsFromGroup(groupId: number, year: number) {
         const teamAtPosition = rankings.find(r => r.position_in_group === position);
         if (teamAtPosition) {
           updates.home_team = teamAtPosition.team_id;
-          console.log(`Setting home team for match ${match.id} to team ${teamAtPosition.team_id} (position ${position} in group ${groupId})`);
         }
       }
     }
@@ -92,7 +87,6 @@ async function updateAdvancingTeamsFromGroup(groupId: number, year: number) {
         const teamAtPosition = rankings.find(r => r.position_in_group === position);
         if (teamAtPosition) {
           updates.away_team = teamAtPosition.team_id;
-          console.log(`Setting away team for match ${match.id} to team ${teamAtPosition.team_id} (position ${position} in group ${groupId})`);
         }
       }
     }
@@ -105,8 +99,6 @@ async function updateAdvancingTeamsFromGroup(groupId: number, year: number) {
       
       if (updateError) {
         console.error(`Error updating group position team for match ${match.id}:`, updateError);
-      } else {
-        console.log(`Updated match ${match.id} with group position team(s):`, updates);
       }
     }
   }
@@ -168,8 +160,6 @@ async function updateAdvancingTeams(matchId: number, homeTeam: number, awayTeam:
       
       if (updateError) {
         console.error(`Error updating advancing team for match ${match.id}:`, updateError);
-      } else {
-        console.log(`Updated match ${match.id} with advancing team(s):`, updates);
       }
     }
   }

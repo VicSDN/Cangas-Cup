@@ -4,7 +4,6 @@ import type { ApiErrorResponse } from '../../../../types/tournament';
 
 export const DELETE: APIRoute = async ({ params }) => {
   const cardId = params.cardId;
-  console.log(`[API DELETE CARD] Attempting to delete cardId: ${cardId}`);
 
   if (!cardId) {
     console.error('[API DELETE CARD] Missing cardId');
@@ -27,14 +26,11 @@ export const DELETE: APIRoute = async ({ params }) => {
   }
 
   try {
-    console.log(`[API DELETE CARD] Calling supabase.delete() for id: ${numericCardId}`);
     const { data, error, status, count } = await supabase
       .from('tournament_card')
       .delete()
       .eq('id', numericCardId)
       .select();
-
-    console.log('[API DELETE CARD] Supabase response:', { data, error, status, count });
 
     if (error) {
       console.error('[API DELETE CARD] Supabase error:', error);
@@ -51,15 +47,6 @@ export const DELETE: APIRoute = async ({ params }) => {
         }
       );
     }
-    if (count === 0 && status !== 404) {
-      console.warn(
-        `[API DELETE CARD] Card with id ${numericCardId} not found or no rows affected, but no explicit error. Status: ${status}, Count: ${count}`
-      );
-    }
-
-    console.log(
-      `[API DELETE CARD] Successfully processed delete for cardId: ${numericCardId}. Status: ${status}`
-    );
     return new Response(
       JSON.stringify({ message: 'Tarjeta eliminada procesada', deletedCard: data }),
       {

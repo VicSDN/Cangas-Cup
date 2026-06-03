@@ -38,10 +38,6 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
-    // Log para depuración (ahora debería funcionar)
-    console.log('========= RAW GOALS DATA FROM SUPABASE (API) =========');
-    console.log(JSON.stringify(rawGoalsData, null, 2));
-
     if (!rawGoalsData) {
       return new Response(JSON.stringify([]), { status: 200 });
     }
