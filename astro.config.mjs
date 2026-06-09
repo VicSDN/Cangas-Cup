@@ -11,12 +11,16 @@ export default defineConfig({
     tailwind(), 
     react(), 
     sitemap({
-      filter: (page) => !page.includes('/admin/'),
+      filter: (page) => !page.includes('/admin/') && !page.includes('/sitemap'),
       customPages: [
         'https://www.cangascup.es/',
         'https://www.cangascup.es/user/2026',
+        'https://www.cangascup.es/user/2026/rankings',
+        'https://www.cangascup.es/user/2026/regulations',
+        'https://www.cangascup.es/user/2026/directo',
         'https://www.cangascup.es/user/2025',
-        'https://www.cangascup.es/user/2024'
+        'https://www.cangascup.es/user/2025/rankings',
+        'https://www.cangascup.es/user/2024',
       ]
     })
   ],
