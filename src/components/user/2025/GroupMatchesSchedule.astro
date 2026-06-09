@@ -1,5 +1,6 @@
 ---
 import { supabase } from '../../../lib/supabase';
+import { groupNumberToLetter } from '../../../lib/groupNames';
 
 export interface Props {
   year?: number;
@@ -133,7 +134,7 @@ try {
     const processedMatches: MatchDisplay[] = [];
 
     rawMatchesData.forEach((match) => {
-      const groupName = getNameFromRelation(match.group_data) || 'Grupo Desconocido';
+      const groupName = groupNumberToLetter(getNameFromRelation(match.group_data) || 'Grupo Desconocido');
       const date = new Date(match.match_date);
 
       let home_team_name: string;

@@ -10,6 +10,7 @@ import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSche
 import HallOfFame from '../../../components/user/2025/HallOfFame.astro';
 import MVPList from '../../../components/user/2025/MVP.astro';
 import { supabase } from '../../../lib/supabase';
+import { groupNumberToLetter, groupLetterToNumber } from '../../../lib/groupNames';
 
 export const prerender = false;
 
@@ -18,7 +19,10 @@ const YEAR_TO_SHOW = 2026;
 const currentTagFromUrl = Astro.url.searchParams.get('tag');
 const currentSubtagFromUrl = Astro.url.searchParams.get('subtag');
 
+// groupNames: nombres para mostrar en UI (letras: GRUPO A, GRUPO B…)
+// groupNamesDB: nombres reales en Supabase (números: GRUPO 1, GRUPO 2…)
 let groupNames: string[] = [];
+let groupNamesDB: string[] = [];
 let errorFetchingGroups: string | null = null;
 
 try {
@@ -30,7 +34,8 @@ try {
 
   if (error) throw error;
   if (groups) {
-    groupNames = groups.map((g) => g.name);
+    groupNamesDB = groups.map((g) => g.name);
+    groupNames = groupNamesDB.map(groupNumberToLetter);
   }
 } catch (e: any) {
   errorFetchingGroups = 'No se pudieron cargar los nombres de los grupos desde la base de datos.';
@@ -52,6 +57,9 @@ if (currentTag === 'Clasificación' && groupNames.length > 0) {
 }
 
 const currentSubtag = currentSubtagFromUrl || defaultSubtag;
+
+// Para las queries a Supabase necesitamos el nombre en DB (número)
+const currentSubtagDB = currentSubtag ? groupLetterToNumber(currentSubtag) : null;
 
 const showGroupRanking =
   currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
@@ -99,7 +107,7 @@ if (currentTag && !currentSubtag) {
     />
 
     <div class="mt-6 md:mt-8">
-      {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
+      {showGroupRanking && <GroupRanking groupName={currentSubtagDB!} year={YEAR_TO_SHOW} />}
       {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
       {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
       {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
