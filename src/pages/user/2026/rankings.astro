@@ -1,66 +1,120 @@
 ---
 import Layout from '../../../layouts/Layout2026.astro';
-import ButtonBack from '../../../sections/ButtonBack.astro'; 
+import CompetitionView from '../../../components/user/2025/CompetitionView.tsx';
+import GroupRanking from '../../../components/user/2025/GroupRanking.astro';
+import TopScorers from '../../../components/user/2025/TopScorers.astro';
+import PlayerCards from '../../../components/user/2025/PlayerCards.astro';
+import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro';
+import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
+import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro';
+import HallOfFame from '../../../components/user/2025/HallOfFame.astro';
+import MVPList from '../../../components/user/2025/MVP.astro';
+import { supabase } from '../../../lib/supabase';
+
+export const prerender = false;
+
+const YEAR_TO_SHOW = 2026;
+
+const currentTagFromUrl = Astro.url.searchParams.get('tag');
+const currentSubtagFromUrl = Astro.url.searchParams.get('subtag');
+
+let groupNames: string[] = [];
+let errorFetchingGroups: string | null = null;
+
+try {
+  const { data: groups, error } = await supabase
+    .from('tournament_group')
+    .select('name')
+    .eq('year', YEAR_TO_SHOW)
+    .order('name', { ascending: true });
+
+  if (error) throw error;
+  if (groups) {
+    groupNames = groups.map((g) => g.name);
+  }
+} catch (e: any) {
+  errorFetchingGroups = 'No se pudieron cargar los nombres de los grupos desde la base de datos.';
+}
+
+const defaultTag = 'Clasificación';
+const currentTag = currentTagFromUrl || defaultTag;
+
+let defaultSubtag: string | null = null;
+const rankingsSubtags = ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas', 'MVPs'];
+const schedulesSubtags = ['Horarios de Grupos', 'Eliminatoria', 'Final Local'];
+
+if (currentTag === 'Clasificación' && groupNames.length > 0) {
+  defaultSubtag = groupNames[0];
+} else if (currentTag === 'Rankings') {
+  defaultSubtag = rankingsSubtags[0];
+} else if (currentTag === 'Horarios y Resultados') {
+  defaultSubtag = schedulesSubtags[0];
+}
+
+const currentSubtag = currentSubtagFromUrl || defaultSubtag;
+
+const showGroupRanking =
+  currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
+const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
+const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
+const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
+const showMVPs = currentTag === 'Rankings' && currentSubtag === 'MVPs';
+const showGroupSchedule =
+  currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
+const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
+const showLocalFinal = currentTag === 'Horarios y Resultados' && currentSubtag === 'Final Local';
+const showHallOfFame = currentTag === 'El Salón de los Elegidos';
+
+const noContentComponentSelected = !(
+  showGroupRanking ||
+  showTopScorers ||
+  showYellowCards ||
+  showRedCards ||
+  showGroupSchedule ||
+  showKnockout ||
+  showLocalFinal ||
+  showHallOfFame
+);
+
+let isTagSelectedButNoSubtag = false;
+if (currentTag && !currentSubtag) {
+  if (currentTag === 'Clasificación' && groupNames.length > 0) isTagSelectedButNoSubtag = true;
+  if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
+  if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0)
+    isTagSelectedButNoSubtag = true;
+}
 ---
 
 <Layout
-  title="Clasificaciones y Resultados | III Cangas Cup 2026"
-  description="Consulta los resultados y clasificaciones de la Cangas Cup 2026. Próximamente disponibles tras el sorteo de grupos."
+  title="Rankings y Clasificaciones | II Cangas Cup 2026"
+  description="Consulta las clasificaciones, horarios y resultados de la II Cangas Cup 2026. Fútbol sala en Cangas del Narcea, Asturias."
 >
-  
-  <div class="mt-8 px-4 md:px-4 animate-fade-in-down relative z-50">
-    <a href="/" class="inline-block transition-transform hover:-translate-x-1">
-      <ButtonBack />
-    </a>
-  </div>
+  <div class="container mx-auto px-2 py-4 md:px-4 md:py-8 bg-grey-700 min-h-screen">
+    <CompetitionView
+      client:load
+      availableGroupNames={groupNames}
+      year={YEAR_TO_SHOW}
+      initialTag={currentTag}
+      initialSubtag={currentSubtag}
+    />
 
-  <section class="mx-auto max-w-4xl px-4 mt-4 mb-12 min-h-[50vh]">
-    
-    <div class="flex flex-col items-center justify-center text-center animate-fade-in-up relative z-0">
-      
-      <div class="w-full max-w-3xl bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 p-10 md:p-16 relative overflow-hidden group">
-        
-        <div class="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-        <div class="relative bg-white p-4 rounded-full mb-6 inline-block shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-          </svg>
-        </div>
-
-        <h1 class="relative text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-          Competición no iniciada
-        </h1>
-        
-        <p class="relative text-gray-600 text-lg max-w-lg mx-auto mb-8">
-          Los grupos, horarios y emparejamientos de la <strong>III Edición</strong> aún no se han sorteado. <br>
-          Podrás consultar aquí todos los datos en tiempo real cuando arranque el torneo.
-        </p>
-   
-        <div class="relative inline-block">
-            <div class="flex flex-col md:flex-row items-center gap-2 text-xl font-bold text-green-800 bg-green-50 px-8 py-3 rounded-xl border border-green-200">
-                <span>🏆 SORTEO DE GRUPOS:</span>
-                <span class="text-green-600">Aprox 10 días antes del comienzo de la Cangas Cup</span>
-            </div>
-        </div>
-
-      </div>
+    <div class="mt-6 md:mt-8">
+      {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
+      {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
+      {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
+      {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
+      {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
+      {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />}
+      {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />}
+      {showHallOfFame && <HallOfFame year={YEAR_TO_SHOW} />}
+      {showMVPs && <MVPList year={YEAR_TO_SHOW} />}
+      {
+        isTagSelectedButNoSubtag && (
+          <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">
+            <p class="text-lg font-medium">Por favor, selecciona una subcategoría.</p>
+          </div>
+        )
+      }
     </div>
-
-  </section>
+  </div>
 </Layout>
-
-<style>
-  @keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .animate-fade-in-down { animation: fadeInDown 0.6s ease-out forwards; }
-  .animate-fade-in-up { animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
-</style>
