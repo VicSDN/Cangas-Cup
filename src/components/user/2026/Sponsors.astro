@@ -2,44 +2,148 @@
 import SectionTitle from './SectionTitle.astro';
 ---
 
-<section id="sponsors" class="mx-auto max-w-4xl py-24 px-4 text-center">
-  <SectionTitle title="Patrocinadores 2026" />
+<section id="countdown" class="mx-auto max-w-4xl py-20 px-4 text-center">
+  <SectionTitle title="El torneo empieza en..." />
 
-  <div class="mt-16 relative group cursor-default">
-    <div class="absolute inset-0 bg-green-500/10 blur-3xl rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-700"></div>
-    <h2 class="text-3d-modern text-4xl md:text-7xl lg:text-8xl font-black italic uppercase tracking-tighter leading-tight relative z-10 transition-transform duration-300 hover:scale-105">
-      <span class="block text-transparent bg-clip-text bg-gradient-to-b from-green-600 to-green-800" style="-webkit-text-stroke: 1px white;">
-        ABIERTO PLAZO
-      </span>
-      <span class="text-white" style="-webkit-text-stroke: 2px #166534;">
-        DE COLABORACIÓN
-      </span>
-    </h2>
+  <!-- Countdown -->
+  <div id="countdown-display" class="mt-12 grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+    <div class="countdown-block">
+      <span id="cd-days" class="countdown-number">--</span>
+      <span class="countdown-label">DÍAS</span>
+    </div>
+    <div class="countdown-block">
+      <span id="cd-hours" class="countdown-number">--</span>
+      <span class="countdown-label">HORAS</span>
+    </div>
+    <div class="countdown-block">
+      <span id="cd-minutes" class="countdown-number">--</span>
+      <span class="countdown-label">MIN</span>
+    </div>
+    <div class="countdown-block">
+      <span id="cd-seconds" class="countdown-number">--</span>
+      <span class="countdown-label">SEG</span>
+    </div>
+  </div>
 
-    <p class="mt-8 text-xl md:text-2xl text-gray-600 font-medium max-w-2xl mx-auto">
-      ¿Quieres que tu marca sea protagonista en el evento deportivo del año?
-    </p>
+  <!-- Mensaje cuando ya empezó -->
+  <div id="started-msg" class="hidden mt-12 text-3xl font-black text-white animate-pulse">
+    🏆 ¡EL TORNEO YA HA COMENZADO!
+  </div>
 
-    <div class="mt-8">
-      <a href="mailto:cangascupfutbol7@gmail.com" class="inline-block bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-600 hover:shadow-green-500/50 transition-all transform hover:-translate-y-1">
-        CONTACTAR AHORA
-      </a>
+  <!-- Divider -->
+  <div class="mt-20 w-16 h-1 bg-green-500 mx-auto rounded-full opacity-60"></div>
+
+  <!-- Stats -->
+  <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+    <div class="stat-block">
+      <span class="stat-number">24</span>
+      <span class="stat-label">Equipos</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">8</span>
+      <span class="stat-label">Grupos</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">42</span>
+      <span class="stat-label">Partidos</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">3K€</span>
+      <span class="stat-label">Al campeón</span>
     </div>
   </div>
 </section>
 
 <style>
-  .text-3d-modern span:last-child {
-    text-shadow: 
-      1px 1px 0 #166534,
-      2px 2px 0 #166534,
-      3px 3px 0 #166534,
-      4px 4px 0 #166534,
-      5px 5px 0 #166534,
-      6px 6px 0 #166534,
-      7px 7px 10px rgba(0,0,0,0.3);
+  .countdown-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    padding: 1.25rem 0.5rem;
+    backdrop-filter: blur(8px);
   }
-  .text-3d-modern span:first-child {
-    filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.1));
+
+  .countdown-number {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1;
+    color: white;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .countdown-label {
+    margin-top: 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #86efac;
+    text-transform: uppercase;
+  }
+
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .stat-number {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    color: white;
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(74, 222, 128, 0.5);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #86efac;
+    text-transform: uppercase;
   }
 </style>
+
+<script>
+  const TARGET = new Date('2026-06-12T22:00:00+02:00').getTime();
+
+  function pad(n: number): string {
+    return String(n).padStart(2, '0');
+  }
+
+  function tick() {
+    const now = Date.now();
+    const diff = TARGET - now;
+
+    const display = document.getElementById('countdown-display');
+    const started = document.getElementById('started-msg');
+
+    if (diff <= 0) {
+      display?.classList.add('hidden');
+      started?.classList.remove('hidden');
+      return;
+    }
+
+    const days    = Math.floor(diff / 86400000);
+    const hours   = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000)  / 60000);
+    const seconds = Math.floor((diff % 60000)    / 1000);
+
+    const dEl = document.getElementById('cd-days');
+    const hEl = document.getElementById('cd-hours');
+    const mEl = document.getElementById('cd-minutes');
+    const sEl = document.getElementById('cd-seconds');
+
+    if (dEl) dEl.textContent = String(days);
+    if (hEl) hEl.textContent = pad(hours);
+    if (mEl) mEl.textContent = pad(minutes);
+    if (sEl) sEl.textContent = pad(seconds);
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
