@@ -12,13 +12,15 @@ import LocalFinalMatch from '../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../components/user/2025/GroupMatchesSchedule.astro';
 import ButtonCreateHallOfFame from '../../components/admin/ButtonCreateHallOfFame.astro';
 import MVPList from '../../components/user/2025/MVP.astro';
+import { groupNumberToLetter, groupLetterToNumber } from '../../lib/groupNames';
 
-const YEAR_TO_SHOW = 2025;
+const YEAR_TO_SHOW = 2026;
 
 const currentTagFromUrl = Astro.url.searchParams.get('tag');
 const currentSubtagFromUrl = Astro.url.searchParams.get('subtag');
 
 let groupNames: string[] = [];
+let groupNamesDB: string[] = [];
 let errorFetchingGroups: string | null = null;
 
 try {
@@ -30,7 +32,8 @@ try {
 
   if (error) throw error;
   if (groups) {
-    groupNames = groups.map((g) => g.name);
+    groupNamesDB = groups.map((g) => g.name);
+    groupNames = groupNamesDB.map(groupNumberToLetter);
   }
 } catch (e: any) {
   errorFetchingGroups = 'No se pudieron cargar los nombres de los grupos desde la base de datos.';
@@ -52,6 +55,7 @@ if (currentTag === 'Clasificación' && groupNames.length > 0) {
 }
 
 const currentSubtag = currentSubtagFromUrl || defaultSubtag;
+const currentSubtagDB = currentSubtag ? groupLetterToNumber(currentSubtag) : null;
 
 const showGroupRanking =
   currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
@@ -128,7 +132,7 @@ const currentYear = new Date().getFullYear();
     />
 
     <div class="mt-6 md:mt-8">
-      {showGroupRanking && <GroupRanking groupName={currentSubtag!} year={YEAR_TO_SHOW} />}
+      {showGroupRanking && <GroupRanking groupName={currentSubtagDB!} year={YEAR_TO_SHOW} />}
       {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
       {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
       {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
