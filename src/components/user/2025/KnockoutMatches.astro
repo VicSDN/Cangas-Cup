@@ -1,10 +1,24 @@
 ---
 import { supabase } from '../../../lib/supabase';
+import { groupNumberToLetter } from '../../../lib/groupNames';
 
 export interface Props {
   year?: number;
 }
 const { year = 2025 } = Astro.props;
+
+// Fetch groups to map ID → display name (e.g. "GRUPO 1" → "Grupo A")
+const { data: groupsData } = await supabase
+  .from('tournament_group')
+  .select('id, name')
+  .eq('year', year);
+
+const groupIdToName = new Map<number, string>();
+if (groupsData) {
+  groupsData.forEach((g) => {
+    groupIdToName.set(g.id, groupNumberToLetter(g.name));
+  });
+}
 
 const KNOCKOUT_STAGES_ORDER = [
   'Octavos de Final',
@@ -133,18 +147,10 @@ try {
             home_team_name = `Perdedor ${homeLoserMatchLabel}`;
             break;
           case 'GROUP_POSITION':
-            let determinedHomeGroupName: string = 'Grupo Desc.';
-            if (
-              match.home_team_source_group_id &&
-              match.home_team_source_group_id >= 1 &&
-              match.home_team_source_group_id <= 26
-            ) {
-              const groupLetter = String.fromCharCode(64 + match.home_team_source_group_id);
-              determinedHomeGroupName = `Grupo ${groupLetter}`;
-            } else if (match.home_team_source_group_id) {
-              determinedHomeGroupName = `Grup.ID ${match.home_team_source_group_id}`;
-            }
-            home_team_name = `${match.home_team_source_group_position || '?'}º ${determinedHomeGroupName}`;
+            const homeGroupName = match.home_team_source_group_id
+              ? (groupIdToName.get(match.home_team_source_group_id) || `Grupo ${match.home_team_source_group_id}`)
+              : 'Grupo Desc.';
+            home_team_name = `${match.home_team_source_group_position || '?'}º ${homeGroupName}`;
             break;
           default:
             if (homeTeamDataObject?.id) {
@@ -181,18 +187,10 @@ try {
             away_team_name = `Perdedor ${awayLoserMatchLabel}`;
             break;
           case 'GROUP_POSITION':
-            let determinedAwayGroupName: string = 'Grupo Desc.';
-            if (
-              match.away_team_source_group_id &&
-              match.away_team_source_group_id >= 1 &&
-              match.away_team_source_group_id <= 26
-            ) {
-              const groupLetter = String.fromCharCode(64 + match.away_team_source_group_id);
-              determinedAwayGroupName = `Grupo ${groupLetter}`;
-            } else if (match.away_team_source_group_id) {
-              determinedAwayGroupName = `Grup.ID ${match.away_team_source_group_id}`;
-            }
-            away_team_name = `${match.away_team_source_group_position || '?'}º ${determinedAwayGroupName}`;
+            const awayGroupName = match.away_team_source_group_id
+              ? (groupIdToName.get(match.away_team_source_group_id) || `Grupo ${match.away_team_source_group_id}`)
+              : 'Grupo Desc.';
+            away_team_name = `${match.away_team_source_group_position || '?'}º ${awayGroupName}`;
             break;
           default:
             if (awayTeamDataObject?.id) {

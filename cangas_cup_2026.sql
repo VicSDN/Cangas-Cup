@@ -270,7 +270,7 @@ DECLARE
   v_pub_buddha   INTEGER;
   v_donango      INTEGER;
 
-  -- IDs partidos Ronda 1
+  -- IDs partidos Ronda 1 (fase de grupos)
   v_m_a1  INTEGER;
   v_m_b1  INTEGER;
   v_m_c1  INTEGER;
@@ -279,6 +279,26 @@ DECLARE
   v_m_f1  INTEGER;
   v_m_g1  INTEGER;
   v_m_h1  INTEGER;
+
+  -- IDs octavos de final
+  v_oct1  INTEGER;
+  v_oct2  INTEGER;
+  v_oct3  INTEGER;
+  v_oct4  INTEGER;
+  v_oct5  INTEGER;
+  v_oct6  INTEGER;
+  v_oct7  INTEGER;
+  v_oct8  INTEGER;
+
+  -- IDs cuartos de final
+  v_c1  INTEGER;
+  v_c2  INTEGER;
+  v_c3  INTEGER;
+  v_c4  INTEGER;
+
+  -- IDs semifinales
+  v_s1  INTEGER;
+  v_s2  INTEGER;
 
 BEGIN
 
@@ -545,9 +565,238 @@ BEGIN
     (NULL, v_salon_cafe, v_grp_h, '2026-06-13T21:00:00+02:00', 2026, NULL, NULL, 'Fase de Grupos', false,
      'WINNER_MATCH', v_m_h1);
 
+  -- =========================================
+  -- 8. OCTAVOS DE FINAL
+  --    home/away = NULL con GROUP_POSITION → se rellenan al terminar grupos
+  --    Sábado 13/06 noche · Domingo 14/06 madrugada
+  -- =========================================
+
+  -- ① Sáb 22:00 · 1º Grupo 1 vs 2º Grupo 2
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-13T22:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_a, 1,
+     'GROUP_POSITION', v_grp_b, 2,
+     '①')
+  RETURNING id INTO v_oct1;
+
+  -- ② Sáb 23:00 · 1º Grupo 2 vs 2º Grupo 1
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-13T23:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_b, 1,
+     'GROUP_POSITION', v_grp_a, 2,
+     '②')
+  RETURNING id INTO v_oct2;
+
+  -- ③ Dom 00:00 · 1º Grupo 3 vs 2º Grupo 4
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T00:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_c, 1,
+     'GROUP_POSITION', v_grp_d, 2,
+     '③')
+  RETURNING id INTO v_oct3;
+
+  -- ④ Dom 01:00 · 1º Grupo 4 vs 2º Grupo 3
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T01:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_d, 1,
+     'GROUP_POSITION', v_grp_c, 2,
+     '④')
+  RETURNING id INTO v_oct4;
+
+  -- ⑤ Dom 02:00 · 1º Grupo 5 vs 2º Grupo 6
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T02:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_e, 1,
+     'GROUP_POSITION', v_grp_f, 2,
+     '⑤')
+  RETURNING id INTO v_oct5;
+
+  -- ⑥ Dom 03:00 · 1º Grupo 6 vs 2º Grupo 5
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T03:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_f, 1,
+     'GROUP_POSITION', v_grp_e, 2,
+     '⑥')
+  RETURNING id INTO v_oct6;
+
+  -- ⑦ Dom 04:00 · 1º Grupo 7 vs 2º Grupo 8
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T04:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_g, 1,
+     'GROUP_POSITION', v_grp_h, 2,
+     '⑦')
+  RETURNING id INTO v_oct7;
+
+  -- ⑧ Dom 05:00 · 1º Grupo 8 vs 2º Grupo 7
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_group_id, home_team_source_group_position,
+     away_team_placeholder_type, away_team_source_group_id, away_team_source_group_position,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T05:00:00+02:00', 2026, NULL, NULL, 'Octavos de Final', false,
+     'GROUP_POSITION', v_grp_h, 1,
+     'GROUP_POSITION', v_grp_g, 2,
+     '⑧')
+  RETURNING id INTO v_oct8;
+
+  -- =========================================
+  -- 9. CUARTOS DE FINAL — Dom 10:00–13:00
+  -- =========================================
+
+  -- C1 10:00 · Ganador ① vs Ganador ③
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T10:00:00+02:00', 2026, NULL, NULL, 'Cuartos de Final', false,
+     'WINNER_MATCH', v_oct1,
+     'WINNER_MATCH', v_oct3,
+     'C1')
+  RETURNING id INTO v_c1;
+
+  -- C2 11:00 · Ganador ② vs Ganador ④
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T11:00:00+02:00', 2026, NULL, NULL, 'Cuartos de Final', false,
+     'WINNER_MATCH', v_oct2,
+     'WINNER_MATCH', v_oct4,
+     'C2')
+  RETURNING id INTO v_c2;
+
+  -- C3 12:00 · Ganador ⑤ vs Ganador ⑦
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T12:00:00+02:00', 2026, NULL, NULL, 'Cuartos de Final', false,
+     'WINNER_MATCH', v_oct5,
+     'WINNER_MATCH', v_oct7,
+     'C3')
+  RETURNING id INTO v_c3;
+
+  -- C4 13:00 · Ganador ⑥ vs Ganador ⑧
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T13:00:00+02:00', 2026, NULL, NULL, 'Cuartos de Final', false,
+     'WINNER_MATCH', v_oct6,
+     'WINNER_MATCH', v_oct8,
+     'C4')
+  RETURNING id INTO v_c4;
+
+  -- =========================================
+  -- 10. SEMIFINALES — Dom 14:00–15:00
+  -- =========================================
+
+  -- S1 14:00 · Ganador C1 vs Ganador C3
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T14:00:00+02:00', 2026, NULL, NULL, 'Semifinal', false,
+     'WINNER_MATCH', v_c1,
+     'WINNER_MATCH', v_c3,
+     'S1')
+  RETURNING id INTO v_s1;
+
+  -- S2 15:00 · Ganador C2 vs Ganador C4
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T15:00:00+02:00', 2026, NULL, NULL, 'Semifinal', false,
+     'WINNER_MATCH', v_c2,
+     'WINNER_MATCH', v_c4,
+     'S2')
+  RETURNING id INTO v_s2;
+
+  -- =========================================
+  -- 11. FINAL LOCAL — Dom 16:00
+  --     is_local_final = true (la gestiona LocalFinalMatch.astro)
+  -- =========================================
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T16:00:00+02:00', 2026, NULL, NULL, 'Final', true,
+     'Final Local');
+
+  -- =========================================
+  -- 12. FINAL — Dom 17:30 · Ganador S1 vs Ganador S2
+  -- =========================================
+  INSERT INTO tournament_match
+    (home_team, away_team, group_id, match_date, year, home_score, away_score, match_stage, is_local_final,
+     home_team_placeholder_type, home_team_source_match_id,
+     away_team_placeholder_type, away_team_source_match_id,
+     round_name)
+  VALUES
+    (NULL, NULL, NULL, '2026-06-14T17:30:00+02:00', 2026, NULL, NULL, 'Final', false,
+     'WINNER_MATCH', v_s1,
+     'WINNER_MATCH', v_s2,
+     'Final');
+
 END;
 $$;
 
--- Total equipos 2026: 24 (16 iniciales + 8 nuevos)
--- Total grupos 2026:   8
--- Total partidos 2026: 24 (8 Ronda 1 + 8 Ronda 2 + 8 Ronda 3)
+-- Total equipos 2026:  24 (16 iniciales + 8 nuevos)
+-- Total grupos 2026:    8
+-- Total partidos 2026: 42
+--   · 8  Ronda 1 (grupos)
+--   · 8  Ronda 2 (grupos - repesca)
+--   · 8  Ronda 3 (grupos - final grupo)
+--   · 8  Octavos de Final
+--   · 4  Cuartos de Final
+--   · 2  Semifinales
+--   · 1  Final Local
+--   · 1  Final
