@@ -22,7 +22,7 @@ export default function CompetitionView({
 }: CompetitionViewProps) {
   const subtagsMapConfig: Record<string, string[]> = {
     Clasificación: availableGroupNames,
-    Rankings: ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas', 'MVPs'],
+    Rankings: ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas'],
     'Horarios y Resultados': ['Horarios de Grupos', 'Eliminatoria', 'Final Local'],
   };
 

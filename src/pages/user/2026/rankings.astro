@@ -8,7 +8,6 @@ import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro
 import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro';
 import HallOfFame from '../../../components/user/2025/HallOfFame.astro';
-import MVPList from '../../../components/user/2025/MVP.astro';
 import { supabase } from '../../../lib/supabase';
 import { groupNumberToLetter, groupLetterToNumber } from '../../../lib/groupNames';
 
@@ -45,7 +44,7 @@ const defaultTag = 'Clasificación';
 const currentTag = currentTagFromUrl || defaultTag;
 
 let defaultSubtag: string | null = null;
-const rankingsSubtags = ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas', 'MVPs'];
+const rankingsSubtags = ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas'];
 const schedulesSubtags = ['Horarios de Grupos', 'Eliminatoria', 'Final Local'];
 
 if (currentTag === 'Clasificación' && groupNames.length > 0) {
@@ -66,7 +65,6 @@ const showGroupRanking =
 const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
 const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
 const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
-const showMVPs = currentTag === 'Rankings' && currentSubtag === 'MVPs';
 const showGroupSchedule =
   currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
 const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
@@ -115,7 +113,6 @@ if (currentTag && !currentSubtag) {
       {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />}
       {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />}
       {showHallOfFame && <HallOfFame year={YEAR_TO_SHOW} />}
-      {showMVPs && <MVPList year={YEAR_TO_SHOW} />}
       {
         isTagSelectedButNoSubtag && (
           <div class="p-6 md:p-8 bg-white rounded-xl shadow-lg text-center text-slate-600">
