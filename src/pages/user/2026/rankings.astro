@@ -2,8 +2,6 @@
 import Layout from '../../../layouts/Layout2026.astro';
 import CompetitionView from '../../../components/user/2025/CompetitionView.tsx';
 import GroupRanking from '../../../components/user/2025/GroupRanking.astro';
-import TopScorers from '../../../components/user/2025/TopScorers.astro';
-import PlayerCards from '../../../components/user/2025/PlayerCards.astro';
 import KnockoutMatches from '../../../components/user/2025/KnockoutMatches.astro';
 import LocalFinalMatch from '../../../components/user/2025/LocalFinalMatch.astro';
 import GroupMatchesSchedule from '../../../components/user/2025/GroupMatchesSchedule.astro';
@@ -44,13 +42,10 @@ const defaultTag = 'Clasificación';
 const currentTag = currentTagFromUrl || defaultTag;
 
 let defaultSubtag: string | null = null;
-const rankingsSubtags = ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas'];
 const schedulesSubtags = ['Horarios de Grupos', 'Eliminatoria', 'Final Local'];
 
 if (currentTag === 'Clasificación' && groupNames.length > 0) {
   defaultSubtag = groupNames[0];
-} else if (currentTag === 'Rankings') {
-  defaultSubtag = rankingsSubtags[0];
 } else if (currentTag === 'Horarios y Resultados') {
   defaultSubtag = schedulesSubtags[0];
 }
@@ -62,9 +57,6 @@ const currentSubtagDB = currentSubtag ? groupLetterToNumber(currentSubtag) : nul
 
 const showGroupRanking =
   currentTag === 'Clasificación' && currentSubtag && groupNames.includes(currentSubtag);
-const showTopScorers = currentTag === 'Rankings' && currentSubtag === 'Máx. Goleadores';
-const showYellowCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Amarillas';
-const showRedCards = currentTag === 'Rankings' && currentSubtag === 'Tarjetas Rojas';
 const showGroupSchedule =
   currentTag === 'Horarios y Resultados' && currentSubtag === 'Horarios de Grupos';
 const showKnockout = currentTag === 'Horarios y Resultados' && currentSubtag === 'Eliminatoria';
@@ -73,9 +65,6 @@ const showHallOfFame = currentTag === 'El Salón de los Elegidos';
 
 const noContentComponentSelected = !(
   showGroupRanking ||
-  showTopScorers ||
-  showYellowCards ||
-  showRedCards ||
   showGroupSchedule ||
   showKnockout ||
   showLocalFinal ||
@@ -85,7 +74,6 @@ const noContentComponentSelected = !(
 let isTagSelectedButNoSubtag = false;
 if (currentTag && !currentSubtag) {
   if (currentTag === 'Clasificación' && groupNames.length > 0) isTagSelectedButNoSubtag = true;
-  if (currentTag === 'Rankings' && rankingsSubtags.length > 0) isTagSelectedButNoSubtag = true;
   if (currentTag === 'Horarios y Resultados' && schedulesSubtags.length > 0)
     isTagSelectedButNoSubtag = true;
 }
@@ -106,9 +94,6 @@ if (currentTag && !currentSubtag) {
 
     <div class="mt-6 md:mt-8">
       {showGroupRanking && <GroupRanking groupName={currentSubtagDB!} year={YEAR_TO_SHOW} />}
-      {showTopScorers && <TopScorers year={YEAR_TO_SHOW} />}
-      {showYellowCards && <PlayerCards cardType="Amarilla" year={YEAR_TO_SHOW} />}
-      {showRedCards && <PlayerCards cardType="Roja" year={YEAR_TO_SHOW} />}
       {showGroupSchedule && <GroupMatchesSchedule year={YEAR_TO_SHOW} />}
       {showKnockout && <KnockoutMatches year={YEAR_TO_SHOW} />}
       {showLocalFinal && <LocalFinalMatch year={YEAR_TO_SHOW} />}

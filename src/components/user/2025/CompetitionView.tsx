@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 const tagsConfig = [
   'Clasificación',
-  'Rankings',
   'Horarios y Resultados',
   'El Salón de los Elegidos',
 ];
@@ -22,7 +21,6 @@ export default function CompetitionView({
 }: CompetitionViewProps) {
   const subtagsMapConfig: Record<string, string[]> = {
     Clasificación: availableGroupNames,
-    Rankings: ['Máx. Goleadores', 'Tarjetas Amarillas', 'Tarjetas Rojas'],
     'Horarios y Resultados': ['Horarios de Grupos', 'Eliminatoria', 'Final Local'],
   };
 
